@@ -57,6 +57,8 @@ T-010 accepted ADR-0006 for Stage 2 backend scope before backend implementation.
 
 T-013 verified Stage 2 with `npm run verify`, security/auth review, content/API contract review, live browser smoke, DB progress persistence check, and 360px no-overflow check.
 
+T-014 added shared content API contract tests and a runtime content import guard. `npm run verify` now also runs `npm run check:runtime-imports` to keep rendered app code on backend API data instead of direct JSON/runtime loader imports.
+
 ## State update rules
 
 Update this file when:

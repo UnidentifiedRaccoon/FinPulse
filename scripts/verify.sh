@@ -16,6 +16,9 @@ echo "[verify] npm version: $(npm --version)"
 echo "[verify] content validation"
 npm run check:content --if-present
 
+echo "[verify] runtime content import guard"
+npm run check:runtime-imports --if-present
+
 echo "[verify] typecheck"
 npm run typecheck --if-present
 
