@@ -1,10 +1,12 @@
 # T-008 — Content data model and Module 1 runtime content
 
-Status: review
+Status: done
 Owner: Codex orchestrator
 Model: GPT-5.5 / xhigh
 Started: 2026-05-25
 Branch/worktree: feat/content-data-model
+PR: https://github.com/UnidentifiedRaccoon/FinPulse/pull/2
+Merged: 2026-05-25
 
 ## Goal
 
@@ -73,4 +75,4 @@ Read before starting:
 - Continuation fixes: expanded supplemental runtime JSON with restorable source details for sections 23–43; restored section 18 feedback and final assignment details; added a primary `checklist` card; made choice correctness accessible to screen readers; hardened content validation for missing manifests, unknown keys, normalized paths, order duplicates, example graph, and scenario correctness.
 - Checks run: `npm run check:content`; `npm run typecheck --if-present`; `npm run lint --if-present`; `npm run test:run --if-present`; `npm run build --if-present`; `npm run verify`; `git diff --check`; validator negative smoke on a temporary copy; browser smoke on `http://127.0.0.1:5173/`; mobile viewport DOM check at 360px.
 - Risks: interactive cards are rendered read-only by design; supplemental material is preserved as unit metadata rather than shown in the primary lesson flow except the red-flags checklist, which is also rendered in the main lesson flow.
-- Follow-up: final verifier pass, then mark PR ready for review.
+- Follow-up: merged in PR #2; no remaining T-008 follow-up.
