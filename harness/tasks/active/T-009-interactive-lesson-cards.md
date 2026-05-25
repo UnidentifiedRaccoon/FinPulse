@@ -68,7 +68,7 @@ Read before starting:
 - Files changed: `src/features/lesson-reader/LessonCardRenderer.tsx`, `src/features/lesson-reader/LessonCardRenderer.test.tsx`, `src/content/modules/module_1/units/unit_01_values_and_goals.json`, `docs/CONTENT_MODEL.md`, `harness/WORKBOARD.md`, this task file.
 - Checks run: `npm run test:run -- src/features/lesson-reader/LessonCardRenderer.test.tsx`; `npm run verify`; `git diff --check`; browser smoke desktop and 360px.
 - Risks: answers are intentionally local React state only and reset on navigation/reload; no persistence or scoring was added.
-- Follow-up: review draft PR.
+- Follow-up: PR ready for review.
 
 ## Continuation review — 2026-05-25
 
@@ -77,3 +77,4 @@ Read before starting:
 - Content semantics review: fixed two supplemental wording items that implied persistence (`Артефакт` glossary definition and product cycle text).
 - Checks rerun after continuation fix: `npm run verify`; `git diff --check`; browser smoke desktop and 360px.
 - Browser smoke evidence: overview -> module -> unit -> lesson path rendered, `single_choice` feedback shown, `reflection` local state shown, `checklist` toggled, no console warnings/errors, and no horizontal overflow at 360px.
+- Ready for review: PR #4 can move out of draft after CI stays green on the latest branch head.
