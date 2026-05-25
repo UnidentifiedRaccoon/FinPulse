@@ -2,11 +2,11 @@
 
 ## Decision summary
 
-Use a Vite React + TypeScript SPA for the MVP.
+Use a Vite React + TypeScript SPA for the frontend. Starting in Stage 2, add a small Fastify + SQLite backend for learner identity, session-backed progress, and read-only content API delivery.
 
 Rationale:
-- content is static JSON;
-- there is no account system or server-dependent personalization;
+- content remains canonical static JSON;
+- progress now needs server-owned persistence;
 - there are no production financial operations;
 - SEO and server rendering are not the primary MVP constraints;
 - development speed and a small mental model matter more right now.
@@ -14,8 +14,8 @@ Rationale:
 Next.js/SSR can be reconsidered later if one of these becomes true:
 - public SEO landing/content discovery becomes a main growth channel;
 - lessons need server-side personalization;
-- authentication and server-owned user state become central;
-- content is moved to a CMS/backend requiring server mediation;
+- SSR-specific personalization becomes central;
+- content is moved to a CMS requiring server rendering or dynamic metadata;
 - the app needs server actions, edge rendering, or dynamic metadata at scale.
 
 ## Recommended frontend stack
@@ -29,6 +29,17 @@ Data:           JSON files, validated by script/schema
 Styling:        Tailwind CSS
 UI primitives:  shadcn/ui
 Tests:          Vitest + Testing Library when components stabilize
+```
+
+## Recommended backend stack
+
+```txt
+HTTP server:    Fastify
+Persistence:    SQLite
+Auth:           login/password with hashed passwords
+Sessions:       server-side session id in httpOnly cookie
+Content API:    read-only responses hydrated from validated JSON files
+Tests:          Vitest integration tests against isolated SQLite files
 ```
 
 ## Recommended project structure
@@ -63,6 +74,20 @@ src/
     program.json
   styles/
     globals.css
+server/
+  app.ts
+  index.ts
+  db/
+    connection.ts
+    migrate.ts
+    schema.sql
+  modules/
+    auth/
+    content/
+    progress/
+  lib/
+    password.ts
+    sessions.ts
 ```
 
 Alternative for runtime-editable static content:
@@ -77,11 +102,19 @@ Use `src/content/` when content is bundled with the app. Use `public/content/` w
 
 ```txt
 JSON content file
-  -> content loader / validator
-  -> typed domain model
-  -> page selectors
+  -> content validator / typed domain model
+  -> backend content API
+  -> frontend API client
   -> React pages/components
-  -> optional small Zustand store for reader UI state
+  -> optional small Zustand store for reader UI state only
+```
+
+```txt
+Learner interaction
+  -> frontend event handler
+  -> authenticated progress API
+  -> SQLite progress row owned by current session user
+  -> frontend progress refresh or optimistic local UI update
 ```
 
 ## State policy
@@ -95,12 +128,12 @@ Use Zustand for:
 - current reader preferences;
 - last opened lesson, if local-only;
 - navigation drawer state shared across routes;
-- offline/local-only progress if explicitly accepted later.
+- small non-sensitive UI preferences.
 
 Do not use Zustand for:
 - storing the entire content corpus without reason;
 - replacing derived selectors;
-- server state that does not exist yet;
+- backend-owned server state such as authenticated user or saved progress;
 - analytics or diagnostics in MVP.
 
 ## Content loading policy
@@ -109,8 +142,46 @@ Current implementation:
 - use `src/content/program.json` as the program manifest;
 - keep module metadata in `src/content/modules/<module>/module.json`;
 - keep full unit runtime content in `src/content/modules/<module>/units/<unit>.json`;
-- hydrate the split files in `src/content/loadProgram.ts`;
+- hydrate the split files through the shared content loader;
 - validate before build using `scripts/check-content-json.mjs`.
+
+Stage 2 runtime policy:
+- JSON files remain source-of-truth in the repo;
+- the backend reads and validates the same split JSON graph;
+- frontend rendered routes fetch program/module/unit/lesson data from `/api/**`;
+- content API routes are read-only unless a later ADR introduces CMS/admin tooling.
+
+## Backend/API boundary
+
+Initial public content routes:
+
+```txt
+GET /api/health
+GET /api/program
+GET /api/modules
+GET /api/modules/:moduleSlug
+GET /api/units/:unitSlug
+GET /api/lessons/:lessonSlug
+```
+
+Initial auth/progress routes:
+
+```txt
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/logout
+GET  /api/auth/me
+GET  /api/progress
+PUT  /api/progress/lessons/:lessonSlug
+PUT  /api/progress/cards/:cardId
+```
+
+Auth and progress policy:
+- content routes may remain public;
+- progress routes require a valid httpOnly cookie session;
+- route handlers derive the user id from the session only;
+- password hashes and session records are stored server-side;
+- progress stores viewed/completed markers, not diagnostics/scoring/analytics.
 
 ## Error handling
 

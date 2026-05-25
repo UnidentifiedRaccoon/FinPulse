@@ -4,9 +4,9 @@ Last updated: 2026-05-25
 
 ## Current phase
 
-Harness v0 / content-reader MVP scaffold with Module 1 runtime content and local-only lesson card interactions.
+Stage 2 backend MVP started.
 
-The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a mobile content-reader surface. Runtime content now uses split JSON files with the hierarchy Program -> Module -> Unit -> Lesson -> Card. The lesson reader supports transient component-state interactions for choice, scenario, reflection, artifact, and checklist cards; answers are not persisted.
+The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a mobile content-reader surface. Runtime content now uses split JSON files with the hierarchy Program -> Module -> Unit -> Lesson -> Card. ADR-0006 accepts a narrow Stage 2 backend: Fastify + SQLite, simple learner login, httpOnly cookie sessions, backend-owned progress markers, and read-only content API delivery from validated JSON.
 
 ## Locked MVP assumptions
 
@@ -15,13 +15,16 @@ The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn
 - JSON as source-of-truth.
 - React + TypeScript.
 - SPA/Vite preferred.
+- Fastify backend accepted for Stage 2.
+- SQLite persistence accepted for Stage 2 learner/session/progress state.
 - Zustand for small client-side state.
 - Tailwind + shadcn/ui.
-- No accounts/cabinets.
+- Minimal learner login is allowed for saved progress; full user cabinets remain out of scope.
 - No diagnostics.
 - No rewards.
 - No analytics dashboards.
-- No backend dependency.
+- Backend-owned progress is not diagnostics, scoring, analytics, or recommendations.
+- JSON remains the canonical educational content source-of-truth.
 - Evals deferred until product flows exist.
 - Agent model policy: GPT-5.5, reasoning effort `xhigh`.
 - Branch, commit, push, and PR rules live in `docs/engineering/contributing.md`.
@@ -30,9 +33,9 @@ The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn
 
 - Final product name and visual identity.
 - Exact content taxonomy beyond the initial lesson block types.
-- Whether content is bundled in `src/content` or loaded from `public/content`.
-- Stage 2 backend scope and API contract for progress/artifact state; local-only reading progress is deferred.
 - Deployment target.
+- Production secret/session hardening and rate limiting.
+- Whether persisted artifact/reflection answers ever become product scope.
 
 ## Current verification state
 
@@ -45,6 +48,8 @@ GitHub Actions runs `npm ci` and `npm run verify` for pull requests and pushes t
 Module 1 source content was split from `docs/modules/module_1/lesson_01.md` into `docs/modules/module_1/lesson_01/`, with the full original preserved in `00_original_content.md` and focused source slices mapped in `README.md`.
 
 T-009 interactive lesson cards merged in PR #4. Current interaction state remains local React component state only; no backend, accounts, diagnostics, rewards, analytics, or persistence were added.
+
+T-010 accepted ADR-0006 for Stage 2 backend scope before backend implementation. Full freeform lesson answers remain transient; only viewed/completed lesson/card progress is in Stage 2 persistence scope.
 
 ## State update rules
 
