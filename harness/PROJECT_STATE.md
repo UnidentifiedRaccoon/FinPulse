@@ -57,6 +57,8 @@ T-010 accepted ADR-0006 for Stage 2 backend scope before backend implementation.
 
 T-013 verified Stage 2 with `npm run verify`, security/auth review, content/API contract review, live browser smoke, DB progress persistence check, and 360px no-overflow check.
 
+T-015 adapted the friendly-learning design-system draft to FinPulse. `docs/DESIGN_SYSTEM.md` now defines MVP-safe lesson/card experience guidance and keeps rewards, streaks, challenges, shops, mascot-led experience, and retention loops deferred.
+
 ## State update rules
 
 Update this file when:
