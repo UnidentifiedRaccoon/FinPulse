@@ -4,9 +4,9 @@ Last updated: 2026-05-25
 
 ## Current phase
 
-Harness v0 / content-reader MVP scaffold with Module 1 runtime content.
+Harness v0 / content-reader MVP scaffold with Module 1 runtime content and local-only lesson card interactions.
 
-The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a mobile content-reader surface. Runtime content now uses split JSON files with the hierarchy Program -> Module -> Unit -> Lesson -> Card.
+The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a mobile content-reader surface. Runtime content now uses split JSON files with the hierarchy Program -> Module -> Unit -> Lesson -> Card. The lesson reader supports transient component-state interactions for choice, scenario, reflection, artifact, and checklist cards; answers are not persisted.
 
 ## Locked MVP assumptions
 
@@ -31,7 +31,7 @@ The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn
 - Final product name and visual identity.
 - Exact content taxonomy beyond the initial lesson block types.
 - Whether content is bundled in `src/content` or loaded from `public/content`.
-- Whether local-only reading progress is allowed in MVP.
+- Stage 2 backend scope and API contract for progress/artifact state; local-only reading progress is deferred.
 - Deployment target.
 
 ## Current verification state
@@ -43,6 +43,8 @@ GitHub Actions runs `npm ci` and `npm run verify` for pull requests and pushes t
 `src/content/program.json` is a program manifest. Module and unit runtime content live under `src/content/modules/**`. The content validator also validates the example split graph, rejects unknown keys, requires normalized relative JSON paths, checks sorted unique `order` values, and verifies scenario `correctOptionId` values have matching options.
 
 Module 1 source content was split from `docs/modules/module_1/lesson_01.md` into `docs/modules/module_1/lesson_01/`, with the full original preserved in `00_original_content.md` and focused source slices mapped in `README.md`.
+
+T-009 interactive lesson cards merged in PR #4. Current interaction state remains local React component state only; no backend, accounts, diagnostics, rewards, analytics, or persistence were added.
 
 ## State update rules
 

@@ -1,10 +1,11 @@
 # T-009 — Interactive lesson cards
 
-Status: review
+Status: done
 Owner: Codex orchestrator
 Model: GPT-5.5 / xhigh
 Started: 2026-05-25
 Branch/worktree: feat/interactive-lesson-cards
+Merged: PR #4 into `main` on 2026-05-25
 
 ## Goal
 
@@ -78,3 +79,4 @@ Read before starting:
 - Checks rerun after continuation fix: `npm run verify`; `git diff --check`; browser smoke desktop and 360px.
 - Browser smoke evidence: overview -> module -> unit -> lesson path rendered, `single_choice` feedback shown, `reflection` local state shown, `checklist` toggled, no console warnings/errors, and no horizontal overflow at 360px.
 - Ready for review: PR #4 can move out of draft after CI stays green on the latest branch head.
+- Merge result: accepted and merged in PR #4.

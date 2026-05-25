@@ -22,6 +22,7 @@ These are suggestions. The orchestrator may split or reorder them.
 | T-005 | done | Add lesson block renderer | `src/**` | Initial heading/paragraph/list/callout renderer is in place. |
 | T-006 | done | Add mobile app shell | `src/**` | Mobile-first shell is in place. |
 | T-007 | done | Add first component tests | test files, test config | Initial Vitest coverage is in place. |
+| T-010 | planned | Decide Stage 2 backend scope | `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `harness/tasks/**`, `harness/WORKBOARD.md`, `harness/PROJECT_STATE.md` | ADR for Fastify + SQLite before backend implementation. |
 
 ## Active tasks
 
@@ -29,7 +30,7 @@ Use files under `harness/tasks/active/` for real active work.
 
 | ID | Status | Task | Intended write set | Notes |
 |---|---:|---|---|---|
-| T-009 | review | Interactive lesson cards | `src/features/lesson-reader/**`, focused tests, task/workboard state; content/docs only if `readOnly` semantics require it | Branch `feat/interactive-lesson-cards`; PR #4 is ready for review after continuation fixes and checks. |
+| _none_ |  |  |  |  |
 
 ## Review tasks
 
@@ -40,3 +41,4 @@ Use task files and PR/diff summaries.
 | ID | Status | Task | Intended write set | Notes |
 |---|---:|---|---|---|
 | T-008 | done | Content data model and Module 1 runtime content | `docs/modules/module_1/lesson_01*`, `docs/CONTENT_MODEL.md`, `harness/schemas/content.schema.json`, `src/content/**`, `scripts/check-content-json.mjs`, `examples/content/program.example.json`, `src/**`, task/state docs | Merged in PR #2. |
+| T-009 | done | Interactive lesson cards | `src/features/lesson-reader/**`, focused tests, `docs/CONTENT_MODEL.md`, first-unit content, task/workboard state | Merged in PR #4; interactions remain local React state only. |
