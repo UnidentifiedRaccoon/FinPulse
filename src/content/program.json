@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "finpulse-foundations",
+  "slug": "finpulse-foundations",
+  "title": "FinPulse Foundations",
+  "description": "A concise mobile-first program for building financial awareness.",
+  "modules": [
+    {
+      "id": "module-1",
+      "slug": "start-here",
+      "title": "Start here",
+      "description": "Core ideas and reading flow for the first version of the program.",
+      "order": 1,
+      "lessons": [
+        {
+          "id": "lesson-1",
+          "slug": "welcome-to-finpulse",
+          "title": "Welcome to FinPulse",
+          "description": "What this reader is for and how to move through the material.",
+          "order": 1,
+          "estimatedMinutes": 4,
+          "blocks": [
+            {
+              "type": "heading",
+              "level": 2,
+              "text": "Read first, expand later"
+            },
+            {
+              "type": "paragraph",
+              "text": "FinPulse starts as a focused content reader for an educational program. The first version prioritizes structure, clarity, and comfortable reading on a phone."
+            },
+            {
+              "type": "callout",
+              "tone": "info",
+              "title": "MVP boundary",
+              "text": "Accounts, diagnostics, rewards, analytics, backend services, CMS, and SSR stay outside the MVP until there is a separate architecture decision."
+            }
+          ]
+        },
+        {
+          "id": "lesson-2",
+          "slug": "program-map",
+          "title": "Program map",
+          "description": "How modules, lessons, and content blocks fit together.",
+          "order": 2,
+          "estimatedMinutes": 3,
+          "blocks": [
+            {
+              "type": "heading",
+              "level": 2,
+              "text": "A simple content model"
+            },
+            {
+              "type": "paragraph",
+              "text": "The reader loads a JSON program. A program contains modules, modules contain lessons, and lessons contain readable content blocks."
+            },
+            {
+              "type": "list",
+              "items": [
+                "Overview page for all modules.",
+                "Module page for ordered lessons.",
+                "Lesson page for content blocks and next navigation."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
