@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 import type { AppDatabase } from '../../db/connection'
 import { sendError } from '../../lib/http'
-import { hashPassword, verifyPassword } from '../../lib/password'
+import { hashPassword, isPasswordTooLongForHash, verifyPassword } from '../../lib/password'
 import {
   clearSessionCookie,
   createSession,
@@ -37,6 +37,9 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, cookie
     const parsed = authBodySchema.safeParse(request.body)
     if (!parsed.success) {
       return sendError(reply, 400, 'invalid_auth_payload', 'Login and password are required')
+    }
+    if (isPasswordTooLongForHash(parsed.data.password)) {
+      return sendError(reply, 400, 'password_too_long', 'Password is too long')
     }
 
     const now = new Date().toISOString()
@@ -71,6 +74,9 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, cookie
     const parsed = authBodySchema.safeParse(request.body)
     if (!parsed.success) {
       return sendError(reply, 400, 'invalid_auth_payload', 'Login and password are required')
+    }
+    if (isPasswordTooLongForHash(parsed.data.password)) {
+      return sendError(reply, 400, 'password_too_long', 'Password is too long')
     }
 
     const user = db

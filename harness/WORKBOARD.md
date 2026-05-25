@@ -22,7 +22,6 @@ These are suggestions. The orchestrator may split or reorder them.
 | T-005 | done | Add lesson block renderer | `src/**` | Initial heading/paragraph/list/callout renderer is in place. |
 | T-006 | done | Add mobile app shell | `src/**` | Mobile-first shell is in place. |
 | T-007 | done | Add first component tests | test files, test config | Initial Vitest coverage is in place. |
-| T-013 | planned | Stage 2 verification and PR polish | docs/harness updates, README, PR evidence | Browser smoke and final risk notes. |
 
 ## Active tasks
 
@@ -45,3 +44,4 @@ Use task files and PR/diff summaries.
 | T-010 | done | Decide Stage 2 backend scope | `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/PRODUCT.md`, `docs/CONTENT_MODEL.md`, `harness/tasks/**`, `harness/WORKBOARD.md`, `harness/PROJECT_STATE.md` | ADR-0006 accepted Fastify + SQLite backend scope before implementation; `npm run verify` passed. |
 | T-011 | done | Build Stage 2 backend API | `server/**`, `package.json`, lockfile, backend tests, `.env.example`, scripts/tsconfig as needed | Fastify + SQLite auth/content/progress API implemented; `npm run verify` passed. |
 | T-012 | done | Migrate frontend to backend API | `src/**`, focused frontend tests, `vite.config.ts` | SPA pages use backend content API; auth controls and progress writes wired; `npm run verify` passed. |
+| T-013 | done | Stage 2 verification and PR polish | docs/harness updates, README, PR evidence | Security/content reviews and browser smoke passed; final `npm run verify` passed. |

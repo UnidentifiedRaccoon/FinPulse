@@ -112,6 +112,55 @@ describe('backend API', () => {
     }
   })
 
+  it('rejects passwords that bcrypt would truncate', async () => {
+    const { app } = await setupTestApp()
+
+    try {
+      const longPassword = 'a'.repeat(73)
+      const registerResponse = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'long-password-user',
+          password: longPassword,
+        },
+      })
+
+      expect(registerResponse.statusCode).toBe(400)
+      expect(registerResponse.json()).toMatchObject({
+        error: {
+          code: 'password_too_long',
+        },
+      })
+
+      await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'valid-password-user',
+          password: 'secure-passphrase',
+        },
+      })
+      const loginResponse = await app.inject({
+        method: 'POST',
+        url: '/api/auth/login',
+        payload: {
+          login: 'valid-password-user',
+          password: longPassword,
+        },
+      })
+
+      expect(loginResponse.statusCode).toBe(400)
+      expect(loginResponse.json()).toMatchObject({
+        error: {
+          code: 'password_too_long',
+        },
+      })
+    } finally {
+      await app.close()
+    }
+  })
+
   it('protects progress routes and stores lesson/card progress per user', async () => {
     const { app } = await setupTestApp()
 
