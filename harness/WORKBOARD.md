@@ -45,3 +45,4 @@ Use task files and PR/diff summaries.
 | T-011 | done | Build Stage 2 backend API | `server/**`, `package.json`, lockfile, backend tests, `.env.example`, scripts/tsconfig as needed | Fastify + SQLite auth/content/progress API implemented; `npm run verify` passed. |
 | T-012 | done | Migrate frontend to backend API | `src/**`, focused frontend tests, `vite.config.ts` | SPA pages use backend content API; auth controls and progress writes wired; `npm run verify` passed. |
 | T-013 | done | Stage 2 verification and PR polish | docs/harness updates, README, PR evidence | Security/content reviews and browser smoke passed; final `npm run verify` passed. |
+| T-015 | done | Clean friendly-learning design system | `docs/DESIGN_SYSTEM.md`, `harness/**` | Friendly-learning design-system draft adapted to FinPulse; MVP-safe lesson/card guidance kept, rewards/streaks/challenges deferred. |
