@@ -1,6 +1,9 @@
-import { CheckCircle2, Circle, ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import { CheckCircle2, Circle, ExternalLink, XCircle } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
 import type { Card } from '@/content/program'
+import { cn } from '@/lib/utils'
 
 const cardTypeLabels: Record<Card['type'], string> = {
   theory: 'Теория',
@@ -76,16 +79,32 @@ function CardBody({ card }: { card: Card }) {
   }
 
   if (card.type === 'single_choice') {
+    if (!card.readOnly) {
+      return (
+        <ChoiceInteraction
+          cardId={card.id}
+          feedback={card.feedback}
+          options={card.options}
+          question={card.question}
+          correctOptionId={card.correctOptionId}
+        />
+      )
+    }
+
     return (
       <div className="flex flex-col gap-3">
         <p className="text-base leading-7">{card.question}</p>
-        <ChoiceList options={card.options} />
+        <StaticChoiceList options={card.options} />
         {card.feedback ? <p className="text-sm leading-6 text-muted-foreground">{card.feedback}</p> : null}
       </div>
     )
   }
 
   if (card.type === 'reflection') {
+    if (!card.readOnly) {
+      return <ReflectionInteraction card={card} />
+    }
+
     return (
       <div className="flex flex-col gap-3">
         <p className="text-base leading-7">{card.prompt}</p>
@@ -96,21 +115,50 @@ function CardBody({ card }: { card: Card }) {
   }
 
   if (card.type === 'scenario') {
+    if (!card.readOnly && card.options) {
+      return (
+        <div className="flex flex-col gap-3">
+          <p className="rounded-lg bg-muted p-3 text-sm leading-6 text-muted-foreground">{card.body}</p>
+          {card.question ? (
+            <ChoiceInteraction
+              cardId={card.id}
+              feedback={card.feedback}
+              options={card.options}
+              question={card.question}
+              correctOptionId={card.correctOptionId}
+            />
+          ) : (
+            <ChoiceInteraction
+              cardId={card.id}
+              feedback={card.feedback}
+              options={card.options}
+              question="Выбери вариант"
+              correctOptionId={card.correctOptionId}
+            />
+          )}
+        </div>
+      )
+    }
+
     return (
       <div className="flex flex-col gap-3">
         <p className="rounded-lg bg-muted p-3 text-sm leading-6 text-muted-foreground">{card.body}</p>
         {card.question ? <p className="text-base leading-7">{card.question}</p> : null}
-        {card.options ? <ChoiceList options={card.options} /> : null}
+        {card.options ? <StaticChoiceList options={card.options} /> : null}
         {card.feedback ? <p className="text-sm leading-6 text-muted-foreground">{card.feedback}</p> : null}
       </div>
     )
   }
 
   if (card.type === 'artifact') {
+    if (!card.readOnly) {
+      return <ArtifactInteraction card={card} />
+    }
+
     return (
       <div className="flex flex-col gap-3">
         <p className="text-base leading-7 text-muted-foreground">{card.body}</p>
-        {card.template ? <Checklist items={card.template} /> : null}
+        {card.template ? <StaticChecklist items={card.template} /> : null}
         {card.variants ? <PillList items={card.variants} /> : null}
       </div>
     )
@@ -120,7 +168,7 @@ function CardBody({ card }: { card: Card }) {
     return (
       <div className="flex flex-col gap-3">
         {card.body ? <p className="text-base leading-7 text-muted-foreground">{card.body}</p> : null}
-        <Checklist items={card.items} />
+        <ChecklistInteraction cardId={card.id} items={card.items} />
       </div>
     )
   }
@@ -128,13 +176,400 @@ function CardBody({ card }: { card: Card }) {
   return (
     <div className="flex flex-col gap-3">
       {card.body ? <p className="text-base leading-7 text-muted-foreground">{card.body}</p> : null}
-      <Checklist items={card.points} checked />
+      <StaticChecklist items={card.points} checked />
       {card.nextStep ? <p className="text-sm leading-6 text-muted-foreground">{card.nextStep}</p> : null}
     </div>
   )
 }
 
-function ChoiceList({ options }: { options: Array<{ id: string; label: string; isCorrect?: boolean }> }) {
+type ChoiceOption = Extract<Card, { type: 'single_choice' }>['options'][number]
+type ReflectionCard = Extract<Card, { type: 'reflection' }>
+type ArtifactCard = Extract<Card, { type: 'artifact' }>
+
+function ChoiceInteraction({
+  cardId,
+  question,
+  options,
+  correctOptionId,
+  feedback,
+}: {
+  cardId: string
+  question: string
+  options: ChoiceOption[]
+  correctOptionId?: string
+  feedback?: string
+}) {
+  const [selectedOptionId, setSelectedOptionId] = useState('')
+  const [isChecked, setIsChecked] = useState(false)
+  const correctOption = getCorrectOption(options, correctOptionId)
+  const selectedOption = options.find((option) => option.id === selectedOptionId)
+  const isCorrect = Boolean(correctOption && selectedOption?.id === correctOption.id)
+  const hasObjectiveAnswer = Boolean(correctOption)
+  const feedbackId = `${cardId}-choice-feedback`
+  const groupName = `${cardId}-choice`
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-base leading-7">{question}</p>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="sr-only">{question}</legend>
+        <ul className="flex flex-col gap-2">
+          {options.map((option) => {
+            const isSelected = selectedOptionId === option.id
+            const shouldShowStatus = isChecked && isSelected && hasObjectiveAnswer
+            const optionIsCorrect = Boolean(correctOption && option.id === correctOption.id)
+
+            return (
+              <li key={option.id}>
+                <label
+                  className={cn(
+                    'flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-border px-3 py-2 text-sm leading-6 transition-colors [overflow-wrap:anywhere] hover:bg-muted/60 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50',
+                    isSelected && 'border-primary bg-primary/5 text-foreground',
+                    shouldShowStatus && optionIsCorrect && 'border-primary bg-primary/10',
+                    shouldShowStatus && !optionIsCorrect && 'border-destructive/60 bg-destructive/5',
+                  )}
+                >
+                  <input
+                    aria-describedby={shouldShowStatus ? feedbackId : undefined}
+                    checked={isSelected}
+                    className="mt-1 size-4 shrink-0 accent-primary"
+                    name={groupName}
+                    onChange={() => {
+                      setSelectedOptionId(option.id)
+                      setIsChecked(false)
+                    }}
+                    type="radio"
+                    value={option.id}
+                  />
+                  <span className="flex flex-col gap-1">
+                    <span>{option.label}</span>
+                    {shouldShowStatus ? (
+                      <span
+                        className={cn(
+                          'inline-flex items-center gap-1 text-xs font-medium',
+                          optionIsCorrect ? 'text-primary' : 'text-destructive',
+                        )}
+                      >
+                        {optionIsCorrect ? (
+                          <CheckCircle2 aria-hidden="true" className="size-4" />
+                        ) : (
+                          <XCircle aria-hidden="true" className="size-4" />
+                        )}
+                        {optionIsCorrect ? 'Верно' : 'Нужно пересмотреть'}
+                      </span>
+                    ) : null}
+                  </span>
+                </label>
+              </li>
+            )
+          })}
+        </ul>
+      </fieldset>
+
+      <Button
+        className="h-auto min-h-11 w-fit whitespace-normal"
+        disabled={!selectedOptionId}
+        onClick={() => setIsChecked(true)}
+        type="button"
+        variant="outline"
+      >
+        {hasObjectiveAnswer ? 'Проверить ответ' : 'Показать обратную связь'}
+      </Button>
+
+      {isChecked && selectedOption ? (
+        <div
+          aria-live="polite"
+          className="flex flex-col gap-2 rounded-lg bg-muted p-3 text-sm leading-6 text-muted-foreground"
+          id={feedbackId}
+          role="status"
+        >
+          {hasObjectiveAnswer ? (
+            <p className="font-medium text-foreground">
+              {isCorrect ? 'Ответ верный.' : 'Это не лучший вариант.'}
+            </p>
+          ) : null}
+          {hasObjectiveAnswer && !isCorrect && correctOption ? (
+            <p>
+              Лучший вариант: <span className="font-medium text-foreground">{correctOption.label}</span>
+            </p>
+          ) : null}
+          {selectedOption.feedback ? <p>{selectedOption.feedback}</p> : null}
+          {feedback ? <p>{feedback}</p> : null}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function ReflectionInteraction({ card }: { card: ReflectionCard }) {
+  const [textValue, setTextValue] = useState('')
+  const [singleValue, setSingleValue] = useState('')
+  const [multiValues, setMultiValues] = useState<string[]>([])
+  const inputType = card.inputType ?? 'freeform'
+  const guidanceId = card.guidance ? `${card.id}-guidance` : undefined
+  const statusId = `${card.id}-local-status`
+
+  if (inputType === 'single_select' && card.options?.length) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="text-base leading-7">{card.prompt}</p>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="sr-only">{card.prompt}</legend>
+          <ul className="flex flex-col gap-2">
+            {card.options.map((option) => (
+              <li key={option}>
+                <label
+                  className={cn(
+                    'flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm leading-6 transition-colors hover:bg-muted/60 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50',
+                    singleValue === option && 'border-primary bg-primary/5 text-foreground',
+                  )}
+                >
+                  <input
+                    aria-describedby={joinIds(guidanceId, statusId)}
+                    checked={singleValue === option}
+                    className="size-4 shrink-0 accent-primary"
+                    name={`${card.id}-reflection`}
+                    onChange={() => setSingleValue(option)}
+                    type="radio"
+                    value={option}
+                  />
+                  <span>{option}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </fieldset>
+        <LocalDraftStatus id={statusId} isActive={Boolean(singleValue)} text="Выбор отмечен на этом экране." />
+        {card.guidance ? <p className="text-sm leading-6 text-muted-foreground" id={guidanceId}>{card.guidance}</p> : null}
+      </div>
+    )
+  }
+
+  if (inputType === 'multi_select' && card.options?.length) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="text-base leading-7">{card.prompt}</p>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="sr-only">{card.prompt}</legend>
+          <ul className="flex flex-col gap-2">
+            {card.options.map((option) => {
+              const isChecked = multiValues.includes(option)
+
+              return (
+                <li key={option}>
+                  <label
+                    className={cn(
+                      'flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm leading-6 transition-colors hover:bg-muted/60 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50',
+                      isChecked && 'border-primary bg-primary/5 text-foreground',
+                    )}
+                  >
+                    <input
+                      aria-describedby={joinIds(guidanceId, statusId)}
+                      checked={isChecked}
+                      className="size-4 shrink-0 accent-primary"
+                      onChange={() => {
+                        setMultiValues((current) =>
+                          current.includes(option) ? current.filter((item) => item !== option) : [...current, option],
+                        )
+                      }}
+                      type="checkbox"
+                      value={option}
+                    />
+                    <span>{option}</span>
+                  </label>
+                </li>
+              )
+            })}
+          </ul>
+        </fieldset>
+        <LocalDraftStatus
+          id={statusId}
+          isActive={multiValues.length > 0}
+          text={`Выбрано: ${multiValues.length}. Отметки хранятся только на этом экране.`}
+        />
+        {card.guidance ? <p className="text-sm leading-6 text-muted-foreground" id={guidanceId}>{card.guidance}</p> : null}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-base leading-7">{card.prompt}</p>
+      <label className="sr-only" htmlFor={`${card.id}-textarea`}>
+        {inputType === 'table' ? 'Заполнить таблицу' : 'Ответ'}
+      </label>
+      <textarea
+        aria-describedby={joinIds(guidanceId, statusId)}
+        className="min-h-32 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        id={`${card.id}-textarea`}
+        onChange={(event) => setTextValue(event.target.value)}
+        placeholder={inputType === 'table' ? 'Заполни строки в свободной форме' : 'Напиши ответ здесь'}
+        rows={inputType === 'table' ? 6 : 4}
+        value={textValue}
+      />
+      <LocalDraftStatus
+        id={statusId}
+        isActive={textValue.trim().length > 0}
+        text="Черновик заполнен. Он исчезнет при перезагрузке."
+      />
+      {card.guidance ? <p className="text-sm leading-6 text-muted-foreground" id={guidanceId}>{card.guidance}</p> : null}
+    </div>
+  )
+}
+
+function ArtifactInteraction({ card }: { card: ArtifactCard }) {
+  const [templateValues, setTemplateValues] = useState(() => card.template?.map(() => '') ?? [''])
+  const [checkedRows, setCheckedRows] = useState<string[]>([])
+  const [fallbackValue, setFallbackValue] = useState('')
+  const [selectedVariant, setSelectedVariant] = useState('')
+  const hasTemplate = Boolean(card.template?.length)
+  const statusId = `${card.id}-artifact-status`
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-base leading-7 text-muted-foreground">{card.body}</p>
+
+      {card.variants?.length ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium">Вариант</p>
+          <div className="flex flex-wrap gap-2">
+            {card.variants.map((variant) => (
+              <button
+                aria-pressed={selectedVariant === variant}
+                className={cn(
+                  'min-h-11 rounded-full border border-border px-3 py-1 text-sm leading-5 transition-colors hover:bg-muted focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                  selectedVariant === variant && 'border-primary bg-primary/10 text-foreground',
+                )}
+                key={variant}
+                onClick={() => setSelectedVariant((current) => (current === variant ? '' : variant))}
+                type="button"
+              >
+                {variant}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {hasTemplate && card.template ? (
+        <ul className="flex flex-col gap-3">
+          {card.template.map((item, index) => {
+            const rowKey = String(index)
+            const isChecked = checkedRows.includes(rowKey)
+
+            return (
+              <li className="flex flex-col gap-2 rounded-lg border border-border p-3" key={`${item}-${index}`}>
+                <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium leading-6">
+                  <input
+                    checked={isChecked}
+                    className="size-4 shrink-0 accent-primary"
+                    onChange={() => {
+                      setCheckedRows((current) =>
+                        current.includes(rowKey) ? current.filter((key) => key !== rowKey) : [...current, rowKey],
+                      )
+                    }}
+                    type="checkbox"
+                  />
+                  <span>{item}</span>
+                </label>
+                <label className="sr-only" htmlFor={`${card.id}-template-${index}`}>
+                  {item}
+                </label>
+                <textarea
+                  aria-describedby={statusId}
+                  className="min-h-20 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  id={`${card.id}-template-${index}`}
+                  onChange={(event) => {
+                    const nextValue = event.target.value
+                    setTemplateValues((current) =>
+                      current.map((value, valueIndex) => (valueIndex === index ? nextValue : value)),
+                    )
+                  }}
+                  placeholder="Заполни локально на этом экране"
+                  rows={2}
+                  value={templateValues[index] ?? ''}
+                />
+              </li>
+            )
+          })}
+        </ul>
+      ) : (
+        <>
+          <label className="sr-only" htmlFor={`${card.id}-artifact-textarea`}>
+            Рабочий ответ
+          </label>
+          <textarea
+            aria-describedby={statusId}
+            className="min-h-32 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            id={`${card.id}-artifact-textarea`}
+            onChange={(event) => setFallbackValue(event.target.value)}
+            placeholder="Заполни артефакт здесь"
+            rows={4}
+            value={fallbackValue}
+          />
+        </>
+      )}
+
+      <LocalDraftStatus
+        id={statusId}
+        isActive={
+          selectedVariant.length > 0 ||
+          checkedRows.length > 0 ||
+          fallbackValue.trim().length > 0 ||
+          templateValues.some((value) => value.trim().length > 0)
+        }
+        text="Рабочий блок заполнен локально. После перезагрузки он очистится."
+      />
+    </div>
+  )
+}
+
+function ChecklistInteraction({ cardId, items }: { cardId: string; items: string[] }) {
+  const [checkedItems, setCheckedItems] = useState<string[]>([])
+  const statusId = `${cardId}-checklist-status`
+
+  return (
+    <div className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-2">
+        {items.map((item, index) => {
+          const itemKey = String(index)
+          const isChecked = checkedItems.includes(itemKey)
+
+          return (
+            <li key={`${item}-${index}`}>
+              <label
+                className={cn(
+                  'flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-border px-3 py-2 text-sm leading-6 transition-colors hover:bg-muted/60 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50',
+                  isChecked && 'border-primary bg-primary/5 text-foreground',
+                )}
+              >
+                <input
+                  aria-describedby={statusId}
+                  checked={isChecked}
+                  className="mt-1 size-4 shrink-0 accent-primary"
+                  onChange={() => {
+                    setCheckedItems((current) =>
+                      current.includes(itemKey)
+                        ? current.filter((currentItem) => currentItem !== itemKey)
+                        : [...current, itemKey],
+                    )
+                  }}
+                  type="checkbox"
+                />
+                <span>{item}</span>
+              </label>
+            </li>
+          )
+        })}
+      </ul>
+      <p aria-live="polite" className="text-sm leading-6 text-muted-foreground" id={statusId} role="status">
+        Отмечено {checkedItems.length} из {items.length}. Отметки хранятся только на этом экране.
+      </p>
+    </div>
+  )
+}
+
+function StaticChoiceList({ options }: { options: Array<{ id: string; label: string; isCorrect?: boolean }> }) {
   return (
     <ul className="flex flex-col gap-2">
       {options.map((option) => (
@@ -157,7 +592,7 @@ function ChoiceList({ options }: { options: Array<{ id: string; label: string; i
   )
 }
 
-function Checklist({ items, checked = false }: { items: string[]; checked?: boolean }) {
+function StaticChecklist({ items, checked = false }: { items: string[]; checked?: boolean }) {
   return (
     <ul className="flex flex-col gap-2">
       {items.map((item) => (
@@ -174,6 +609,14 @@ function Checklist({ items, checked = false }: { items: string[]; checked?: bool
   )
 }
 
+function LocalDraftStatus({ id, isActive, text }: { id: string; isActive: boolean; text: string }) {
+  return (
+    <p aria-live="polite" className="text-sm leading-6 text-muted-foreground" id={id} role="status">
+      {isActive ? text : 'Ответ пока не заполнен.'}
+    </p>
+  )
+}
+
 function PillList({ items }: { items: string[] }) {
   return (
     <ul className="flex flex-wrap gap-2">
@@ -184,4 +627,17 @@ function PillList({ items }: { items: string[] }) {
       ))}
     </ul>
   )
+}
+
+function getCorrectOption(options: ChoiceOption[], correctOptionId?: string) {
+  if (correctOptionId) {
+    return options.find((option) => option.id === correctOptionId)
+  }
+
+  return options.find((option) => option.isCorrect)
+}
+
+function joinIds(...ids: Array<string | undefined>) {
+  const joinedIds = ids.filter(Boolean).join(' ')
+  return joinedIds || undefined
 }
