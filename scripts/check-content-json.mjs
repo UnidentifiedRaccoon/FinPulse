@@ -19,14 +19,14 @@ const allowedCardTypes = new Set([
 const allowedCheckability = new Set(['objective', 'subjective', 'mixed']);
 const allowedInputTypes = new Set(['text', 'single_select', 'multi_select', 'table', 'freeform']);
 
-if (!fs.existsSync(programFile)) {
-  console.log('[content] No src/content/program.json found yet. Skipping content validation.');
-  process.exit(0);
-}
-
 function fail(message) {
   console.error(`[content] ${message}`);
   process.exitCode = 1;
+}
+
+if (!fs.existsSync(programFile)) {
+  fail('src/content/program.json is required');
+  process.exit(1);
 }
 
 function rel(file) {
@@ -56,6 +56,16 @@ function requireObject(value, ctx) {
     return false;
   }
   return true;
+}
+
+function requireOnlyKeys(obj, allowedKeys, ctx) {
+  if (!isObject(obj)) return;
+  const allowed = new Set(allowedKeys);
+  for (const key of Object.keys(obj)) {
+    if (!allowed.has(key)) {
+      fail(`${ctx}.${key} is not supported`);
+    }
+  }
 }
 
 function requireString(obj, key, ctx) {
@@ -105,13 +115,54 @@ function checkUnique(value, set, ctx) {
   set.add(value);
 }
 
-function resolveRef(baseDir, refPath) {
+function validateOrderSequence(items, ctx) {
+  const seenOrders = new Set();
+  let previousOrder = -1;
+
+  for (const [index, item] of items.entries()) {
+    if (!isObject(item) || !Number.isInteger(item.order)) continue;
+
+    if (seenOrders.has(item.order)) {
+      fail(`${ctx}[${index}].order duplicates value: ${item.order}`);
+    }
+    if (item.order < previousOrder) {
+      fail(`${ctx} must be sorted by order`);
+    }
+
+    seenOrders.add(item.order);
+    previousOrder = item.order;
+  }
+}
+
+function normalizeRefPath(refPath, ctx) {
   if (typeof refPath !== 'string' || refPath.trim() === '') return null;
-  return path.resolve(baseDir, refPath);
+  if (refPath.trim() !== refPath) {
+    fail(`${ctx}.path must not have leading or trailing whitespace`);
+    return null;
+  }
+  if (path.isAbsolute(refPath) || refPath.includes('\\')) {
+    fail(`${ctx}.path must be a normalized relative POSIX path`);
+    return null;
+  }
+
+  const normalized = path.posix.normalize(refPath);
+  if (normalized !== refPath || normalized === '.' || normalized.startsWith('../') || normalized.includes('/../')) {
+    fail(`${ctx}.path must be normalized and stay within the content tree`);
+    return null;
+  }
+
+  return normalized;
+}
+
+function resolveRef(baseDir, refPath, ctx) {
+  const normalized = normalizeRefPath(refPath, ctx);
+  if (!normalized) return null;
+  return path.join(baseDir, ...normalized.split('/'));
 }
 
 function validateRefShape(ref, ctx) {
   if (!requireObject(ref, ctx)) return;
+  requireOnlyKeys(ref, ['id', 'slug', 'title', 'description', 'order', 'path'], ctx);
   requireString(ref, 'id', ctx);
   requireSlug(ref, 'slug', ctx);
   requireString(ref, 'title', ctx);
@@ -122,6 +173,7 @@ function validateRefShape(ref, ctx) {
 
 function validateLesson(lesson, ctx, seen) {
   if (!requireObject(lesson, ctx)) return;
+  requireOnlyKeys(lesson, ['id', 'slug', 'title', 'subtitle', 'description', 'order', 'estimatedMinutes', 'learningGoal', 'mainSkill', 'tags', 'sourceSection', 'cards'], ctx);
   requireString(lesson, 'id', ctx);
   requireSlug(lesson, 'slug', ctx);
   requireString(lesson, 'title', ctx);
@@ -139,6 +191,7 @@ function validateLesson(lesson, ctx, seen) {
   checkUnique(lesson.slug, seen.lessonSlugs, 'lesson slug');
 
   const cards = requireArray(lesson, 'cards', ctx, 1);
+  validateOrderSequence(cards, `${ctx}.cards`);
   for (const [cardIndex, card] of cards.entries()) {
     validateCard(card, `${ctx}.cards[${cardIndex}]`, seen);
   }
@@ -150,6 +203,7 @@ function validateChoiceOptions(card, ctx) {
   for (const [optionIndex, option] of options.entries()) {
     const optionCtx = `${ctx}.options[${optionIndex}]`;
     if (!requireObject(option, optionCtx)) continue;
+    requireOnlyKeys(option, ['id', 'label', 'isCorrect', 'feedback'], optionCtx);
     requireString(option, 'id', optionCtx);
     requireString(option, 'label', optionCtx);
     requireOptionalString(option, 'feedback', optionCtx);
@@ -175,6 +229,19 @@ function validateCard(card, ctx, seen) {
     fail(`${ctx}.type has unsupported value: ${card.type}`);
     return;
   }
+  const baseCardKeys = ['id', 'type', 'order', 'title', 'sourceSection', 'thinkingType', 'develops', 'checkability'];
+  const cardKeysByType = {
+    theory: [...baseCardKeys, 'body', 'examples'],
+    video: [...baseCardKeys, 'src', 'provider', 'transcript', 'timecodes'],
+    callout: [...baseCardKeys, 'tone', 'body'],
+    single_choice: [...baseCardKeys, 'question', 'options', 'correctOptionId', 'feedback', 'readOnly'],
+    reflection: [...baseCardKeys, 'prompt', 'inputType', 'options', 'saveKey', 'guidance', 'readOnly'],
+    scenario: [...baseCardKeys, 'body', 'question', 'options', 'correctOptionId', 'feedback', 'readOnly'],
+    artifact: [...baseCardKeys, 'body', 'template', 'variants', 'readOnly'],
+    checklist: [...baseCardKeys, 'body', 'items'],
+    summary: [...baseCardKeys, 'body', 'points', 'nextStep'],
+  };
+  requireOnlyKeys(card, cardKeysByType[card.type], ctx);
   if (card.checkability !== undefined && !allowedCheckability.has(card.checkability)) {
     fail(`${ctx}.checkability must be objective, subjective, or mixed`);
   }
@@ -194,6 +261,7 @@ function validateCard(card, ctx, seen) {
       for (const [timecodeIndex, timecode] of timecodes.entries()) {
         const timecodeCtx = `${ctx}.timecodes[${timecodeIndex}]`;
         if (!requireObject(timecode, timecodeCtx)) continue;
+        requireOnlyKeys(timecode, ['time', 'label'], timecodeCtx);
         requireString(timecode, 'time', timecodeCtx);
         requireString(timecode, 'label', timecodeCtx);
       }
@@ -224,6 +292,9 @@ function validateCard(card, ctx, seen) {
     requireString(card, 'body', ctx);
     requireOptionalString(card, 'question', ctx);
     if (card.options !== undefined) validateChoiceOptions(card, ctx);
+    if (card.correctOptionId !== undefined && card.options === undefined) {
+      fail(`${ctx}.correctOptionId requires options`);
+    }
     requireOptionalString(card, 'correctOptionId', ctx);
     requireOptionalString(card, 'feedback', ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
@@ -249,6 +320,7 @@ function validateSupplemental(unit, ctx) {
   if (unit.supplemental === undefined) return;
   const supplemental = unit.supplemental;
   if (!requireObject(supplemental, `${ctx}.supplemental`)) return;
+  requireOnlyKeys(supplemental, ['strategy', 'sourceFiles', 'trainings', 'spacedRepetition', 'expansionScenarios', 'editorialRules', 'glossary', 'outcome'], `${ctx}.supplemental`);
   requireOptionalString(supplemental, 'strategy', `${ctx}.supplemental`);
   requireStringArray(supplemental, 'sourceFiles', `${ctx}.supplemental`);
   for (const key of ['trainings', 'spacedRepetition', 'expansionScenarios']) {
@@ -257,11 +329,13 @@ function validateSupplemental(unit, ctx) {
     for (const [itemIndex, item] of items.entries()) {
       const itemCtx = `${ctx}.supplemental.${key}[${itemIndex}]`;
       if (!requireObject(item, itemCtx)) continue;
+      requireOnlyKeys(item, ['id', 'title', 'sourceSection', 'type', 'summary', 'content'], itemCtx);
       requireString(item, 'id', itemCtx);
       requireString(item, 'title', itemCtx);
       requireOptionalString(item, 'sourceSection', itemCtx);
       requireOptionalString(item, 'type', itemCtx);
       requireString(item, 'summary', itemCtx);
+      requireStringArray(item, 'content', itemCtx);
     }
   }
   requireStringArray(supplemental, 'editorialRules', `${ctx}.supplemental`);
@@ -271,24 +345,27 @@ function validateSupplemental(unit, ctx) {
     for (const [termIndex, term] of terms.entries()) {
       const termCtx = `${ctx}.supplemental.glossary[${termIndex}]`;
       if (!requireObject(term, termCtx)) continue;
+      requireOnlyKeys(term, ['term', 'definition'], termCtx);
       requireString(term, 'term', termCtx);
       requireString(term, 'definition', termCtx);
     }
   }
 }
 
-const program = readJson(programFile);
-const seen = {
-  moduleIds: new Set(),
-  moduleSlugs: new Set(),
-  unitIds: new Set(),
-  unitSlugs: new Set(),
-  lessonIds: new Set(),
-  lessonSlugs: new Set(),
-  cardIds: new Set(),
-};
+function validateProgramGraph(programFile, contentRoot) {
+  const program = readJson(programFile);
+  const seen = {
+    moduleIds: new Set(),
+    moduleSlugs: new Set(),
+    unitIds: new Set(),
+    unitSlugs: new Set(),
+    lessonIds: new Set(),
+    lessonSlugs: new Set(),
+    cardIds: new Set(),
+  };
 
-if (requireObject(program, 'program')) {
+  if (requireObject(program, 'program')) {
+  requireOnlyKeys(program, ['schemaVersion', 'id', 'slug', 'title', 'description', 'modules'], 'program');
   if (program.schemaVersion !== 1) fail('program.schemaVersion must be 1');
   requireString(program, 'id', 'program');
   requireSlug(program, 'slug', 'program');
@@ -296,13 +373,14 @@ if (requireObject(program, 'program')) {
   requireOptionalString(program, 'description', 'program');
 
   const moduleRefs = requireArray(program, 'modules', 'program', 1);
+  validateOrderSequence(moduleRefs, 'program.modules');
   for (const [moduleIndex, moduleRef] of moduleRefs.entries()) {
     const refCtx = `program.modules[${moduleIndex}]`;
     validateRefShape(moduleRef, refCtx);
     checkUnique(moduleRef.id, seen.moduleIds, 'module id');
     checkUnique(moduleRef.slug, seen.moduleSlugs, 'module slug');
 
-    const modulePath = resolveRef(contentRoot, moduleRef.path);
+    const modulePath = resolveRef(contentRoot, moduleRef.path, refCtx);
     if (!modulePath || !fs.existsSync(modulePath)) {
       fail(`${refCtx}.path does not exist: ${moduleRef.path}`);
       continue;
@@ -311,6 +389,7 @@ if (requireObject(program, 'program')) {
     const module = readJson(modulePath);
     const moduleCtx = `${rel(modulePath)}`;
     if (!requireObject(module, moduleCtx)) continue;
+    requireOnlyKeys(module, ['schemaVersion', 'id', 'slug', 'title', 'description', 'order', 'source', 'units'], moduleCtx);
     if (module.schemaVersion !== 1) fail(`${moduleCtx}.schemaVersion must be 1`);
     requireString(module, 'id', moduleCtx);
     requireSlug(module, 'slug', moduleCtx);
@@ -326,6 +405,7 @@ if (requireObject(program, 'program')) {
     }
 
     const unitRefs = requireArray(module, 'units', moduleCtx, 1);
+    validateOrderSequence(unitRefs, `${moduleCtx}.units`);
     const unitIdsInModule = new Set();
     const unitSlugsInModule = new Set();
     for (const [unitIndex, unitRef] of unitRefs.entries()) {
@@ -336,7 +416,7 @@ if (requireObject(program, 'program')) {
       checkUnique(unitRef.id, seen.unitIds, 'unit id');
       checkUnique(unitRef.slug, seen.unitSlugs, 'unit slug');
 
-      const unitPath = resolveRef(path.dirname(modulePath), unitRef.path);
+      const unitPath = resolveRef(path.dirname(modulePath), unitRef.path, unitRefCtx);
       if (!unitPath || !fs.existsSync(unitPath)) {
         fail(`${unitRefCtx}.path does not exist: ${unitRef.path}`);
         continue;
@@ -345,6 +425,7 @@ if (requireObject(program, 'program')) {
       const unit = readJson(unitPath);
       const unitCtx = `${rel(unitPath)}`;
       if (!requireObject(unit, unitCtx)) continue;
+      requireOnlyKeys(unit, ['schemaVersion', 'id', 'slug', 'title', 'description', 'order', 'source', 'lessons', 'supplemental'], unitCtx);
       if (unit.schemaVersion !== 1) fail(`${unitCtx}.schemaVersion must be 1`);
       requireString(unit, 'id', unitCtx);
       requireSlug(unit, 'slug', unitCtx);
@@ -360,12 +441,21 @@ if (requireObject(program, 'program')) {
       }
 
       const lessons = requireArray(unit, 'lessons', unitCtx, 1);
+      validateOrderSequence(lessons, `${unitCtx}.lessons`);
       for (const [lessonIndex, lesson] of lessons.entries()) {
         validateLesson(lesson, `${unitCtx}.lessons[${lessonIndex}]`, seen);
       }
       validateSupplemental(unit, unitCtx);
     }
   }
+  }
+}
+
+validateProgramGraph(programFile, contentRoot);
+
+const exampleProgramFile = path.join(root, 'examples/content/program.example.json');
+if (fs.existsSync(exampleProgramFile)) {
+  validateProgramGraph(exampleProgramFile, path.dirname(exampleProgramFile));
 }
 
 if (process.exitCode) {

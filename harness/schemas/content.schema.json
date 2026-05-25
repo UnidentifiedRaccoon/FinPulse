@@ -465,6 +465,9 @@
                 "correctOptionId": { "type": "string" },
                 "feedback": { "type": "string" },
                 "readOnly": { "type": "boolean" }
+              },
+              "dependentRequired": {
+                "correctOptionId": ["options"]
               }
             }
           ]
@@ -576,6 +579,13 @@
         "summary": {
           "type": "string",
           "minLength": 1
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },

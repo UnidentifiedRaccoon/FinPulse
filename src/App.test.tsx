@@ -29,4 +29,14 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
     expect(screen.getByText(/Два человека хотят/i)).toBeTruthy()
   })
+
+  it('renders checklist cards in the reader flow', () => {
+    window.history.pushState({}, '', '/lessons/practice-1m')
+
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: 'Практика 1M$' })).toBeTruthy()
+    expect(screen.getByText('Чеклист · 31')).toBeTruthy()
+    expect(screen.getByText(/Хочу много денег/)).toBeTruthy()
+  })
 })

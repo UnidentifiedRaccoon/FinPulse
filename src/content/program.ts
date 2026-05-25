@@ -7,7 +7,7 @@ const choiceOptionSchema = z.object({
   label: z.string().min(1),
   isCorrect: z.boolean().optional(),
   feedback: z.string().optional(),
-})
+}).strict()
 
 const cardBaseSchema = z.object({
   id: z.string().min(1),
@@ -17,14 +17,14 @@ const cardBaseSchema = z.object({
   thinkingType: z.string().optional(),
   develops: z.string().optional(),
   checkability: checkabilitySchema.optional(),
-})
+}).strict()
 
 const cardSchema = z.discriminatedUnion('type', [
   cardBaseSchema.extend({
     type: z.literal('theory'),
     body: z.string().min(1),
     examples: z.array(z.string().min(1)).optional(),
-  }),
+  }).strict(),
   cardBaseSchema.extend({
     type: z.literal('video'),
     title: z.string().min(1),
@@ -36,15 +36,15 @@ const cardSchema = z.discriminatedUnion('type', [
         z.object({
           time: z.string().min(1),
           label: z.string().min(1),
-        }),
+        }).strict(),
       )
       .optional(),
-  }),
+  }).strict(),
   cardBaseSchema.extend({
     type: z.literal('callout'),
     tone: z.enum(['info', 'warning', 'success', 'reflection']).optional(),
     body: z.string().min(1),
-  }),
+  }).strict(),
   cardBaseSchema.extend({
     type: z.literal('single_choice'),
     question: z.string().min(1),
@@ -52,7 +52,7 @@ const cardSchema = z.discriminatedUnion('type', [
     correctOptionId: z.string().optional(),
     feedback: z.string().optional(),
     readOnly: z.boolean().optional(),
-  }),
+  }).strict(),
   cardBaseSchema.extend({
     type: z.literal('reflection'),
     prompt: z.string().min(1),
@@ -61,7 +61,7 @@ const cardSchema = z.discriminatedUnion('type', [
     saveKey: z.string().optional(),
     guidance: z.string().optional(),
     readOnly: z.boolean().optional(),
-  }),
+  }).strict(),
   cardBaseSchema.extend({
     type: z.literal('scenario'),
     body: z.string().min(1),
@@ -70,26 +70,45 @@ const cardSchema = z.discriminatedUnion('type', [
     correctOptionId: z.string().optional(),
     feedback: z.string().optional(),
     readOnly: z.boolean().optional(),
-  }),
+  }).strict(),
   cardBaseSchema.extend({
     type: z.literal('artifact'),
     body: z.string().min(1),
     template: z.array(z.string().min(1)).optional(),
     variants: z.array(z.string().min(1)).optional(),
     readOnly: z.boolean().optional(),
-  }),
+  }).strict(),
   cardBaseSchema.extend({
     type: z.literal('checklist'),
     body: z.string().optional(),
     items: z.array(z.string().min(1)).min(1),
-  }),
+  }).strict(),
   cardBaseSchema.extend({
     type: z.literal('summary'),
     body: z.string().optional(),
     points: z.array(z.string().min(1)).min(1),
     nextStep: z.string().optional(),
-  }),
-])
+  }).strict(),
+]).superRefine((card, ctx) => {
+  if ('correctOptionId' in card && card.correctOptionId) {
+    if (!('options' in card) || !card.options) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'correctOptionId requires options',
+        path: ['correctOptionId'],
+      })
+      return
+    }
+
+    if (!card.options.some((option) => option.id === card.correctOptionId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'correctOptionId must match one of the option ids',
+        path: ['correctOptionId'],
+      })
+    }
+  }
+})
 
 const lessonSchema = z.object({
   id: z.string().min(1),
@@ -104,7 +123,7 @@ const lessonSchema = z.object({
   tags: z.array(z.string().min(1)).optional(),
   sourceSection: z.string().optional(),
   cards: z.array(cardSchema).min(1),
-})
+}).strict()
 
 const supplementalItemSchema = z.object({
   id: z.string().min(1),
@@ -112,7 +131,8 @@ const supplementalItemSchema = z.object({
   sourceSection: z.string().optional(),
   type: z.string().optional(),
   summary: z.string().min(1),
-})
+  content: z.array(z.string().min(1)).optional(),
+}).strict()
 
 const supplementalSchema = z
   .object({
@@ -127,11 +147,12 @@ const supplementalSchema = z
         z.object({
           term: z.string().min(1),
           definition: z.string().min(1),
-        }),
+        }).strict(),
       )
       .optional(),
     outcome: z.array(z.string().min(1)).optional(),
   })
+  .strict()
   .optional()
 
 const unitFileSchema = z.object({
@@ -144,7 +165,7 @@ const unitFileSchema = z.object({
   source: z.string().min(1),
   lessons: z.array(lessonSchema).min(1),
   supplemental: supplementalSchema,
-})
+}).strict()
 
 const unitRefSchema = z.object({
   id: z.string().min(1),
@@ -153,7 +174,7 @@ const unitRefSchema = z.object({
   description: z.string().optional(),
   order: z.number().int().nonnegative(),
   path: z.string().min(1),
-})
+}).strict()
 
 const moduleFileSchema = z.object({
   schemaVersion: z.literal(1),
@@ -164,7 +185,7 @@ const moduleFileSchema = z.object({
   order: z.number().int().nonnegative(),
   source: z.string().optional(),
   units: z.array(unitRefSchema).min(1),
-})
+}).strict()
 
 const moduleRefSchema = z.object({
   id: z.string().min(1),
@@ -173,7 +194,7 @@ const moduleRefSchema = z.object({
   description: z.string().optional(),
   order: z.number().int().nonnegative(),
   path: z.string().min(1),
-})
+}).strict()
 
 export const programManifestSchema = z.object({
   schemaVersion: z.literal(1),
@@ -182,15 +203,15 @@ export const programManifestSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   modules: z.array(moduleRefSchema).min(1),
-})
+}).strict()
 
 export const moduleSchema = moduleFileSchema.extend({
   units: z.array(unitFileSchema).min(1),
-})
+}).strict()
 
 export const programSchema = programManifestSchema.extend({
   modules: z.array(moduleSchema).min(1),
-})
+}).strict()
 
 export type ProgramManifest = z.infer<typeof programManifestSchema>
 export type ModuleRef = z.infer<typeof moduleRefSchema>

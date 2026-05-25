@@ -16,7 +16,7 @@ const cardTypeLabels: Record<Card['type'], string> = {
 
 export function LessonCardRenderer({ card }: { card: Card }) {
   return (
-    <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4 text-card-foreground">
+    <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4 text-card-foreground [overflow-wrap:anywhere]">
       <header className="flex flex-col gap-2">
         <p className="text-xs font-medium uppercase tracking-normal text-muted-foreground">
           {cardTypeLabels[card.type]}
@@ -147,7 +147,10 @@ function ChoiceList({ options }: { options: Array<{ id: string; label: string; i
           ) : (
             <Circle aria-hidden="true" className="mt-1 text-muted-foreground" />
           )}
-          <span>{option.label}</span>
+          <span>
+            {option.isCorrect ? <span className="sr-only">Правильный ответ: </span> : null}
+            {option.label}
+          </span>
         </li>
       ))}
     </ul>

@@ -177,6 +177,8 @@ Use it for:
 - editorial rules;
 - unit outcome.
 
+Supplemental items should keep enough source detail to restore the exercise without reopening the original Markdown. Use `summary` for a short reviewer-facing description and optional `content: string[]` for full prompts, tables, options, answers, feedback, or scenario text.
+
 The first Module 1 unit keeps supplemental material there to avoid bloating the primary reader while preserving all source content.
 
 ## Content rules
@@ -211,6 +213,8 @@ Validation checks:
 - module refs match module files;
 - unit refs match unit files;
 - ids/slugs are unique in their scopes;
+- referenced paths are normalized relative JSON paths;
+- ordered arrays are sorted and do not reuse `order`;
 - lessons contain cards;
 - card type-specific fields are present.
 

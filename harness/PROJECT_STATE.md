@@ -38,7 +38,7 @@ The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn
 
 `./scripts/verify.sh` exists as the generic entry point and runs content validation, typecheck, lint, tests, and production build through available package scripts.
 
-`src/content/program.json` is a program manifest. Module and unit runtime content live under `src/content/modules/**`.
+`src/content/program.json` is a program manifest. Module and unit runtime content live under `src/content/modules/**`. The content validator also validates the example split graph, rejects unknown keys, requires normalized relative JSON paths, checks sorted unique `order` values, and verifies scenario `correctOptionId` values have matching options.
 
 Module 1 source content was split from `docs/modules/module_1/lesson_01.md` into `docs/modules/module_1/lesson_01/`, with the full original preserved in `00_original_content.md` and focused source slices mapped in `README.md`.
 
