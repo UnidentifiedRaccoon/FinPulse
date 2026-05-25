@@ -22,7 +22,6 @@ These are suggestions. The orchestrator may split or reorder them.
 | T-005 | done | Add lesson block renderer | `src/**` | Initial heading/paragraph/list/callout renderer is in place. |
 | T-006 | done | Add mobile app shell | `src/**` | Mobile-first shell is in place. |
 | T-007 | done | Add first component tests | test files, test config | Initial Vitest coverage is in place. |
-| T-010 | planned | Decide Stage 2 backend scope | `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `harness/tasks/**`, `harness/WORKBOARD.md`, `harness/PROJECT_STATE.md` | ADR for Fastify + SQLite before backend implementation. |
 
 ## Active tasks
 
@@ -42,3 +41,7 @@ Use task files and PR/diff summaries.
 |---|---:|---|---|---|
 | T-008 | done | Content data model and Module 1 runtime content | `docs/modules/module_1/lesson_01*`, `docs/CONTENT_MODEL.md`, `harness/schemas/content.schema.json`, `src/content/**`, `scripts/check-content-json.mjs`, `examples/content/program.example.json`, `src/**`, task/state docs | Merged in PR #2. |
 | T-009 | done | Interactive lesson cards | `src/features/lesson-reader/**`, focused tests, `docs/CONTENT_MODEL.md`, first-unit content, task/workboard state | Merged in PR #4; interactions remain local React state only. |
+| T-010 | done | Decide Stage 2 backend scope | `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/PRODUCT.md`, `docs/CONTENT_MODEL.md`, `harness/tasks/**`, `harness/WORKBOARD.md`, `harness/PROJECT_STATE.md` | ADR-0006 accepted Fastify + SQLite backend scope before implementation; `npm run verify` passed. |
+| T-011 | done | Build Stage 2 backend API | `server/**`, `package.json`, lockfile, backend tests, `.env.example`, scripts/tsconfig as needed | Fastify + SQLite auth/content/progress API implemented; `npm run verify` passed. |
+| T-012 | done | Migrate frontend to backend API | `src/**`, focused frontend tests, `vite.config.ts` | SPA pages use backend content API; auth controls and progress writes wired; `npm run verify` passed. |
+| T-013 | done | Stage 2 verification and PR polish | docs/harness updates, README, PR evidence | Security/content reviews and browser smoke passed; final `npm run verify` passed. |

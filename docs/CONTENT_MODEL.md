@@ -220,6 +220,14 @@ Validation checks:
 - lessons contain cards;
 - card type-specific fields are present.
 
+## Backend API policy
+
+Stage 2 serves the same hydrated Program -> Module -> Unit -> Lesson -> Card graph through read-only backend API routes.
+
+The JSON files remain the canonical source-of-truth. The backend must validate and hydrate the graph with the same model before returning content responses. Frontend routes may fetch program/module/unit/lesson data from the API, but content edits still happen in the repo JSON files and must pass `npm run check:content`.
+
+Saved progress may reference stable `lesson.slug` and `card.id` values only. It must not create a parallel content schema, rewrite lesson/card data, or persist full freeform answers unless a later ADR expands that scope.
+
 ## Migration rule
 
 If the content model changes, update:
