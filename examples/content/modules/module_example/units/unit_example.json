@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "unit-example",
+  "slug": "getting-started",
+  "title": "Getting started",
+  "description": "Example unit description.",
+  "order": 1,
+  "source": "examples/content/modules/module_example/units/unit_example.md",
+  "lessons": [
+    {
+      "id": "lesson-example",
+      "slug": "first-lesson",
+      "title": "First lesson",
+      "description": "Example lesson description.",
+      "order": 1,
+      "estimatedMinutes": 3,
+      "learningGoal": "Understand the split content shape.",
+      "mainSkill": "Read a card-based lesson.",
+      "tags": ["example"],
+      "sourceSection": "example",
+      "cards": [
+        {
+          "id": "card-example-theory",
+          "type": "theory",
+          "order": 1,
+          "title": "Theory card",
+          "sourceSection": "example",
+          "body": "This card shows the minimum theory shape.",
+          "examples": ["Example item"]
+        },
+        {
+          "id": "card-example-summary",
+          "type": "summary",
+          "order": 2,
+          "title": "Summary card",
+          "sourceSection": "example",
+          "points": ["The example includes program, module, unit, lesson, and cards."]
+        }
+      ]
+    }
+  ],
+  "supplemental": {
+    "strategy": "Example supplemental content shape.",
+    "trainings": [
+      {
+        "id": "supp-example-training",
+        "title": "Example supplemental item",
+        "sourceSection": "example",
+        "type": "reference",
+        "summary": "Supplemental items can keep short summaries and full source details.",
+        "content": ["Full prompt, options, answers, feedback, or table rows can be stored here."]
+      }
+    ]
+  }
+}

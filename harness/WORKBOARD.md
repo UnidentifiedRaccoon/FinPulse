@@ -27,6 +27,10 @@ These are suggestions. The orchestrator may split or reorder them.
 
 Use files under `harness/tasks/active/` for real active work.
 
+| ID | Status | Task | Intended write set | Notes |
+|---|---:|---|---|---|
+| T-008 | review | Content data model and Module 1 runtime content | `docs/modules/module_1/lesson_01*`, `docs/CONTENT_MODEL.md`, `harness/schemas/content.schema.json`, `src/content/**`, `scripts/check-content-json.mjs`, `examples/content/program.example.json`, `src/**`, task/state docs | Verified locally; ready to publish PR. |
+
 ## Review tasks
 
 Use task files and PR/diff summaries.

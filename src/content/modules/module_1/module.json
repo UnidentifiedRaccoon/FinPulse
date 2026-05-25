@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "module_1",
+  "slug": "financial-goals",
+  "title": "Финансовые цели",
+  "description": "Модуль о личных и семейных целях, ценностях и мотивации для финансовых решений.",
+  "order": 1,
+  "source": "docs/modules/module_1/lesson_01/README.md",
+  "units": [
+    {
+      "id": "unit_01_values_and_goals",
+      "slug": "values-and-goals",
+      "title": "Ваши базовые ценности",
+      "description": "Юнит помогает отличить покупку от ценности и связать ценности с финансовыми целями.",
+      "order": 1,
+      "path": "units/unit_01_values_and_goals.json"
+    }
+  ]
+}

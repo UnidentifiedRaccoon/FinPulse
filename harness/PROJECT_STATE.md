@@ -4,9 +4,9 @@ Last updated: 2026-05-25
 
 ## Current phase
 
-Harness v0 / initial product scaffold.
+Harness v0 / content-reader MVP scaffold with Module 1 runtime content.
 
-The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a minimal mobile content-reader surface. The harness defines how agents should continue work without expanding scope accidentally.
+The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a mobile content-reader surface. Runtime content now uses split JSON files with the hierarchy Program -> Module -> Unit -> Lesson -> Card.
 
 ## Locked MVP assumptions
 
@@ -38,7 +38,9 @@ The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn
 
 `./scripts/verify.sh` exists as the generic entry point and runs content validation, typecheck, lint, tests, and production build through available package scripts.
 
-`src/content/program.json` exists as initial app content. Methodology and long-form module source content live under `docs/`.
+`src/content/program.json` is a program manifest. Module and unit runtime content live under `src/content/modules/**`. The content validator also validates the example split graph, rejects unknown keys, requires normalized relative JSON paths, checks sorted unique `order` values, and verifies scenario `correctOptionId` values have matching options.
+
+Module 1 source content was split from `docs/modules/module_1/lesson_01.md` into `docs/modules/module_1/lesson_01/`, with the full original preserved in `00_original_content.md` and focused source slices mapped in `README.md`.
 
 ## State update rules
 

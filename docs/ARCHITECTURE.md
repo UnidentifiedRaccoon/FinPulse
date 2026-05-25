@@ -105,9 +105,11 @@ Do not use Zustand for:
 
 ## Content loading policy
 
-Initial recommendation:
-- start with a single `src/content/program.json` while content is small;
-- split into `program.json` + `modules/*.json` when bundle size or editing friction grows;
+Current implementation:
+- use `src/content/program.json` as the program manifest;
+- keep module metadata in `src/content/modules/<module>/module.json`;
+- keep full unit runtime content in `src/content/modules/<module>/units/<unit>.json`;
+- hydrate the split files in `src/content/loadProgram.ts`;
 - validate before build using `scripts/check-content-json.mjs`.
 
 ## Error handling
