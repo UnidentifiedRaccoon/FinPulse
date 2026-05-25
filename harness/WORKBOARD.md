@@ -29,6 +29,7 @@ Use files under `harness/tasks/active/` for real active work.
 
 | ID | Status | Task | Intended write set | Notes |
 |---|---:|---|---|---|
+| T-009 | review | Interactive lesson cards | `src/features/lesson-reader/**`, focused tests, task/workboard state; content/docs only if `readOnly` semantics require it | Branch `feat/interactive-lesson-cards`; PR #4 is ready for review after continuation fixes and checks. |
 
 ## Review tasks
 

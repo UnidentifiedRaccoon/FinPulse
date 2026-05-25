@@ -163,7 +163,9 @@ Minimal type-specific fields:
 - `checklist`: `items`, optional `body`.
 - `summary`: `points`, optional `body`, `nextStep`.
 
-Interactive cards can be rendered read-only in the MVP. Their methodical fields must stay in JSON so later interaction can be added without rewriting content.
+`readOnly: true` means the reader must force static rendering even when that card type supports interaction.
+If `readOnly` is omitted or `false`, the card is eligible for the reader's local interactive behavior.
+Interactive state is UI-only unless a future product decision explicitly adds persistence.
 
 ## Supplemental content
 
