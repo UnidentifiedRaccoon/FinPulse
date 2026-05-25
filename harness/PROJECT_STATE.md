@@ -4,9 +4,11 @@ Last updated: 2026-05-25
 
 ## Current phase
 
-Stage 2 backend MVP started.
+Stage 2 backend MVP implementation in progress.
 
 The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a mobile content-reader surface. Runtime content now uses split JSON files with the hierarchy Program -> Module -> Unit -> Lesson -> Card. ADR-0006 accepts a narrow Stage 2 backend: Fastify + SQLite, simple learner login, httpOnly cookie sessions, backend-owned progress markers, and read-only content API delivery from validated JSON.
+
+The Fastify backend and frontend API migration are implemented on `feat/stage-2-backend-mvp`. Frontend rendered pages now fetch program/module/unit/lesson data through `/api/**`; authenticated users can save viewed/completed lesson/card progress.
 
 ## Locked MVP assumptions
 
@@ -41,6 +43,8 @@ The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn
 
 `./scripts/verify.sh` exists as the generic entry point and runs content validation, typecheck, lint, tests, and production build through available package scripts.
 
+`npm run dev` now starts both the Fastify backend and Vite frontend. Vite proxies `/api` to `http://127.0.0.1:3001` for local development.
+
 GitHub Actions runs `npm ci` and `npm run verify` for pull requests and pushes to `main`.
 
 `src/content/program.json` is a program manifest. Module and unit runtime content live under `src/content/modules/**`. The content validator also validates the example split graph, rejects unknown keys, requires normalized relative JSON paths, checks sorted unique `order` values, and verifies scenario `correctOptionId` values have matching options.
@@ -49,7 +53,7 @@ Module 1 source content was split from `docs/modules/module_1/lesson_01.md` into
 
 T-009 interactive lesson cards merged in PR #4. Current interaction state remains local React component state only; no backend, accounts, diagnostics, rewards, analytics, or persistence were added.
 
-T-010 accepted ADR-0006 for Stage 2 backend scope before backend implementation. Full freeform lesson answers remain transient; only viewed/completed lesson/card progress is in Stage 2 persistence scope.
+T-010 accepted ADR-0006 for Stage 2 backend scope before backend implementation. T-011 added the Fastify + SQLite auth/content/progress API. T-012 migrated rendered frontend data to the backend API and wired minimal auth/progress controls. Full freeform lesson answers remain transient; only viewed/completed lesson/card progress is in Stage 2 persistence scope.
 
 ## State update rules
 

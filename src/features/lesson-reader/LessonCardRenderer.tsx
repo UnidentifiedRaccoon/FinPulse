@@ -17,7 +17,13 @@ const cardTypeLabels: Record<Card['type'], string> = {
   summary: 'Итог',
 }
 
-export function LessonCardRenderer({ card }: { card: Card }) {
+export function LessonCardRenderer({
+  card,
+  onCardProgress,
+}: {
+  card: Card
+  onCardProgress?: (cardId: string) => void | Promise<void>
+}) {
   return (
     <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4 text-card-foreground [overflow-wrap:anywhere]">
       <header className="flex flex-col gap-2">
@@ -33,12 +39,18 @@ export function LessonCardRenderer({ card }: { card: Card }) {
         ) : null}
       </header>
 
-      <CardBody card={card} />
+      <CardBody card={card} onCardProgress={onCardProgress} />
     </section>
   )
 }
 
-function CardBody({ card }: { card: Card }) {
+function CardBody({
+  card,
+  onCardProgress,
+}: {
+  card: Card
+  onCardProgress?: (cardId: string) => void | Promise<void>
+}) {
   if (card.type === 'theory') {
     return (
       <div className="flex flex-col gap-3">
@@ -87,6 +99,7 @@ function CardBody({ card }: { card: Card }) {
           options={card.options}
           question={card.question}
           correctOptionId={card.correctOptionId}
+          onCardProgress={onCardProgress}
         />
       )
     }
@@ -102,7 +115,7 @@ function CardBody({ card }: { card: Card }) {
 
   if (card.type === 'reflection') {
     if (!card.readOnly) {
-      return <ReflectionInteraction card={card} />
+      return <ReflectionInteraction card={card} onCardProgress={onCardProgress} />
     }
 
     return (
@@ -126,6 +139,7 @@ function CardBody({ card }: { card: Card }) {
               options={card.options}
               question={card.question}
               correctOptionId={card.correctOptionId}
+              onCardProgress={onCardProgress}
             />
           ) : (
             <ChoiceInteraction
@@ -134,6 +148,7 @@ function CardBody({ card }: { card: Card }) {
               options={card.options}
               question="Выбери вариант"
               correctOptionId={card.correctOptionId}
+              onCardProgress={onCardProgress}
             />
           )}
         </div>
@@ -152,7 +167,7 @@ function CardBody({ card }: { card: Card }) {
 
   if (card.type === 'artifact') {
     if (!card.readOnly) {
-      return <ArtifactInteraction card={card} />
+      return <ArtifactInteraction card={card} onCardProgress={onCardProgress} />
     }
 
     return (
@@ -168,7 +183,7 @@ function CardBody({ card }: { card: Card }) {
     return (
       <div className="flex flex-col gap-3">
         {card.body ? <p className="text-base leading-7 text-muted-foreground">{card.body}</p> : null}
-        <ChecklistInteraction cardId={card.id} items={card.items} />
+        <ChecklistInteraction cardId={card.id} items={card.items} onCardProgress={onCardProgress} />
       </div>
     )
   }
@@ -192,12 +207,14 @@ function ChoiceInteraction({
   options,
   correctOptionId,
   feedback,
+  onCardProgress,
 }: {
   cardId: string
   question: string
   options: ChoiceOption[]
   correctOptionId?: string
   feedback?: string
+  onCardProgress?: (cardId: string) => void | Promise<void>
 }) {
   const [selectedOptionId, setSelectedOptionId] = useState('')
   const [isChecked, setIsChecked] = useState(false)
@@ -269,7 +286,10 @@ function ChoiceInteraction({
       <Button
         className="h-auto min-h-11 w-fit whitespace-normal"
         disabled={!selectedOptionId}
-        onClick={() => setIsChecked(true)}
+        onClick={() => {
+          setIsChecked(true)
+          void onCardProgress?.(cardId)
+        }}
         type="button"
         variant="outline"
       >
@@ -301,7 +321,13 @@ function ChoiceInteraction({
   )
 }
 
-function ReflectionInteraction({ card }: { card: ReflectionCard }) {
+function ReflectionInteraction({
+  card,
+  onCardProgress,
+}: {
+  card: ReflectionCard
+  onCardProgress?: (cardId: string) => void | Promise<void>
+}) {
   const [textValue, setTextValue] = useState('')
   const [singleValue, setSingleValue] = useState('')
   const [multiValues, setMultiValues] = useState<string[]>([])
@@ -329,7 +355,10 @@ function ReflectionInteraction({ card }: { card: ReflectionCard }) {
                     checked={singleValue === option}
                     className="size-4 shrink-0 accent-primary"
                     name={`${card.id}-reflection`}
-                    onChange={() => setSingleValue(option)}
+                    onChange={() => {
+                      setSingleValue(option)
+                      void onCardProgress?.(card.id)
+                    }}
                     type="radio"
                     value={option}
                   />
@@ -371,6 +400,7 @@ function ReflectionInteraction({ card }: { card: ReflectionCard }) {
                         setMultiValues((current) =>
                           current.includes(option) ? current.filter((item) => item !== option) : [...current, option],
                         )
+                        void onCardProgress?.(card.id)
                       }}
                       type="checkbox"
                       value={option}
@@ -403,6 +433,11 @@ function ReflectionInteraction({ card }: { card: ReflectionCard }) {
         className="min-h-32 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         id={`${card.id}-textarea`}
         onChange={(event) => setTextValue(event.target.value)}
+        onBlur={() => {
+          if (textValue.trim().length > 0) {
+            void onCardProgress?.(card.id)
+          }
+        }}
         placeholder={inputType === 'table' ? 'Заполни строки в свободной форме' : 'Напиши ответ здесь'}
         rows={inputType === 'table' ? 6 : 4}
         value={textValue}
@@ -417,7 +452,13 @@ function ReflectionInteraction({ card }: { card: ReflectionCard }) {
   )
 }
 
-function ArtifactInteraction({ card }: { card: ArtifactCard }) {
+function ArtifactInteraction({
+  card,
+  onCardProgress,
+}: {
+  card: ArtifactCard
+  onCardProgress?: (cardId: string) => void | Promise<void>
+}) {
   const [templateValues, setTemplateValues] = useState(() => card.template?.map(() => '') ?? [''])
   const [checkedRows, setCheckedRows] = useState<string[]>([])
   const [fallbackValue, setFallbackValue] = useState('')
@@ -441,7 +482,10 @@ function ArtifactInteraction({ card }: { card: ArtifactCard }) {
                   selectedVariant === variant && 'border-primary bg-primary/10 text-foreground',
                 )}
                 key={variant}
-                onClick={() => setSelectedVariant((current) => (current === variant ? '' : variant))}
+                onClick={() => {
+                  setSelectedVariant((current) => (current === variant ? '' : variant))
+                  void onCardProgress?.(card.id)
+                }}
                 type="button"
               >
                 {variant}
@@ -467,6 +511,7 @@ function ArtifactInteraction({ card }: { card: ArtifactCard }) {
                       setCheckedRows((current) =>
                         current.includes(rowKey) ? current.filter((key) => key !== rowKey) : [...current, rowKey],
                       )
+                      void onCardProgress?.(card.id)
                     }}
                     type="checkbox"
                   />
@@ -484,6 +529,11 @@ function ArtifactInteraction({ card }: { card: ArtifactCard }) {
                     setTemplateValues((current) =>
                       current.map((value, valueIndex) => (valueIndex === index ? nextValue : value)),
                     )
+                  }}
+                  onBlur={() => {
+                    if (templateValues[index]?.trim()) {
+                      void onCardProgress?.(card.id)
+                    }
                   }}
                   placeholder="Заполни локально на этом экране"
                   rows={2}
@@ -503,6 +553,11 @@ function ArtifactInteraction({ card }: { card: ArtifactCard }) {
             className="min-h-32 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             id={`${card.id}-artifact-textarea`}
             onChange={(event) => setFallbackValue(event.target.value)}
+            onBlur={() => {
+              if (fallbackValue.trim().length > 0) {
+                void onCardProgress?.(card.id)
+              }
+            }}
             placeholder="Заполни артефакт здесь"
             rows={4}
             value={fallbackValue}
@@ -524,7 +579,15 @@ function ArtifactInteraction({ card }: { card: ArtifactCard }) {
   )
 }
 
-function ChecklistInteraction({ cardId, items }: { cardId: string; items: string[] }) {
+function ChecklistInteraction({
+  cardId,
+  items,
+  onCardProgress,
+}: {
+  cardId: string
+  items: string[]
+  onCardProgress?: (cardId: string) => void | Promise<void>
+}) {
   const [checkedItems, setCheckedItems] = useState<string[]>([])
   const statusId = `${cardId}-checklist-status`
 
@@ -553,6 +616,7 @@ function ChecklistInteraction({ cardId, items }: { cardId: string; items: string
                         ? current.filter((currentItem) => currentItem !== itemKey)
                         : [...current, itemKey],
                     )
+                    void onCardProgress?.(cardId)
                   }}
                   type="checkbox"
                 />

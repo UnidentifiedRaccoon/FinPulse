@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { vi } from 'vitest'
 
 import type { Card } from '@/content/program'
 
@@ -41,6 +42,29 @@ describe('LessonCardRenderer interactions', () => {
       'aria-describedby',
       'test-choice-choice-feedback',
     )
+  })
+
+  it('reports card progress after an interactive card action', async () => {
+    const user = userEvent.setup()
+    const onCardProgress = vi.fn()
+    const card = {
+      id: 'test-choice-progress',
+      type: 'single_choice',
+      order: 1,
+      question: 'Какой вариант подходит?',
+      options: [
+        { id: 'a', label: 'Не подходит' },
+        { id: 'b', label: 'Подходит', isCorrect: true },
+      ],
+      correctOptionId: 'b',
+    } satisfies Card
+
+    render(<LessonCardRenderer card={card} onCardProgress={onCardProgress} />)
+
+    await user.click(screen.getByRole('radio', { name: 'Подходит' }))
+    await user.click(screen.getByRole('button', { name: 'Проверить ответ' }))
+
+    expect(onCardProgress).toHaveBeenCalledWith('test-choice-progress')
   })
 
   it('keeps read-only choice cards static', () => {
