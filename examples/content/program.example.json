@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "program-example",
+  "slug": "program-example",
+  "title": "Example Educational Program",
+  "description": "Placeholder example used only to demonstrate the JSON shape.",
+  "modules": [
+    {
+      "id": "module-1",
+      "slug": "introduction",
+      "title": "Introduction",
+      "description": "Example module description.",
+      "order": 1,
+      "lessons": [
+        {
+          "id": "lesson-1",
+          "slug": "welcome",
+          "title": "Welcome",
+          "description": "Example lesson description.",
+          "order": 1,
+          "estimatedMinutes": 5,
+          "blocks": [
+            {
+              "type": "heading",
+              "level": 2,
+              "text": "Welcome"
+            },
+            {
+              "type": "paragraph",
+              "text": "This is placeholder content. Replace it with real program material."
+            },
+            {
+              "type": "callout",
+              "tone": "info",
+              "title": "Note",
+              "text": "This example is not an eval and not production content."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
