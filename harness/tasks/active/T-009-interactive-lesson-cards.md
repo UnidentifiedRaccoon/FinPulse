@@ -69,3 +69,11 @@ Read before starting:
 - Checks run: `npm run test:run -- src/features/lesson-reader/LessonCardRenderer.test.tsx`; `npm run verify`; `git diff --check`; browser smoke desktop and 360px.
 - Risks: answers are intentionally local React state only and reset on navigation/reload; no persistence or scoring was added.
 - Follow-up: review draft PR.
+
+## Continuation review — 2026-05-25
+
+- PR/CI review: PASS; PR #4 is open as draft, mergeable, and had GitHub Actions `npm run verify` passing on `a48a06c`.
+- Accessibility review: PASS by static review; browser smoke repeated by orchestrator after server startup.
+- Content semantics review: fixed two supplemental wording items that implied persistence (`Артефакт` glossary definition and product cycle text).
+- Checks rerun after continuation fix: `npm run verify`; `git diff --check`; browser smoke desktop and 360px.
+- Browser smoke evidence: overview -> module -> unit -> lesson path rendered, `single_choice` feedback shown, `reflection` local state shown, `checklist` toggled, no console warnings/errors, and no horizontal overflow at 360px.
