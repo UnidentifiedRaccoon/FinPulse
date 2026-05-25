@@ -1,75 +1,194 @@
-# Content Model — JSON Source of Truth
+# Content Model — Split JSON Source of Truth
 
 ## Goal
 
-Represent the educational program in JSON files that are easy for agents and humans to edit safely.
+Represent the educational program as small JSON files that can be edited, reviewed, and validated without turning runtime content into one giant file.
 
-## Recommended initial file
+The runtime hierarchy is:
 
 ```txt
-src/content/program.json
+Program
+└─ Module
+   └─ Unit
+      └─ Lesson
+         └─ Card
 ```
 
-Optional later structure:
+## Runtime files
 
 ```txt
 src/content/
   program.json
   modules/
-    module-1.json
-    module-2.json
+    module_1/
+      module.json
+      units/
+        unit_01_values_and_goals.json
 ```
 
-## Core model
+`program.json` is the program manifest. It stores program metadata and references module JSON files.
+
+`module.json` stores module metadata and references unit JSON files.
+
+Unit files store the full runtime lesson/card content for the unit.
+
+## File shapes
 
 ```ts
-export type Program = {
+export type ProgramManifest = {
   schemaVersion: 1
   id: string
   slug: string
   title: string
   description?: string
-  modules: ProgramModule[]
+  modules: ModuleRef[]
 }
 
-export type ProgramModule = {
+export type ModuleRef = {
   id: string
   slug: string
   title: string
   description?: string
   order: number
-  lessons: Lesson[]
+  path: string
 }
 
+export type ModuleFile = {
+  schemaVersion: 1
+  id: string
+  slug: string
+  title: string
+  description?: string
+  order: number
+  source?: string
+  units: UnitRef[]
+}
+
+export type UnitRef = {
+  id: string
+  slug: string
+  title: string
+  description?: string
+  order: number
+  path: string
+}
+
+export type UnitFile = {
+  schemaVersion: 1
+  id: string
+  slug: string
+  title: string
+  description?: string
+  order: number
+  source: string
+  lessons: Lesson[]
+  supplemental?: UnitSupplemental
+}
+```
+
+After loading, the app works with hydrated objects:
+
+```ts
+export type Program = Omit<ProgramManifest, 'modules'> & {
+  modules: Module[]
+}
+
+export type Module = Omit<ModuleFile, 'units'> & {
+  units: Unit[]
+}
+
+export type Unit = UnitFile
+```
+
+## Lesson
+
+```ts
 export type Lesson = {
   id: string
   slug: string
   title: string
+  subtitle?: string
   description?: string
   order: number
   estimatedMinutes?: number
-  blocks: LessonBlock[]
+  learningGoal?: string
+  mainSkill?: string
+  tags?: string[]
+  sourceSection?: string
+  cards: Card[]
 }
-
-export type LessonBlock =
-  | { type: 'heading'; level: 2 | 3; text: string }
-  | { type: 'paragraph'; text: string }
-  | { type: 'list'; style?: 'bullet' | 'numbered'; items: string[] }
-  | { type: 'quote'; text: string; attribution?: string }
-  | { type: 'callout'; tone?: 'info' | 'warning' | 'success'; title?: string; text: string }
-  | { type: 'image'; src: string; alt: string; caption?: string }
-  | { type: 'video'; src: string; title: string; transcript?: string }
 ```
+
+## Cards
+
+Every card has:
+
+```ts
+type CardBase = {
+  id: string
+  type: CardType
+  order: number
+  title?: string
+  sourceSection?: string
+  thinkingType?: string
+  develops?: string
+  checkability?: 'objective' | 'subjective' | 'mixed'
+}
+```
+
+Supported card types:
+
+```ts
+export type Card =
+  | TheoryCard
+  | VideoCard
+  | CalloutCard
+  | SingleChoiceCard
+  | ReflectionCard
+  | ScenarioCard
+  | ArtifactCard
+  | ChecklistCard
+  | SummaryCard
+```
+
+Minimal type-specific fields:
+
+- `theory`: `body`, optional `examples`.
+- `video`: `src`, `title`, optional `provider`, `timecodes`, `transcript`.
+- `callout`: `body`, optional `tone`.
+- `single_choice`: `question`, `options`, optional `correctOptionId`, `feedback`, `readOnly`.
+- `reflection`: `prompt`, optional `options`, `inputType`, `saveKey`, `guidance`, `readOnly`.
+- `scenario`: `body`, optional `question`, `options`, `correctOptionId`, `feedback`, `readOnly`.
+- `artifact`: `body`, optional `template`, `variants`, `readOnly`.
+- `checklist`: `items`, optional `body`.
+- `summary`: `points`, optional `body`, `nextStep`.
+
+Interactive cards can be rendered read-only in the MVP. Their methodical fields must stay in JSON so later interaction can be added without rewriting content.
+
+## Supplemental content
+
+Large support material that should not become the main lesson path belongs in `UnitFile.supplemental`.
+
+Use it for:
+
+- additional trainings;
+- spaced repetition cards;
+- expansion scenarios;
+- editorial rules;
+- unit outcome.
+
+The first Module 1 unit keeps supplemental material there to avoid bloating the primary reader while preserving all source content.
 
 ## Content rules
 
-- Every `id` must be stable and unique within its type.
-- Every `slug` must be URL-safe and unique within its route type.
+- Every `id` must be stable and unique across its runtime type.
+- Every `slug` must be URL-safe and unique across modules, units, and lessons.
+- Card ids must be unique across the program.
 - `order` defines display order; arrays should also be sorted by order.
 - Do not store arbitrary HTML in JSON for MVP.
-- Use semantic content blocks instead of markdown/HTML until there is a reason to change.
-- All images need meaningful `alt` text unless decorative.
-- Video blocks should have a title and eventually a transcript.
+- Use semantic cards instead of raw markdown/HTML.
+- All video cards need a title and source URL.
+- Quickly changing financial values should be taught as lookup skills, not stored as eternal facts.
 
 ## Validation
 
@@ -79,18 +198,28 @@ Run:
 node scripts/check-content-json.mjs
 ```
 
-or, after package scripts are configured:
+or:
 
 ```bash
 npm run check:content
 ```
 
-The script intentionally supports the early phase where no real `program.json` exists yet. It should skip cleanly until content is added.
+Validation checks:
+
+- `src/content/program.json` exists and is valid;
+- referenced module and unit files exist;
+- module refs match module files;
+- unit refs match unit files;
+- ids/slugs are unique in their scopes;
+- lessons contain cards;
+- card type-specific fields are present.
 
 ## Migration rule
 
 If the content model changes, update:
+
 - this document;
 - `harness/schemas/content.schema.json`;
-- `scripts/check-content-json.mjs` if needed;
-- any example files under `examples/content/`.
+- `src/content/program.ts`;
+- `scripts/check-content-json.mjs`;
+- examples under `examples/content/`.
