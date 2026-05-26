@@ -35,6 +35,10 @@ Use files under `harness/tasks/active/` for real active work.
 
 Use task files and PR/diff summaries.
 
+| ID | Status | Task | Intended write set | Notes |
+|---|---:|---|---|---|
+| T-016 | review | Lesson card experience | `src/features/lesson-reader/**`, `src/pages/LessonPage.tsx`, focused tests, `harness/tasks/**`, `harness/WORKBOARD.md`, `harness/PROJECT_STATE.md` | Focused lesson session UI implemented; `npm run verify` and browser smoke passed; backend/API contract unchanged. |
+
 ## Done tasks
 
 | ID | Status | Task | Intended write set | Notes |

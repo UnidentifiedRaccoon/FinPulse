@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, vi } from 'vitest'
 
 import { parsedProgram } from '@/content/loadProgram'
@@ -103,12 +104,17 @@ describe('App', () => {
   })
 
   it('renders checklist cards in the reader flow', async () => {
+    const user = userEvent.setup()
     window.history.pushState({}, '', '/lessons/practice-1m')
 
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Практика 1M$' })).toBeTruthy()
-    expect(screen.getByText('Чеклист · 31')).toBeTruthy()
+    for (let index = 0; index < 5; index += 1) {
+      await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+    }
+
+    expect(screen.getByRole('heading', { name: 'Красные флаги цели' })).toBeTruthy()
     expect(screen.getByText(/Хочу много денег/)).toBeTruthy()
   })
 })
