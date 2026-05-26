@@ -1,31 +1,89 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 
-import type { Card } from '@/content/program'
+import type { LessonDetails } from '@/api/client'
+import type { Card, Lesson, Module, Unit } from '@/content/program'
 
-import { LessonCardRenderer } from './LessonCardRenderer'
+import { LessonSession } from './LessonSession'
 
-describe('LessonCardRenderer interactions', () => {
-  it('checks single choice answers only after an explicit action', async () => {
+describe('LessonSession', () => {
+  it('renders the first card in a focused session', () => {
+    renderSession([
+      {
+        id: 'card-theory',
+        type: 'theory',
+        order: 1,
+        title: 'Первый шаг',
+        body: 'Короткое объяснение.',
+      },
+      {
+        id: 'card-summary',
+        type: 'summary',
+        order: 2,
+        title: 'Итог',
+        points: ['Пункт'],
+      },
+    ])
+
+    expect(screen.getByRole('heading', { name: 'Тестовый урок' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Первый шаг' })).toBeInTheDocument()
+    expect(screen.getByText('1 из 2')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'Прогресс урока' })).toHaveAttribute('aria-valuenow', '50')
+  })
+
+  it('continues through cards with the sticky CTA', async () => {
     const user = userEvent.setup()
-    const card = {
-      id: 'test-choice',
-      type: 'single_choice',
-      order: 1,
-      title: 'Проверка выбора',
-      question: 'Какой вариант подходит?',
-      options: [
-        { id: 'a', label: 'Не подходит' },
-        { id: 'b', label: 'Подходит', isCorrect: true },
-      ],
-      correctOptionId: 'b',
-      feedback: 'Общий фидбек',
-    } satisfies Card
 
-    render(<LessonCardRenderer card={card} />)
+    renderSession([
+      {
+        id: 'card-theory',
+        type: 'theory',
+        order: 1,
+        title: 'Первый шаг',
+        body: 'Короткое объяснение.',
+      },
+      {
+        id: 'card-choice',
+        type: 'single_choice',
+        order: 2,
+        title: 'Выбор',
+        question: 'Какой вариант подходит?',
+        options: [
+          { id: 'a', label: 'Не подходит' },
+          { id: 'b', label: 'Подходит', isCorrect: true },
+        ],
+        correctOptionId: 'b',
+      },
+    ])
 
-    const checkButton = screen.getByRole('button', { name: 'Проверить ответ' })
+    await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+
+    expect(screen.getByRole('heading', { name: 'Выбор' })).toBeInTheDocument()
+    expect(screen.getByText('2 из 2')).toBeInTheDocument()
+  })
+
+  it('checks a selected choice and shows supportive feedback', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-choice',
+        type: 'single_choice',
+        order: 1,
+        title: 'Проверка выбора',
+        question: 'Какой вариант подходит?',
+        options: [
+          { id: 'a', label: 'Не подходит' },
+          { id: 'b', label: 'Подходит', isCorrect: true },
+        ],
+        correctOptionId: 'b',
+        feedback: 'Общий фидбек',
+      },
+    ])
+
+    const checkButton = screen.getByRole('button', { name: 'Проверить' })
     expect(checkButton).toBeDisabled()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
 
@@ -34,173 +92,165 @@ describe('LessonCardRenderer interactions', () => {
     await user.click(checkButton)
 
     const feedback = screen.getByRole('status')
-    expect(feedback).toHaveTextContent('Это не лучший вариант.')
-    expect(feedback).toHaveTextContent('Лучший вариант: Подходит')
+    expect(feedback).toHaveTextContent('Можно уточнить')
+    expect(feedback).toHaveTextContent('Лучше подходит: Подходит.')
     expect(feedback).toHaveTextContent('Общий фидбек')
-    expect(feedback).toHaveAttribute('aria-live', 'polite')
-    expect(screen.getByRole('radio', { name: /Не подходит/ })).toHaveAttribute(
-      'aria-describedby',
-      'test-choice-choice-feedback',
+    expect(screen.getByRole('button', { name: 'Завершить' })).toBeEnabled()
+  })
+
+  it('keeps reflection text local until the user continues', async () => {
+    const user = userEvent.setup()
+    const onCardCompleted = vi.fn()
+
+    renderSession(
+      [
+        {
+          id: 'card-reflection',
+          type: 'reflection',
+          order: 1,
+          title: 'Рефлексия',
+          prompt: 'Запиши мысль.',
+          inputType: 'freeform',
+          guidance: 'Подсказка',
+        },
+      ],
+      { canSaveProgress: true, onCardCompleted },
     )
-  })
-
-  it('reports card progress after an interactive card action', async () => {
-    const user = userEvent.setup()
-    const onCardProgress = vi.fn()
-    const card = {
-      id: 'test-choice-progress',
-      type: 'single_choice',
-      order: 1,
-      question: 'Какой вариант подходит?',
-      options: [
-        { id: 'a', label: 'Не подходит' },
-        { id: 'b', label: 'Подходит', isCorrect: true },
-      ],
-      correctOptionId: 'b',
-    } satisfies Card
-
-    render(<LessonCardRenderer card={card} onCardProgress={onCardProgress} />)
-
-    await user.click(screen.getByRole('radio', { name: 'Подходит' }))
-    await user.click(screen.getByRole('button', { name: 'Проверить ответ' }))
-
-    expect(onCardProgress).toHaveBeenCalledWith('test-choice-progress')
-  })
-
-  it('keeps read-only choice cards static', () => {
-    const card = {
-      id: 'readonly-choice',
-      type: 'single_choice',
-      order: 1,
-      title: 'Статичный выбор',
-      question: 'Что видно?',
-      options: [
-        { id: 'a', label: 'Обычный вариант' },
-        { id: 'b', label: 'Правильный вариант', isCorrect: true },
-      ],
-      correctOptionId: 'b',
-      feedback: 'Фидбек виден сразу',
-      readOnly: true,
-    } satisfies Card
-
-    render(<LessonCardRenderer card={card} />)
-
-    expect(screen.queryByRole('radio')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Проверить ответ/i })).not.toBeInTheDocument()
-    expect(screen.getByText('Фидбек виден сразу')).toBeInTheDocument()
-  })
-
-  it('renders scenario options with the same feedback flow', async () => {
-    const user = userEvent.setup()
-    const card = {
-      id: 'test-scenario',
-      type: 'scenario',
-      order: 1,
-      title: 'Сценарий',
-      body: 'Ситуация с выбором.',
-      question: 'Что выбрать?',
-      options: [
-        { id: 'a', label: 'Лучший вариант', isCorrect: true },
-        { id: 'b', label: 'Слабый вариант' },
-      ],
-      correctOptionId: 'a',
-      feedback: 'Фидбек по сценарию',
-    } satisfies Card
-
-    render(<LessonCardRenderer card={card} />)
-
-    expect(screen.getByText('Ситуация с выбором.')).toBeInTheDocument()
-    await user.click(screen.getByRole('radio', { name: 'Лучший вариант' }))
-    await user.click(screen.getByRole('button', { name: 'Проверить ответ' }))
-
-    expect(screen.getByRole('status')).toHaveTextContent('Ответ верный.')
-    expect(screen.getByRole('status')).toHaveTextContent('Фидбек по сценарию')
-  })
-
-  it('keeps reflection text in local component state', async () => {
-    const user = userEvent.setup()
-    const card = {
-      id: 'test-reflection-text',
-      type: 'reflection',
-      order: 1,
-      title: 'Рефлексия',
-      prompt: 'Запиши мысль.',
-      inputType: 'freeform',
-      guidance: 'Подсказка',
-    } satisfies Card
-
-    render(<LessonCardRenderer card={card} />)
 
     const textarea = screen.getByRole('textbox', { name: 'Ответ' })
     await user.type(textarea, 'Мой черновик')
 
     expect(textarea).toHaveValue('Мой черновик')
     expect(screen.getByRole('status')).toHaveTextContent('Черновик заполнен. Он исчезнет при перезагрузке.')
-  })
+    expect(onCardCompleted).not.toHaveBeenCalled()
 
-  it('supports local multi-select reflection answers', async () => {
-    const user = userEvent.setup()
-    const card = {
-      id: 'test-reflection-multi',
-      type: 'reflection',
-      order: 1,
-      title: 'Ценности',
-      prompt: 'Выбери ценности.',
-      inputType: 'multi_select',
-      options: ['Свобода', 'Безопасность'],
-    } satisfies Card
+    await user.click(screen.getByRole('button', { name: 'Завершить' }))
 
-    render(<LessonCardRenderer card={card} />)
-
-    const checkbox = screen.getByRole('checkbox', { name: 'Свобода' })
-    await user.click(checkbox)
-
-    expect(checkbox).toBeChecked()
-    expect(screen.getByRole('status')).toHaveTextContent('Выбрано: 1.')
+    await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-reflection'))
+    expect(onCardCompleted).toHaveBeenCalledTimes(1)
   })
 
   it('toggles checklist items locally', async () => {
     const user = userEvent.setup()
-    const card = {
-      id: 'test-checklist',
-      type: 'checklist',
-      order: 1,
-      title: 'Чеклист',
-      items: ['Первый пункт', 'Второй пункт'],
-    } satisfies Card
 
-    render(<LessonCardRenderer card={card} />)
+    renderSession([
+      {
+        id: 'card-checklist',
+        type: 'checklist',
+        order: 1,
+        title: 'Чеклист',
+        body: 'Отметь подходящие пункты.',
+        items: ['Первый пункт', 'Второй пункт'],
+      },
+    ])
 
     const firstItem = screen.getByRole('checkbox', { name: 'Первый пункт' })
     await user.click(firstItem)
 
     expect(firstItem).toBeChecked()
     expect(screen.getByRole('status')).toHaveTextContent('Отмечено 1 из 2.')
-    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite')
   })
 
-  it('makes artifact templates editable and variants selectable', async () => {
+  it('marks viewed cards and completes lesson with existing progress markers', async () => {
     const user = userEvent.setup()
-    const card = {
-      id: 'test-artifact',
-      type: 'artifact',
-      order: 1,
-      title: 'Артефакт',
-      body: 'Заполни рабочий блок.',
-      template: ['Желание'],
-      variants: ['Базовый', 'Расширенный'],
-    } satisfies Card
+    const onCardViewed = vi.fn()
+    const onCardCompleted = vi.fn()
+    const onLessonCompleted = vi.fn()
 
-    render(<LessonCardRenderer card={card} />)
+    renderSession(
+      [
+        {
+          id: 'card-one',
+          type: 'theory',
+          order: 1,
+          title: 'Первый шаг',
+          body: 'Короткое объяснение.',
+        },
+        {
+          id: 'card-two',
+          type: 'summary',
+          order: 2,
+          title: 'Итог',
+          points: ['Пункт'],
+        },
+      ],
+      { canSaveProgress: true, onCardCompleted, onCardViewed, onLessonCompleted },
+    )
 
-    const variant = screen.getByRole('button', { name: 'Базовый' })
-    const textarea = screen.getByRole('textbox', { name: 'Желание' })
+    await waitFor(() => expect(onCardViewed).toHaveBeenCalledWith('card-one'))
 
-    await user.click(variant)
-    await user.type(textarea, 'Дом у моря')
+    await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+    await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-one'))
+    await waitFor(() => expect(onCardViewed).toHaveBeenCalledWith('card-two'))
 
-    expect(variant).toHaveAttribute('aria-pressed', 'true')
-    expect(textarea).toHaveValue('Дом у моря')
-    expect(screen.getByRole('status')).toHaveTextContent('Рабочий блок заполнен локально.')
+    await user.click(screen.getByRole('button', { name: 'Завершить' }))
+
+    await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-two'))
+    expect(onLessonCompleted).toHaveBeenCalledWith('test-lesson')
+    expect(screen.getByRole('heading', { name: 'Урок завершён' })).toBeInTheDocument()
   })
 })
+
+function renderSession(
+  cards: Card[],
+  overrides: Partial<{
+    canSaveProgress: boolean
+    onCardViewed: (cardId: string) => void | Promise<void>
+    onCardCompleted: (cardId: string) => void | Promise<void>
+    onLessonCompleted: (lessonSlug: string) => void | Promise<void>
+  }> = {},
+) {
+  const details = createLessonDetails(cards)
+
+  return render(
+    <MemoryRouter>
+      <LessonSession
+        canSaveProgress={overrides.canSaveProgress ?? false}
+        details={details}
+        isLessonCompleted={false}
+        onCardCompleted={overrides.onCardCompleted}
+        onCardViewed={overrides.onCardViewed}
+        onLessonCompleted={overrides.onLessonCompleted}
+      />
+    </MemoryRouter>,
+  )
+}
+
+function createLessonDetails(cards: Card[]): LessonDetails {
+  const lesson: Lesson = {
+    id: 'lesson-1',
+    slug: 'test-lesson',
+    title: 'Тестовый урок',
+    description: 'Описание урока.',
+    learningGoal: 'Сделать один маленький шаг.',
+    order: 1,
+    cards,
+  }
+
+  const unit: Unit = {
+    schemaVersion: 1,
+    id: 'unit-1',
+    slug: 'unit-1',
+    title: 'Тестовый юнит',
+    order: 1,
+    source: 'test',
+    lessons: [lesson],
+  }
+
+  const module: Module = {
+    schemaVersion: 1,
+    id: 'module-1',
+    slug: 'module-1',
+    title: 'Тестовый модуль',
+    order: 1,
+    units: [unit],
+  }
+
+  return {
+    module,
+    unit,
+    lesson,
+    previous: null,
+    next: null,
+  }
+}

@@ -35,6 +35,10 @@ Use files under `harness/tasks/active/` for real active work.
 
 Use task files and PR/diff summaries.
 
+| ID | Status | Task | Intended write set | Notes |
+|---|---:|---|---|---|
+| T-016 | review | Lesson card experience | `src/features/lesson-reader/**`, `src/pages/LessonPage.tsx`, focused tests, `harness/tasks/**`, `harness/WORKBOARD.md`, `harness/PROJECT_STATE.md` | Focused lesson session UI implemented; `npm run verify` and browser smoke passed; backend/API contract unchanged. |
+
 ## Done tasks
 
 | ID | Status | Task | Intended write set | Notes |
@@ -46,3 +50,4 @@ Use task files and PR/diff summaries.
 | T-012 | done | Migrate frontend to backend API | `src/**`, focused frontend tests, `vite.config.ts` | SPA pages use backend content API; auth controls and progress writes wired; `npm run verify` passed. |
 | T-013 | done | Stage 2 verification and PR polish | docs/harness updates, README, PR evidence | Security/content reviews and browser smoke passed; final `npm run verify` passed. |
 | T-014 | done | Add API contract guards | `src/content/program.ts`, `server/**` tests, `scripts/**`, `package.json`, `harness/**` | Shared API contract tests and rendered app content import guard added; `npm run verify` passed. |
+| T-015 | done | Clean friendly-learning design system | `docs/DESIGN_SYSTEM.md`, `harness/**` | Friendly-learning design-system draft adapted to FinPulse; MVP-safe lesson/card guidance kept, rewards/streaks/challenges deferred. |
