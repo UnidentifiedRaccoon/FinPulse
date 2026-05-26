@@ -19,7 +19,7 @@ const cardBaseSchema = z.object({
   checkability: checkabilitySchema.optional(),
 }).strict()
 
-const cardSchema = z.discriminatedUnion('type', [
+export const cardSchema = z.discriminatedUnion('type', [
   cardBaseSchema.extend({
     type: z.literal('theory'),
     body: z.string().min(1),
@@ -110,7 +110,7 @@ const cardSchema = z.discriminatedUnion('type', [
   }
 })
 
-const lessonSchema = z.object({
+export const lessonSchema = z.object({
   id: z.string().min(1),
   slug: slugSchema,
   title: z.string().min(1),
@@ -155,7 +155,7 @@ const supplementalSchema = z
   .strict()
   .optional()
 
-const unitFileSchema = z.object({
+export const unitFileSchema = z.object({
   schemaVersion: z.literal(1),
   id: z.string().min(1),
   slug: slugSchema,

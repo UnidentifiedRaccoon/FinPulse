@@ -57,6 +57,8 @@ T-010 accepted ADR-0006 for Stage 2 backend scope before backend implementation.
 
 T-013 verified Stage 2 with `npm run verify`, security/auth review, content/API contract review, live browser smoke, DB progress persistence check, and 360px no-overflow check.
 
+T-014 added shared content API contract tests and a runtime content import guard. `npm run verify` now also runs `npm run check:runtime-imports` to keep rendered app code on backend API data instead of direct JSON/runtime loader imports.
+
 T-015 adapted the friendly-learning design-system draft to FinPulse. `docs/DESIGN_SYSTEM.md` now defines MVP-safe lesson/card experience guidance and keeps rewards, streaks, challenges, shops, mascot-led experience, and retention loops deferred.
 
 T-016 implements the first friendly-learning lesson/card UI slice: one active card per lesson session, a progress header, sticky bottom CTA, supportive choice feedback, local checklist/reflection/artifact interaction state, and existing viewed/completed progress markers only. `npm run verify` passed; browser smoke passed on desktop-ish and 360px with no horizontal overflow or console errors.
