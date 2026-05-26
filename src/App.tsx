@@ -104,6 +104,11 @@ function App() {
         setProgress(nextProgress)
         setProgressError('')
       } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          setProgress(null)
+          setProgressError('')
+          return
+        }
         setProgressError(getApiMessage(error))
       }
     },
@@ -118,6 +123,11 @@ function App() {
         setProgress(nextProgress)
         setProgressError('')
       } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          setProgress(null)
+          setProgressError('')
+          return
+        }
         setProgressError(getApiMessage(error))
       }
     },

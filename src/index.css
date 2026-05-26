@@ -63,6 +63,33 @@
     oklch(0.269 0 0);
   --radius:
     0.625rem;
+  --fr-color-brand-50: #eff7ff;
+  --fr-color-brand-100: #ddf0ff;
+  --fr-color-brand-200: #bde0ff;
+  --fr-color-brand-300: #8fc9fa;
+  --fr-color-brand-500: #1787f2;
+  --fr-color-brand-600: #0d6fe8;
+  --fr-color-brand-700: #0758c7;
+  --fr-color-cyan-400: #43c9d6;
+  --fr-color-learn-correct-50: #eafbf4;
+  --fr-color-learn-correct-500: #26c895;
+  --fr-color-learn-almost-50: #fff7e8;
+  --fr-color-learn-almost-500: #ffb547;
+  --fr-color-learn-retry-50: #fff3f1;
+  --fr-color-learn-retry-500: #e86b5c;
+  --fr-surface-canvas: #f7fbff;
+  --fr-surface-card: #ffffff;
+  --fr-surface-soft: #f1f7fe;
+  --fr-surface-muted: #f6f8fb;
+  --fr-border-subtle: #eef4fb;
+  --fr-border-default: #dde9f6;
+  --fr-border-strong: #bfd6ef;
+  --fr-text-primary: #10234a;
+  --fr-text-secondary: #637188;
+  --fr-text-tertiary: #9aa8ba;
+  --fr-shadow-sm: 0 2px 8px rgba(18, 52, 89, 0.06);
+  --fr-shadow-md: 0 8px 24px rgba(18, 52, 89, 0.08);
+  --fr-shadow-focus: 0 0 0 4px rgba(23, 135, 242, 0.14);
   --sidebar:
     oklch(0.985 0 0);
   --sidebar-foreground:
