@@ -1,0 +1,564 @@
+{
+  "schemaVersion": 1,
+  "id": "unit_03_financial_goals",
+  "slug": "financial-goals-map",
+  "title": "01.03 Финансовые цели",
+  "description": "Раздел 01.03 помогает сформулировать финансовые цели, собрать карту целей и проверить их достижимость.",
+  "order": 3,
+  "source": "docs/modules/module_1/lesson_03_financial_goals/README.md",
+  "lessons": [
+    {
+      "id": "lesson_0103_01_financial_goal_types",
+      "slug": "financial-goal-types",
+      "title": "Какими бывают финансовые цели",
+      "description": "Финансовая цель — это конкретный объект, услуга или образ жизни, который можно реализовать с помощью денег.",
+      "order": 1,
+      "estimatedMinutes": 4,
+      "learningGoal": "Отличать финансовую цель от общего желания и узнавать типичные категории целей.",
+      "mainSkill": "Формулировать цель как конкретный будущий результат, а не как желание «больше денег».",
+      "tags": ["финансовые цели", "карта целей", "планирование"],
+      "sourceSection": "0103 / Тема №3. Формулируем финансовые цели",
+      "cards": [
+        {
+          "id": "card_0103_01_scenario_goal_or_wish",
+          "type": "scenario",
+          "order": 1,
+          "title": "Желание или цель",
+          "sourceSection": "0103 / Топ 10 финансовых целей",
+          "thinkingType": "understanding",
+          "develops": "hard skills",
+          "checkability": "mixed",
+          "body": "У человека есть фраза «хочу жить спокойнее». Это важное желание, но пока непонятно, что именно нужно профинансировать.",
+          "question": "Как приблизить эту фразу к финансовой цели?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Уточнить, какой результат даст спокойствие: резерв, жильё, обучение или другое",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "label": "Оставить формулировку общей, чтобы она подходила ко всему"
+            },
+            {
+              "id": "c",
+              "label": "Сразу выбрать финансовый инструмент, не уточняя цель"
+            }
+          ],
+          "correctOptionId": "a",
+          "feedback": "Финансовая цель становится рабочей, когда понятно, что именно нужно оплатить или создать."
+        },
+        {
+          "id": "card_0103_02_video_goal_types",
+          "type": "video",
+          "order": 2,
+          "title": "Видео: формулируем финансовые цели",
+          "sourceSection": "0103 / Тема №3. Формулируем финансовые цели",
+          "src": "https://rutube.ru/play/embed/eadd57171a4c3c49aef8b98e1748cfa0/?p=ulfnuQncSSDW5uIdnqh6Og",
+          "provider": "rutube",
+          "timecodes": [
+            {
+              "time": "00:10",
+              "label": "Типы финансовых целей"
+            },
+            {
+              "time": "02:22",
+              "label": "Типичные цели семьи"
+            },
+            {
+              "time": "03:15",
+              "label": "Линия жизни"
+            },
+            {
+              "time": "04:15",
+              "label": "Параметры финансовых целей"
+            },
+            {
+              "time": "08:45",
+              "label": "Приоритеты в финансировании целей"
+            }
+          ]
+        },
+        {
+          "id": "card_0103_03_theory_financial_goal",
+          "type": "theory",
+          "order": 3,
+          "title": "Определение",
+          "sourceSection": "0103 / Выводы",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Финансовые цели — это товары, объекты, услуги или образ жизни, которые можно реализовать с помощью денег. Деньги здесь не самоцель, а ресурс для конкретного результата.",
+          "examples": ["резервный фонд", "обучение", "жильё", "переезд", "финансовая независимость", "погашение долга"]
+        },
+        {
+          "id": "card_0103_04_choice_goal_formulation",
+          "type": "single_choice",
+          "order": 4,
+          "title": "Рабочая формулировка",
+          "sourceSection": "0103 / Топ 10 финансовых целей",
+          "thinkingType": "understanding",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Какая формулировка больше похожа на финансовую цель?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Хочу нормально жить"
+            },
+            {
+              "id": "b",
+              "label": "Хочу резервный фонд на 4 месяца расходов",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "label": "Хочу выбрать самый выгодный продукт"
+            }
+          ],
+          "correctOptionId": "b",
+          "feedback": "Здесь есть понятный результат. Позже к нему можно добавить срок, стоимость и ресурсы."
+        },
+        {
+          "id": "card_0103_05_reflection_goal_categories",
+          "type": "reflection",
+          "order": 5,
+          "title": "Какие цели откликаются",
+          "sourceSection": "0103 / Есть ли у вас такие цели?",
+          "thinkingType": "personal world",
+          "develops": "psychology + hard skills",
+          "checkability": "subjective",
+          "prompt": "Какие категории целей сейчас потенциально важны для тебя?",
+          "inputType": "multi_select",
+          "options": ["жильё", "автомобиль", "обучение", "ребёнок или семья", "значимое событие", "бизнес", "резервный фонд", "переезд", "долги", "финансовая независимость", "пока не знаю"],
+          "saveKey": "financial_goal_categories",
+          "guidance": "Это первичный список, а не обязательство. Его можно пересмотреть после карты целей."
+        },
+        {
+          "id": "card_0103_06_summary_goal_types",
+          "type": "summary",
+          "order": 6,
+          "title": "Микро-правило",
+          "sourceSection": "0103 / Выводы",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "subjective",
+          "points": [
+            "Сначала называем жизненный результат, потом подбираем деньги и инструменты.",
+            "Фраза «хочу больше денег» становится целью только после уточнения: на что, зачем и когда."
+          ],
+          "nextStep": "Дальше разложим цели по линии жизни."
+        }
+      ]
+    },
+    {
+      "id": "lesson_0103_02_goal_timeline",
+      "slug": "goal-timeline",
+      "title": "Карта целей на линии жизни",
+      "description": "Карта целей помогает увидеть, какие крупные события и потребности могут появиться в будущем.",
+      "order": 2,
+      "estimatedMinutes": 5,
+      "learningGoal": "Научиться собирать первичную карту целей по годам или жизненным этапам.",
+      "mainSkill": "Размещать цели на временной линии и связывать их с ценностями и видением будущего.",
+      "tags": ["карта целей", "линия жизни", "семейные цели"],
+      "sourceSection": "0103 / Практика. Ваши финансовые цели",
+      "cards": [
+        {
+          "id": "card_0103_07_theory_goal_timeline",
+          "type": "theory",
+          "order": 1,
+          "title": "Зачем нужна линия жизни",
+          "sourceSection": "0103 / Практика. Ваши финансовые цели",
+          "thinkingType": "understanding",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Линия жизни помогает предположить, какие материальные цели могут возникнуть в будущем. Это может быть рисунок, список по годам или простая таблица: возраст, срок, цель."
+        },
+        {
+          "id": "card_0103_08_scenario_many_goals",
+          "type": "scenario",
+          "order": 2,
+          "title": "Цели в одном списке",
+          "sourceSection": "0103 / Практика. Ваши финансовые цели",
+          "thinkingType": "real world B",
+          "develops": "hard skills + psychology",
+          "checkability": "mixed",
+          "body": "В списке одновременно появились обучение, ремонт, резервный фонд и переезд. Пока все цели стоят рядом, трудно понять, что раньше, что позже и что связано с видением будущего.",
+          "question": "Что стоит сделать первым?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Разместить цели по срокам и жизненным этапам",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "label": "Удалить все цели, которые выглядят сложными"
+            },
+            {
+              "id": "c",
+              "label": "Выбрать цель с самой крупной суммой как главную"
+            }
+          ],
+          "correctOptionId": "a",
+          "feedback": "Временная линия показывает последовательность и помогает увидеть перегрузку будущих периодов."
+        },
+        {
+          "id": "card_0103_09_artifact_goal_map",
+          "type": "artifact",
+          "order": 3,
+          "title": "Черновик карты целей",
+          "sourceSection": "0103 / Практика. Ваши финансовые цели",
+          "thinkingType": "artifact",
+          "develops": "hard skills",
+          "checkability": "subjective",
+          "body": "Заполни 2-3 строки будущей карты. Пока достаточно простого описания.",
+          "template": [
+            "Возраст или год",
+            "Цель",
+            "Зачем она нужна",
+            "С какой ценностью или образом будущего связана"
+          ]
+        },
+        {
+          "id": "card_0103_10_reflection_family_discussion",
+          "type": "reflection",
+          "order": 4,
+          "title": "С кем это обсудить",
+          "sourceSection": "0103 / Практика. Ваши финансовые цели",
+          "thinkingType": "personal world",
+          "develops": "soft skills",
+          "checkability": "subjective",
+          "prompt": "Есть ли человек, с кем важно обсудить видение будущего и крупные цели?",
+          "inputType": "single_select",
+          "options": ["партнёр или партнёрша", "семья", "другой близкий человек", "сначала хочу подумать самостоятельно", "неактуально"],
+          "saveKey": "goal_discussion_person",
+          "guidance": "Выбор не отправляется и не сохраняется на сервере. Он помогает заметить, где цель может быть общей."
+        },
+        {
+          "id": "card_0103_11_checklist_goal_map",
+          "type": "checklist",
+          "order": 5,
+          "title": "Проверка карты",
+          "sourceSection": "0103 / Практика. Ваши финансовые цели",
+          "thinkingType": "habit",
+          "develops": "habits + hard skills",
+          "checkability": "subjective",
+          "items": [
+            "У каждой цели есть примерный срок",
+            "Понятно, зачем цель нужна",
+            "Цель не противоречит ключевым ценностям",
+            "Цели не все выпадают на один и тот же период",
+            "Есть цели, которые можно обсудить с близкими"
+          ]
+        },
+        {
+          "id": "card_0103_12_summary_goal_timeline",
+          "type": "summary",
+          "order": 6,
+          "title": "Итог",
+          "sourceSection": "0103 / Практика. Ваши финансовые цели",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "subjective",
+          "points": [
+            "Карта целей начинается с простого описания: когда, что и зачем.",
+            "Ценности и видение будущего помогают понять, какие цели действительно ваши."
+          ],
+          "nextStep": "Теперь добавим параметры: стоимость, ресурсы и будущую стоимость."
+        }
+      ]
+    },
+    {
+      "id": "lesson_0103_03_goal_parameters",
+      "slug": "goal-parameters",
+      "title": "Параметры финансовой цели",
+      "description": "Цель становится рабочей, когда у неё есть срок, стоимость, смысл и ресурсы.",
+      "order": 3,
+      "estimatedMinutes": 5,
+      "learningGoal": "Научиться уточнять цель через ключевые финансовые параметры.",
+      "mainSkill": "Проверять цель по параметрам до выбора финансового инструмента.",
+      "tags": ["параметры цели", "ресурсы", "будущая стоимость"],
+      "sourceSection": "0103 / Изучите конспект «Финансовые параметры целей»",
+      "cards": [
+        {
+          "id": "card_0103_13_video_goal_practice",
+          "type": "video",
+          "order": 1,
+          "title": "Видео: практика «Ваши финансовые цели»",
+          "sourceSection": "0103 / Практика. Ваши финансовые цели",
+          "src": "https://rutube.ru/play/embed/dc838e76ba92c9d7fb73e9f28b0c971b/?p=zNpvHBPKiNtooffKKjFouQ",
+          "provider": "rutube"
+        },
+        {
+          "id": "card_0103_14_theory_goal_parameters",
+          "type": "theory",
+          "order": 2,
+          "title": "Минимальный набор параметров",
+          "sourceSection": "0103 / и продолжите практику «Ваши финансовые цели»",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Для рабочей финансовой цели нужны параметры: что именно нужно, зачем, когда, текущая стоимость, будущая стоимость, текущие ресурсы и недостающие ресурсы. Не все числа будут точными сразу, но их нужно научиться уточнять."
+        },
+        {
+          "id": "card_0103_15_choice_stronger_goal",
+          "type": "single_choice",
+          "order": 3,
+          "title": "Какая цель сильнее",
+          "sourceSection": "0103 / и продолжите практику «Ваши финансовые цели»",
+          "thinkingType": "understanding",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Какая формулировка лучше подготовлена к расчёту?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Хочу обновить жильё когда-нибудь"
+            },
+            {
+              "id": "b",
+              "label": "Хочу накопить на первый взнос к 2028 году; уже есть часть ресурсов",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "label": "Хочу финансовый инструмент с высокой доходностью"
+            }
+          ],
+          "correctOptionId": "b",
+          "feedback": "Здесь есть назначение, срок и упоминание ресурсов. Такую цель уже можно уточнять финансово."
+        },
+        {
+          "id": "card_0103_16_artifact_goal_parameters",
+          "type": "artifact",
+          "order": 4,
+          "title": "Таблица параметров",
+          "sourceSection": "0103 / Итоговое задание",
+          "thinkingType": "artifact",
+          "develops": "hard skills",
+          "checkability": "subjective",
+          "body": "Выбери одну цель и заполни черновик. Если числа пока неизвестны, отметь, что нужно проверить.",
+          "template": [
+            "Приоритет цели",
+            "Что это за цель",
+            "Зачем она нужна",
+            "Когда это нужно",
+            "Текущая стоимость",
+            "Будущая стоимость или что нужно уточнить",
+            "Какие ресурсы уже есть"
+          ]
+        },
+        {
+          "id": "card_0103_17_checklist_future_cost",
+          "type": "checklist",
+          "order": 5,
+          "title": "Как не захардкодить стоимость",
+          "sourceSection": "0103 / Работа с XLS. Расчет достижимости целей",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "subjective",
+          "body": "Будущая стоимость зависит от предположений. Для учебной цели важно не угадать число, а научиться проверять входные данные.",
+          "items": [
+            "Записать текущую стоимость из актуального источника",
+            "Отметить, какие допущения используются для будущей стоимости",
+            "Проверить, есть ли уже накопленные ресурсы",
+            "Не выбирать инструмент до уточнения цели"
+          ]
+        },
+        {
+          "id": "card_0103_18_summary_goal_parameters",
+          "type": "summary",
+          "order": 6,
+          "title": "Итог",
+          "sourceSection": "0103 / Выводы",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "subjective",
+          "points": [
+            "Цель становится финансовой задачей, когда появляются срок, стоимость и ресурсы.",
+            "Будущая стоимость — это расчёт на основе допущений, а не вечное число."
+          ],
+          "nextStep": "Дальше проверим, достижима ли цель при текущих ресурсах."
+        }
+      ]
+    },
+    {
+      "id": "lesson_0103_04_goal_achievability",
+      "slug": "goal-achievability",
+      "title": "Достижимость и приоритеты",
+      "description": "Если целей много, важно проверить ресурсы, регулярный вклад и последовательность.",
+      "order": 4,
+      "estimatedMinutes": 5,
+      "learningGoal": "Понять, как проверять достижимость цели без встроенного калькулятора.",
+      "mainSkill": "Разбирать цель на ресурсы, регулярный платёж, препятствия и приоритет.",
+      "tags": ["достижимость", "ресурсы", "приоритеты"],
+      "sourceSection": "0103 / Работа с XLS. Расчет достижимости целей",
+      "cards": [
+        {
+          "id": "card_0103_19_theory_achievability",
+          "type": "theory",
+          "order": 1,
+          "title": "Что проверяет расчёт",
+          "sourceSection": "0103 / Работа с XLS. Расчет достижимости целей",
+          "thinkingType": "understanding",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Проверка достижимости отвечает на практический вопрос: сколько нужно регулярно откладывать или какие ресурсы нужны, чтобы цель стала реальной. Точные расчёты удобнее делать в электронных таблицах."
+        },
+        {
+          "id": "card_0103_20_checklist_achievability",
+          "type": "checklist",
+          "order": 2,
+          "title": "Перед расчётом",
+          "sourceSection": "0103 / Работа с XLS. Расчет достижимости целей",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "subjective",
+          "items": [
+            "Понятна сумма цели или способ её уточнить",
+            "Понятен срок",
+            "Известны текущие ресурсы",
+            "Есть гипотеза о регулярном взносе",
+            "Понятно, чем придётся пожертвовать ради цели"
+          ]
+        },
+        {
+          "id": "card_0103_21_scenario_too_many_goals",
+          "type": "scenario",
+          "order": 3,
+          "title": "Когда целей слишком много",
+          "sourceSection": "0103 / Что делать, если целей много?",
+          "thinkingType": "real world B",
+          "develops": "hard skills + psychology",
+          "checkability": "mixed",
+          "body": "После первичной карты целей оказалось, что все важные цели требуют денег в ближайшие два года. При текущем доходе регулярного взноса на всё не хватает.",
+          "question": "Что лучше сделать дальше?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Оптимизировать цели: поменять сроки, масштаб или последовательность",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "label": "Оставить всё как есть и надеяться, что как-нибудь получится"
+            },
+            {
+              "id": "c",
+              "label": "Удалить все цели, кроме самой дорогой"
+            }
+          ],
+          "correctOptionId": "a",
+          "feedback": "Оптимизация не отменяет мечту. Она помогает выбрать реалистичный порядок, срок или масштаб."
+        },
+        {
+          "id": "card_0103_22_artifact_goal_optimization",
+          "type": "artifact",
+          "order": 4,
+          "title": "Одна правка цели",
+          "sourceSection": "0103 / Изучите конспект «Оптимизация целей»",
+          "thinkingType": "artifact",
+          "develops": "hard skills + habits",
+          "checkability": "subjective",
+          "body": "Выбери одну цель, которая выглядит сложной, и наметь одну реалистичную правку.",
+          "template": [
+            "Цель",
+            "Что перегружает план",
+            "Что можно изменить: срок, масштаб, ресурс или последовательность",
+            "Какой следующий расчёт нужен"
+          ]
+        },
+        {
+          "id": "card_0103_23_summary_achievability",
+          "type": "summary",
+          "order": 5,
+          "title": "Результат раздела",
+          "sourceSection": "0103 / Итоговое задание",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "subjective",
+          "points": [
+            "Карта целей должна показывать не только мечты, но и сроки, стоимость, ресурсы и приоритет.",
+            "Если расчёт не сходится, цель можно оптимизировать: изменить срок, масштаб или порядок.",
+            "Следующий раздел поможет удерживать движение к цели, когда мотивация снижается."
+          ],
+          "nextStep": "Перейдём к мотивации достижения целей."
+        }
+      ]
+    }
+  ],
+  "supplemental": {
+    "strategy": "Большие таблицы, XLS-файл, изображения и конспекты сохранены как источник. Runtime учит принципам карты целей и проверки достижимости без добавления калькулятора.",
+    "sourceFiles": [
+      "docs/methodology/finzdorov_module_01/0103-finansovye-tseli.md",
+      "docs/methodology/finzdorov_module_01/materials/0103-life-goals-types.pdf",
+      "docs/methodology/finzdorov_module_01/materials/0103-top-financial-goals.png",
+      "docs/methodology/finzdorov_module_01/materials/0103-goal-timeline-example.png",
+      "docs/methodology/finzdorov_module_01/materials/0103-financial-goal-parameters.pdf",
+      "docs/methodology/finzdorov_module_01/materials/0103-goal-calculator.xlsx",
+      "docs/methodology/finzdorov_module_01/materials/0103-goal-optimization.pdf",
+      "docs/methodology/finzdorov_module_01/materials/0103-final-assignment.docx",
+      "docs/methodology/finzdorov_module_01/materials/0103-final-assignment.pdf",
+      "docs/methodology/finzdorov_module_01/materials/0103-xls-input-example.png",
+      "docs/methodology/finzdorov_module_01/materials/0103-xls-formula-example.png",
+      "docs/methodology/finzdorov_module_01/materials/0103-xls-result-example.png",
+      "docs/methodology/finzdorov_module_01/materials/0103-xls-replacement-example.png"
+    ],
+    "trainings": [
+      {
+        "id": "supp_0103_life_goals_types",
+        "title": "Конспект «Типы жизненных целей»",
+        "sourceSection": "0103 / Изучите конспект «Типы жизненных целей»",
+        "type": "source_document",
+        "summary": "PDF-конспект для расширения темы типичных жизненных и финансовых целей.",
+        "content": ["Локальный файл: docs/methodology/finzdorov_module_01/materials/0103-life-goals-types.pdf"]
+      },
+      {
+        "id": "supp_0103_goal_calculator",
+        "title": "XLS-калькулятор цели",
+        "sourceSection": "0103 / Работа с XLS. Расчет достижимости целей",
+        "type": "calculator_source",
+        "summary": "Исходная Excel-таблица для расчёта будущей стоимости и необходимых ежемесячных отчислений.",
+        "content": ["Локальный файл: docs/methodology/finzdorov_module_01/materials/0103-goal-calculator.xlsx"]
+      },
+      {
+        "id": "supp_0103_goal_optimization",
+        "title": "Конспект «Оптимизация целей»",
+        "sourceSection": "0103 / Что делать, если целей много?",
+        "type": "source_document",
+        "summary": "PDF-конспект о пересмотре сроков, масштаба и последовательности целей.",
+        "content": ["Локальный файл: docs/methodology/finzdorov_module_01/materials/0103-goal-optimization.pdf"]
+      },
+      {
+        "id": "supp_0103_final_assignment",
+        "title": "Итоговая таблица трёх целей",
+        "sourceSection": "0103 / Итоговое задание",
+        "type": "assignment_template",
+        "summary": "DOCX/PDF-шаблон итогового задания по трём финансовым целям.",
+        "content": [
+          "Локальный файл: docs/methodology/finzdorov_module_01/materials/0103-final-assignment.docx",
+          "Локальный файл: docs/methodology/finzdorov_module_01/materials/0103-final-assignment.pdf"
+        ]
+      }
+    ],
+    "glossary": [
+      {
+        "term": "Финансовая цель",
+        "definition": "Товар, объект, услуга или образ жизни, который можно реализовать с помощью денег."
+      },
+      {
+        "term": "Карта целей",
+        "definition": "Список или таблица целей с примерными сроками, смыслом, стоимостью, ресурсами и приоритетами."
+      },
+      {
+        "term": "Достижимость цели",
+        "definition": "Проверка, хватает ли сроков, ресурсов и регулярного взноса для движения к цели."
+      }
+    ],
+    "outcome": [
+      "Пользователь собирает первичную карту целей.",
+      "Пользователь понимает, какие параметры нужны для расчёта и проверки достижимости."
+    ]
+  }
+}

@@ -6,7 +6,7 @@ import { useApiQuery } from '@/api/useApiQuery'
 import { Button } from '@/components/ui/button'
 import { getOrderedModules } from '@/content/program'
 import { LessonPathMap, ModuleTransitionCard } from '@/features/program-navigation/LessonPathMap'
-import { buildModuleLearningPath, getProgressPercent } from '@/features/program-navigation/learningPath'
+import { buildModuleLearningPath } from '@/features/program-navigation/learningPath'
 import { buildLessonPathSections } from '@/features/program-navigation/lessonPathSections'
 
 export function ModulePage({ progress }: { progress: ProgressResponse | null }) {
@@ -31,7 +31,7 @@ export function ModulePage({ progress }: { progress: ProgressResponse | null }) 
   const modulePath = path.modules[0]
   const sections = buildLessonPathSections(modulePath?.units ?? [])
   const activeSection = sections.find((section) => section.state === 'current') ?? sections.find((section) => section.state === 'locked') ?? sections[0]
-  const percent = getProgressPercent(path.completedLessons, path.totalLessons)
+  const moduleContext = `Модуль ${module.order}`
   const nextModule =
     programQuery.status === 'success'
       ? (getOrderedModules(programQuery.data).find((candidate) => candidate.order > module.order) ?? null)
@@ -43,42 +43,20 @@ export function ModulePage({ progress }: { progress: ProgressResponse | null }) 
         <div className="flex items-start">
           <Button
             asChild
-            className="min-h-10 rounded-2xl px-0 text-base font-bold text-white hover:bg-white/10 hover:text-white"
+            className="min-h-10 rounded-2xl px-0 text-sm font-bold uppercase leading-5 tracking-normal text-white/75 hover:bg-white/10 hover:text-white/75"
             variant="ghost"
           >
             <Link to="/program">
               <ChevronLeft data-icon="inline-start" />
-              Модуль {module.order}
+              {moduleContext}
             </Link>
           </Button>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
-          <div>
-            <p className="text-sm font-bold uppercase leading-5 tracking-normal text-white/75">
-              Модуль {module.order}
-              {activeSection ? `, раздел ${activeSection.number}` : ''}
-            </p>
-            <h1 className="mt-1 text-3xl font-bold leading-tight tracking-normal">
-              {activeSection?.title ?? module.title}
-            </h1>
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-3 text-sm font-bold leading-5 text-white/85">
-              <span className="sr-only">Прогресс модуля</span>
-              <span>{percent}%</span>
-            </div>
-            <div
-              aria-label={`${percent}% модуля завершено`}
-              aria-valuemax={100}
-              aria-valuemin={0}
-              aria-valuenow={percent}
-              className="h-3 overflow-hidden rounded-full bg-white/30"
-              role="progressbar"
-            >
-              <div className="h-full rounded-full bg-white" style={{ width: `${percent}%` }} />
-            </div>
-          </div>
+          <h1 className="min-w-0 text-3xl font-bold leading-tight tracking-normal [overflow-wrap:anywhere]">
+            {activeSection?.title ?? module.title}
+          </h1>
         </div>
       </section>
 
@@ -93,9 +71,9 @@ export function ModulePage({ progress }: { progress: ProgressResponse | null }) 
 
 function PageState({ title, description }: { title: string; description?: string }) {
   return (
-    <section className="flex flex-col gap-2 rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
+    <section className="rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
       <h1 className="text-xl font-bold">{title}</h1>
-      {description ? <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">{description}</p> : null}
+      {description ? <p className="mt-1 text-sm leading-6 text-[var(--fr-text-secondary)]">{description}</p> : null}
     </section>
   )
 }

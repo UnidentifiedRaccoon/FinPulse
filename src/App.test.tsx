@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { StrictMode } from 'react'
 import { afterEach, beforeEach, vi } from 'vitest'
@@ -137,6 +137,7 @@ describe('App', () => {
       '/lessons/why-values-matter',
     )
     expect(await screen.findByText(/0 из \d+ уроков/)).toBeTruthy()
+    expect(within(screen.getByRole('main')).getByRole('button', { name: 'Выйти' })).toBeTruthy()
   })
 
   it('renders the real program overview', async () => {
@@ -149,6 +150,42 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/modules/financial-goals')
   })
 
+  it('renders the desktop sidebar and mobile bottom navigation', async () => {
+    window.history.pushState({}, '', '/program')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+
+    const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
+    const bottomNavigation = screen.getByRole('navigation', { name: 'Нижнее меню приложения' })
+    const sidebarLearningLink = within(sidebar).getByRole('link', { name: 'Обучение' })
+
+    expect(sidebarLearningLink.getAttribute('href')).toBe('/program')
+    expect(sidebarLearningLink.getAttribute('aria-current')).toBe('page')
+    expect(within(sidebar).getByRole('link', { name: 'Аккаунт' }).getAttribute('href')).toBe('/')
+    expect(within(bottomNavigation).getByRole('link', { name: 'Обучение' }).getAttribute('href')).toBe('/program')
+    expect(within(bottomNavigation).getByRole('link', { name: 'Войти' }).getAttribute('href')).toBe('/')
+  })
+
+  it('separates authenticated account and logout controls in desktop while keeping mobile nav focused', async () => {
+    apiOptions.currentUser = { id: 'user-1', login: 'learner' }
+    apiOptions.progress = emptyProgress
+    window.history.pushState({}, '', '/program')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+
+    const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
+    const bottomNavigation = screen.getByRole('navigation', { name: 'Нижнее меню приложения' })
+
+    expect(within(sidebar).getByRole('link', { name: 'Аккаунт' }).getAttribute('href')).toBe('/')
+    expect(within(bottomNavigation).getByRole('link', { name: 'Аккаунт' }).getAttribute('href')).toBe('/')
+    expect(within(bottomNavigation).queryByRole('button', { name: 'Выйти' })).toBeNull()
+    expect(screen.getAllByRole('button', { name: 'Выйти' }).length).toBe(1)
+  })
+
   it('opens lesson details from the module lesson path before navigation', async () => {
     const user = userEvent.setup()
     window.history.pushState({}, '', '/modules/financial-goals')
@@ -158,10 +195,30 @@ describe('App', () => {
     expect((await screen.findAllByRole('heading', { name: 'Ваши базовые ценности' })).length).toBeGreaterThan(0)
     await user.click(await screen.findByRole('button', { name: /Зачем финансовым целям нужны ценности/i }))
 
-    expect(await screen.findByRole('dialog')).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
-    expect(screen.getByText(/Финансовая цель — это жизненная цель/i)).toBeTruthy()
-    expect(screen.getByRole('link', { name: /Продолжить урок/i }).getAttribute('href')).toBe('/lessons/why-values-matter')
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
+    expect(within(dialog).getByText('4 мин')).toBeTruthy()
+    expect(within(dialog).queryByText(/Финансовая цель — это жизненная цель/i)).toBeNull()
+    expect(within(dialog).queryByText(/Отличать сумму или покупку/i)).toBeNull()
+    expect(within(dialog).getByRole('link', { name: /Продолжить урок/i }).getAttribute('href')).toBe('/lessons/why-values-matter')
+  })
+
+  it('renders one visual section per Finzdorov unit in the module path', async () => {
+    window.history.pushState({}, '', '/modules/financial-goals')
+
+    render(<App />)
+
+    const lessonPath = await screen.findByRole('region', { name: 'Разделы модуля' })
+    const sectionHeadings = within(lessonPath).getAllByRole('heading').map((heading) => heading.textContent)
+
+    expect(sectionHeadings).toEqual([
+      'Ваши базовые ценности',
+      'Видение будущего',
+      'Финансовые цели',
+      'Мотивация достижения целей',
+    ])
+    expect(within(lessonPath).queryByText(/01\.0[1-4]/)).toBeNull()
+    expect(within(lessonPath).queryByText(/Раздел \d/)).toBeNull()
   })
 
   it('renders a lesson with cards', async () => {
@@ -171,6 +228,23 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
     expect(screen.getByText(/Два человека хотят/i)).toBeTruthy()
+  })
+
+  it('renders newly converted future vision and motivation content routes', async () => {
+    window.history.pushState({}, '', '/modules/financial-goals/units/future-vision')
+
+    const { unmount } = render(<App />)
+
+    expect((await screen.findAllByRole('heading', { name: 'Видение будущего' })).length).toBeGreaterThan(0)
+    expect(await screen.findByRole('button', { name: /День из будущего/i })).toBeTruthy()
+
+    unmount()
+    window.history.pushState({}, '', '/lessons/goal-levels')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Уровни большой цели' })).toBeTruthy()
+    expect(screen.getByText(/Большую цель легче удерживать/i)).toBeTruthy()
   })
 
   it('saves initial lesson and active card progress once for an authenticated lesson reader', async () => {
@@ -199,9 +273,19 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Практика 1M$' })).toBeTruthy()
-    for (let index = 0; index < 5; index += 1) {
-      await user.click(screen.getByRole('button', { name: 'Далее' }))
-    }
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(await screen.findByRole('radio', { name: 'Безопасность и восстановление / радость' }))
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+    await user.click(await screen.findByRole('button', { name: 'Далее' }))
+    await user.click(
+      await screen.findByRole('radio', {
+        name: 'Давай разберёмся, что для нас важнее сейчас: отдых или чувство безопасности',
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+    await user.click(await screen.findByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
 
     expect(screen.getByRole('heading', { name: 'Красные флаги цели' })).toBeTruthy()
     expect(screen.getByText(/Хочу много денег/)).toBeTruthy()
