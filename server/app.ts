@@ -23,6 +23,9 @@ export type CreatedApp = {
   db: AppDatabase
 }
 
+type CorsOriginOption = string | string[] | false | undefined
+type CorsOriginCallback = (error: Error | null, origin: string | boolean) => void
+
 export async function createApp(options: CreateAppOptions = {}): Promise<CreatedApp> {
   const db = openDatabase({
     path: options.dbPath ?? process.env.FINPULSE_DB_PATH ?? 'data/finpulse.sqlite',
@@ -34,8 +37,9 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
 
   await app.register(cookie)
   await app.register(cors, {
-    origin: options.corsOrigin ?? process.env.FINPULSE_CORS_ORIGIN ?? 'http://localhost:5173',
+    origin: resolveCorsOrigin(options.corsOrigin ?? process.env.FINPULSE_CORS_ORIGIN),
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'OPTIONS'],
   })
 
   app.setErrorHandler((error, _request, reply) => {
@@ -64,4 +68,49 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
   })
 
   return { app, db }
+}
+
+function resolveCorsOrigin(configured: CorsOriginOption) {
+  if (configured === false) {
+    return false
+  }
+
+  if (Array.isArray(configured)) {
+    return configured
+  }
+
+  if (typeof configured === 'string') {
+    const origins = configured
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+
+    if (origins.length === 1) {
+      return origins[0]
+    }
+
+    if (origins.length > 1) {
+      return origins
+    }
+  }
+
+  return allowLocalDevOrigin
+}
+
+function allowLocalDevOrigin(origin: string | undefined, callback: CorsOriginCallback) {
+  if (!origin) {
+    callback(null, false)
+    return
+  }
+
+  callback(null, isLocalLoopbackOrigin(origin) ? origin : false)
+}
+
+function isLocalLoopbackOrigin(origin: string) {
+  try {
+    const url = new URL(origin)
+    return url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]', '::1'].includes(url.hostname)
+  } catch {
+    return false
+  }
 }

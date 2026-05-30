@@ -1,5 +1,3 @@
-import { CheckCircle2, Circle } from 'lucide-react'
-
 import { LessonFeedback } from '@/features/lesson-reader/LessonFeedback'
 import type { ChoiceCard as ChoiceCardType, ChoiceState } from '@/features/lesson-reader/lessonInteraction'
 import { getChoiceOptions, getChoiceQuestion, getCorrectOption } from '@/features/lesson-reader/lessonInteraction'
@@ -9,10 +7,12 @@ export function ChoiceCard({
   card,
   state,
   onSelect,
+  showFeedback = true,
 }: {
   card: ChoiceCardType
   state: ChoiceState
   onSelect: (optionId: string) => void
+  showFeedback?: boolean
 }) {
   const options = getChoiceOptions(card)
   const question = getChoiceQuestion(card)
@@ -44,7 +44,7 @@ export function ChoiceCard({
                   className={cn(
                     'flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] px-4 py-3 text-sm leading-6 text-[var(--fr-text-secondary)] shadow-[var(--fr-shadow-sm)] transition-colors [overflow-wrap:anywhere] hover:bg-[var(--fr-surface-soft)] focus-within:ring-4 focus-within:ring-[var(--fr-color-brand-500)]/15',
                     isSelected &&
-                      'border-[var(--fr-color-brand-500)] bg-[var(--fr-color-brand-50)] text-[var(--fr-text-primary)]',
+                      'border-[var(--fr-color-sky-500)] bg-[var(--fr-color-brand-50)] text-[var(--fr-text-primary)]',
                     showStatus &&
                       optionIsCorrect &&
                       'border-[var(--fr-color-learn-correct-500)]/60 bg-[var(--fr-color-learn-correct-50)]',
@@ -56,7 +56,7 @@ export function ChoiceCard({
                   <input
                     aria-describedby={showStatus ? feedbackId : undefined}
                     checked={isSelected}
-                    className="mt-1 size-4 shrink-0 accent-[var(--fr-color-brand-500)]"
+                    className="mt-1 size-4 shrink-0 accent-[var(--fr-color-sky-500)]"
                     name={`${card.id}-choice`}
                     onChange={() => onSelect(option.id)}
                     type="radio"
@@ -64,19 +64,6 @@ export function ChoiceCard({
                   />
                   <span className="flex min-w-0 flex-col gap-1">
                     <span>{option.label}</span>
-                    {showStatus ? (
-                      <span
-                        className={cn(
-                          'inline-flex items-center gap-1 text-xs font-semibold',
-                          optionIsCorrect
-                            ? 'text-[var(--fr-color-learn-correct-500)]'
-                            : 'text-[var(--fr-color-brand-700)]',
-                        )}
-                      >
-                        {optionIsCorrect ? <CheckCircle2 aria-hidden="true" /> : <Circle aria-hidden="true" />}
-                        {optionIsCorrect ? 'Подходит' : 'Есть нюанс'}
-                      </span>
-                    ) : null}
                   </span>
                 </label>
               </li>
@@ -85,7 +72,7 @@ export function ChoiceCard({
         </ul>
       </fieldset>
 
-      {state.isChecked && selectedOption ? (
+      {showFeedback && state.isChecked && selectedOption ? (
         <ChoiceFeedback
           cardFeedback={card.feedback}
           correctOptionLabel={correctOption?.label}

@@ -58,10 +58,39 @@ describe('LessonSession', () => {
       },
     ])
 
-    await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
 
     expect(screen.getByRole('heading', { name: 'Выбор' })).toBeInTheDocument()
     expect(screen.getByText('2 из 2')).toBeInTheDocument()
+  })
+
+  it('embeds supported video cards inside the lesson', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-video',
+        type: 'video',
+        order: 1,
+        title: 'Видео урока',
+        src: 'https://rutube.ru/play/embed/98b1d47fb6794e189e48bc2d16496429/?p=YZO74pElZsnRBGF7kooKIQ',
+        provider: 'rutube',
+        timecodes: [{ time: '01:05', label: 'Как поставить финансовую цель' }],
+      },
+    ])
+
+    const player = screen.getByTitle('Видео урока')
+    expect(player).toHaveAttribute('src', expect.stringContaining('https://rutube.ru/play/embed/'))
+    expect(player).toHaveAttribute('src', expect.stringContaining('skinColor=1E9BD7'))
+    expect(player).toHaveAttribute('allow', expect.stringContaining('autoplay'))
+    expect(screen.getByRole('link', { name: 'Открыть в RUTUBE' })).toHaveAttribute(
+      'href',
+      'https://rutube.ru/play/embed/98b1d47fb6794e189e48bc2d16496429/?p=YZO74pElZsnRBGF7kooKIQ',
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Перейти к фрагменту 01:05: Как поставить финансовую цель' }))
+
+    expect(screen.getByTitle('Видео урока')).toHaveAttribute('src', expect.stringContaining('t=65'))
   })
 
   it('checks a selected choice and shows supportive feedback', async () => {
@@ -121,7 +150,7 @@ describe('LessonSession', () => {
     await user.type(textarea, 'Мой черновик')
 
     expect(textarea).toHaveValue('Мой черновик')
-    expect(screen.getByRole('status')).toHaveTextContent('Черновик заполнен. Он исчезнет при перезагрузке.')
+    expect(screen.getByRole('status')).toHaveTextContent('Черновик заполнен.')
     expect(onCardCompleted).not.toHaveBeenCalled()
 
     await user.click(screen.getByRole('button', { name: 'Завершить' }))
@@ -179,7 +208,7 @@ describe('LessonSession', () => {
 
     await waitFor(() => expect(onCardViewed).toHaveBeenCalledWith('card-one'))
 
-    await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
     await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-one'))
     await waitFor(() => expect(onCardViewed).toHaveBeenCalledWith('card-two'))
 

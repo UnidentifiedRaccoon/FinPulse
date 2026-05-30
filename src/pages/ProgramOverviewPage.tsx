@@ -1,9 +1,8 @@
-import { ChevronRight } from 'lucide-react'
-import { Link } from 'react-router'
-
 import { api, type ProgressResponse } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
-import { getOrderedLessons, getOrderedModules, getOrderedUnits, type Module } from '@/content/program'
+import { buildProgramLearningPath } from '@/features/program-navigation/learningPath'
+import { ModulePathNode } from '@/features/program-navigation/ModulePathNode'
+import { PathProgressSummary } from '@/features/program-navigation/PathProgressSummary'
 
 export function ProgramOverviewPage({ progress }: { progress: ProgressResponse | null }) {
   const programQuery = useApiQuery(api.getProgram, [])
@@ -17,72 +16,35 @@ export function ProgramOverviewPage({ progress }: { progress: ProgressResponse |
   }
 
   const program = programQuery.data
+  const path = buildProgramLearningPath(program, progress)
 
   return (
-    <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-3">
-        <p className="text-sm font-medium text-muted-foreground">Образовательная программа</p>
-        <h1 className="text-4xl font-semibold leading-tight tracking-normal">{program.title}</h1>
-        {program.description ? (
-          <p className="max-w-2xl text-base leading-7 text-muted-foreground">{program.description}</p>
-        ) : null}
+    <div className="flex flex-col gap-6 pb-8">
+      <section className="flex flex-col gap-3 pt-2">
+        <h1 className="text-[2rem] font-bold leading-9 tracking-normal text-[var(--fr-text-primary)]">Модули</h1>
+        <p className="text-base leading-7 text-[var(--fr-text-secondary)]">
+          {program.description ?? 'Выберите модуль, чтобы открыть разделы и уроки.'}
+        </p>
       </section>
 
-      <section className="flex flex-col gap-3" aria-labelledby="modules-heading">
-        <h2 id="modules-heading" className="text-xl font-semibold">
-          Модули
-        </h2>
-        <div className="flex flex-col gap-3">
-          {getOrderedModules(program).map((module) => {
-            const summary = getModuleProgressSummary(module, progress)
+      <PathProgressSummary completed={path.completedLessons} total={path.totalLessons} />
 
-            return (
-              <Link
-                className="rounded-lg border border-border bg-card p-4 text-card-foreground transition-colors hover:bg-muted"
-                key={module.id}
-                to={`/modules/${module.slug}`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex flex-col gap-1">
-                    <h3 className="text-lg font-semibold">{module.title}</h3>
-                    {module.description ? (
-                      <p className="text-sm leading-6 text-muted-foreground">{module.description}</p>
-                    ) : null}
-                    <p className="text-xs text-muted-foreground">
-                      {module.units.length} юнит
-                      {summary ? ` · завершено ${summary.completed} из ${summary.total}` : ''}
-                    </p>
-                  </div>
-                  <ChevronRight aria-hidden="true" className="mt-1 text-muted-foreground" />
-                </div>
-              </Link>
-            )
-          })}
+      <section className="flex flex-col gap-3" aria-label="Модули программы">
+        <div className="flex flex-col gap-3">
+          {path.modules.map((module, index) => (
+            <ModulePathNode index={index + 1} item={module} key={module.module.id} />
+          ))}
         </div>
       </section>
     </div>
   )
 }
 
-function getModuleProgressSummary(module: Module, progress: ProgressResponse | null) {
-  if (!progress) return null
-
-  const completedLessons = new Set(
-    progress.lessons.filter((lessonProgress) => lessonProgress.completed).map((lessonProgress) => lessonProgress.lessonSlug),
-  )
-  const lessons = getOrderedUnits(module).flatMap((unit) => getOrderedLessons(unit))
-
-  return {
-    total: lessons.length,
-    completed: lessons.filter((lesson) => completedLessons.has(lesson.slug)).length,
-  }
-}
-
 function PageState({ title, description }: { title: string; description?: string }) {
   return (
-    <section className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4 text-card-foreground">
-      <h1 className="text-xl font-semibold">{title}</h1>
-      {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
+    <section className="flex flex-col gap-2 rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
+      <h1 className="text-xl font-bold">{title}</h1>
+      {description ? <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">{description}</p> : null}
     </section>
   )
 }

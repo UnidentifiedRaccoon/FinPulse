@@ -15,13 +15,17 @@ import {
   type SessionCookieOptions,
 } from '../../lib/sessions'
 
+const USERNAME_LOGIN_PATTERN = /^[a-zA-Z0-9._-]+$/
+const EMAIL_LOGIN_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const AUTH_PAYLOAD_MESSAGE = 'Введите email или логин и пароль'
+
 const authBodySchema = z.object({
   login: z
     .string()
     .trim()
     .min(3)
-    .max(64)
-    .regex(/^[a-zA-Z0-9._-]+$/)
+    .max(254)
+    .refine(isSupportedLogin)
     .transform((value) => value.toLowerCase()),
   password: z.string().min(8).max(128),
 }).strict()
@@ -36,7 +40,7 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, cookie
   app.post('/api/auth/register', async (request, reply) => {
     const parsed = authBodySchema.safeParse(request.body)
     if (!parsed.success) {
-      return sendError(reply, 400, 'invalid_auth_payload', 'Login and password are required')
+      return sendError(reply, 400, 'invalid_auth_payload', AUTH_PAYLOAD_MESSAGE)
     }
     if (isPasswordTooLongForHash(parsed.data.password)) {
       return sendError(reply, 400, 'password_too_long', 'Password is too long')
@@ -53,7 +57,7 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, cookie
       ).run(userId, parsed.data.login, passwordHash, now)
     } catch (error) {
       if (isUniqueConstraintError(error)) {
-        return sendError(reply, 409, 'login_taken', 'Login is already registered')
+        return sendError(reply, 409, 'login_taken', 'Такой email или логин уже зарегистрирован')
       }
 
       throw error
@@ -73,7 +77,7 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, cookie
   app.post('/api/auth/login', async (request, reply) => {
     const parsed = authBodySchema.safeParse(request.body)
     if (!parsed.success) {
-      return sendError(reply, 400, 'invalid_auth_payload', 'Login and password are required')
+      return sendError(reply, 400, 'invalid_auth_payload', AUTH_PAYLOAD_MESSAGE)
     }
     if (isPasswordTooLongForHash(parsed.data.password)) {
       return sendError(reply, 400, 'password_too_long', 'Password is too long')
@@ -84,12 +88,12 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, cookie
       .get(parsed.data.login) as UserRow | undefined
 
     if (!user) {
-      return sendError(reply, 401, 'invalid_credentials', 'Invalid login or password')
+      return sendError(reply, 401, 'invalid_credentials', 'Неверный email, логин или пароль')
     }
 
     const passwordMatches = await verifyPassword(parsed.data.password, user.password_hash)
     if (!passwordMatches) {
-      return sendError(reply, 401, 'invalid_credentials', 'Invalid login or password')
+      return sendError(reply, 401, 'invalid_credentials', 'Неверный email, логин или пароль')
     }
 
     const existingSessionId = request.cookies[SESSION_COOKIE_NAME]
@@ -122,6 +126,10 @@ export function registerAuthRoutes(app: FastifyInstance, db: AppDatabase, cookie
 
     return { user }
   })
+}
+
+function isSupportedLogin(value: string) {
+  return (value.length <= 64 && USERNAME_LOGIN_PATTERN.test(value)) || EMAIL_LOGIN_PATTERN.test(value)
 }
 
 function isUniqueConstraintError(error: unknown) {

@@ -1,8 +1,10 @@
-import { LogIn, LogOut, UserPlus } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 
 import type { ApiUser } from '@/api/client'
 import { Button } from '@/components/ui/button'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 
 export type AuthControlsProps = {
   user: ApiUser | null
@@ -11,26 +13,38 @@ export type AuthControlsProps = {
   onLogin: (login: string, password: string) => Promise<void>
   onRegister: (login: string, password: string) => Promise<void>
   onLogout: () => Promise<void>
+  variant?: 'compact' | 'entry'
 }
 
-export function AuthControls({ user, isBusy, error, onLogin, onRegister, onLogout }: AuthControlsProps) {
+export function AuthControls({
+  user,
+  isBusy,
+  error,
+  onLogin,
+  onRegister,
+  onLogout,
+  variant = 'compact',
+}: AuthControlsProps) {
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
+  const isEntry = variant === 'entry'
+  const loginLabel = 'Email или логин'
 
   if (user) {
     return (
       <div className="flex items-center gap-2">
         <span className="hidden text-xs text-muted-foreground sm:inline">{user.login}</span>
         <Button disabled={isBusy} onClick={onLogout} size="sm" type="button" variant="outline">
-          <LogOut data-icon="inline-start" />
           Выйти
         </Button>
       </div>
     )
   }
 
-  const submit = (action: 'login' | 'register') => async (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    const submitter = (event.nativeEvent as SubmitEvent).submitter
+    const action = submitter instanceof HTMLButtonElement && submitter.value === 'register' ? 'register' : 'login'
 
     if (action === 'login') {
       await onLogin(login, password)
@@ -41,53 +55,60 @@ export function AuthControls({ user, isBusy, error, onLogin, onRegister, onLogou
   }
 
   return (
-    <form className="flex w-full flex-col gap-2 sm:w-auto" onSubmit={submit('login')}>
-      <div className="grid grid-cols-2 gap-2">
-        <label className="sr-only" htmlFor="auth-login">
-          Логин
-        </label>
-        <input
-          autoComplete="username"
-          className="min-h-9 min-w-0 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          id="auth-login"
-          onChange={(event) => setLogin(event.target.value)}
-          placeholder="login"
-          value={login}
-        />
-        <label className="sr-only" htmlFor="auth-password">
-          Пароль
-        </label>
-        <input
-          autoComplete="current-password"
-          className="min-h-9 min-w-0 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          id="auth-password"
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="password"
-          type="password"
-          value={password}
-        />
-      </div>
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button className="min-h-9" disabled={isBusy} size="sm" type="submit">
-          <LogIn data-icon="inline-start" />
+    <form className={cn('flex w-full flex-col', isEntry ? 'gap-4' : 'gap-2 sm:w-auto')} onSubmit={submit}>
+      <FieldGroup className={isEntry ? 'gap-4' : 'grid grid-cols-2 gap-2'}>
+        <Field>
+          <FieldLabel className={isEntry ? undefined : 'sr-only'} htmlFor="auth-login">
+            {loginLabel}
+          </FieldLabel>
+          <Input
+            autoComplete="username"
+            className={isEntry ? 'h-11' : 'h-9'}
+            disabled={isBusy}
+            id="auth-login"
+            inputMode="email"
+            name="login"
+            onChange={(event) => setLogin(event.target.value)}
+            placeholder={loginLabel}
+            required
+            spellCheck={false}
+            value={login}
+          />
+        </Field>
+        <Field>
+          <FieldLabel className={isEntry ? undefined : 'sr-only'} htmlFor="auth-password">
+            Пароль
+          </FieldLabel>
+          <Input
+            autoComplete="current-password"
+            className={isEntry ? 'h-11' : 'h-9'}
+            disabled={isBusy}
+            id="auth-password"
+            name="password"
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Пароль"
+            required
+            type="password"
+            value={password}
+          />
+        </Field>
+      </FieldGroup>
+      <div className={cn('flex flex-wrap gap-2', isEntry ? 'flex-col sm:flex-row' : 'justify-end')}>
+        <Button className={cn('min-h-9', isEntry && 'min-h-11 flex-1')} disabled={isBusy} size={isEntry ? 'lg' : 'sm'} type="submit" value="login">
           Войти
         </Button>
         <Button
-          className="min-h-9"
+          className={cn('min-h-9', isEntry && 'min-h-11 flex-1')}
           disabled={isBusy}
-          onClick={(event) => {
-            event.preventDefault()
-            void onRegister(login, password)
-          }}
-          size="sm"
-          type="button"
+          size={isEntry ? 'lg' : 'sm'}
+          type="submit"
+          value="register"
           variant="outline"
         >
-          <UserPlus data-icon="inline-start" />
           Регистрация
         </Button>
       </div>
-      {error ? <p className="text-right text-xs leading-5 text-destructive">{error}</p> : null}
+      {error ? <FieldError className={isEntry ? undefined : 'text-right'}>{error}</FieldError> : null}
     </form>
   )
 }

@@ -65,7 +65,7 @@ export function ReflectionCard({
             ))}
           </ul>
         </fieldset>
-        <LocalDraftStatus id={statusId} isActive={Boolean(state.singleValue)} text="Выбор отмечен на этом экране." />
+        <LocalDraftStatus id={statusId} isActive={Boolean(state.singleValue)} text="Выбор отмечен." />
         {card.guidance ? (
           <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
             {card.guidance}
@@ -119,7 +119,7 @@ export function ReflectionCard({
         <LocalDraftStatus
           id={statusId}
           isActive={state.multiValues.length > 0}
-          text={`Выбрано: ${state.multiValues.length}. Отметки хранятся только на этом экране.`}
+          text={`Выбрано: ${state.multiValues.length}.`}
         />
         {card.guidance ? (
           <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
@@ -148,7 +148,7 @@ export function ReflectionCard({
       <LocalDraftStatus
         id={statusId}
         isActive={state.textValue.trim().length > 0}
-        text="Черновик заполнен. Он исчезнет при перезагрузке."
+        text="Черновик заполнен."
       />
       {card.guidance ? (
         <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
@@ -161,7 +161,12 @@ export function ReflectionCard({
 
 function LocalDraftStatus({ id, isActive, text }: { id: string; isActive: boolean; text: string }) {
   return (
-    <p aria-live="polite" className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={id} role="status">
+    <p
+      aria-live="polite"
+      className={cn('text-sm leading-6 text-[var(--fr-text-secondary)]', !isActive && 'sr-only')}
+      id={id}
+      role="status"
+    >
       {isActive ? text : 'Ответ пока не заполнен.'}
     </p>
   )

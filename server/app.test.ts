@@ -27,6 +27,63 @@ function sessionCookie(response: { headers: Record<string, number | string | str
 }
 
 describe('backend API', () => {
+  it('allows local loopback CORS origins by default', async () => {
+    const { app } = await createApp({
+      dbPath: ':memory:',
+      cookieSecure: false,
+    })
+    await app.ready()
+
+    try {
+      for (const origin of ['http://localhost:5173', 'http://127.0.0.1:5174']) {
+        const response = await app.inject({
+          method: 'OPTIONS',
+          url: '/api/auth/register',
+          headers: {
+            origin,
+            'access-control-request-method': 'POST',
+            'access-control-request-headers': 'content-type',
+          },
+        })
+
+        expect(response.statusCode).toBe(204)
+        expect(response.headers['access-control-allow-origin']).toBe(origin)
+        expect(response.headers['access-control-allow-credentials']).toBe('true')
+        expect(response.headers['access-control-allow-methods']).toContain('POST')
+      }
+
+      const progressWriteResponse = await app.inject({
+        method: 'OPTIONS',
+        url: '/api/progress/lessons/why-values-matter',
+        headers: {
+          origin: 'http://127.0.0.1:5174',
+          'access-control-request-method': 'PUT',
+          'access-control-request-headers': 'content-type',
+        },
+      })
+
+      expect(progressWriteResponse.statusCode).toBe(204)
+      expect(progressWriteResponse.headers['access-control-allow-origin']).toBe('http://127.0.0.1:5174')
+      expect(progressWriteResponse.headers['access-control-allow-credentials']).toBe('true')
+      expect(progressWriteResponse.headers['access-control-allow-methods']).toContain('PUT')
+
+      const blockedResponse = await app.inject({
+        method: 'OPTIONS',
+        url: '/api/auth/register',
+        headers: {
+          origin: 'http://example.com',
+          'access-control-request-method': 'POST',
+          'access-control-request-headers': 'content-type',
+        },
+      })
+
+      expect(blockedResponse.statusCode).toBe(404)
+      expect(blockedResponse.headers['access-control-allow-origin']).toBeUndefined()
+    } finally {
+      await app.close()
+    }
+  })
+
   it('registers a user, hashes the password, sets a session cookie, and returns me', async () => {
     const { app, db } = await setupTestApp()
 
@@ -65,6 +122,46 @@ describe('backend API', () => {
       expect(meResponse.json()).toMatchObject({
         user: {
           login: 'learner.one',
+        },
+      })
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('registers and logs in with an email identifier', async () => {
+    const { app } = await setupTestApp()
+
+    try {
+      const registerResponse = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'Learner.Email+One@Example.COM',
+          password: 'secure-passphrase',
+        },
+      })
+
+      expect(registerResponse.statusCode).toBe(201)
+      expect(registerResponse.json()).toMatchObject({
+        user: {
+          login: 'learner.email+one@example.com',
+        },
+      })
+
+      const loginResponse = await app.inject({
+        method: 'POST',
+        url: '/api/auth/login',
+        payload: {
+          login: 'learner.email+one@example.com',
+          password: 'secure-passphrase',
+        },
+      })
+
+      expect(loginResponse.statusCode).toBe(200)
+      expect(loginResponse.json()).toMatchObject({
+        user: {
+          login: 'learner.email+one@example.com',
         },
       })
     } finally {
@@ -242,16 +339,19 @@ describe('backend API', () => {
       expect(programResponse.statusCode).toBe(200)
       expect(programResponse.json()).toMatchObject({
         slug: 'finpulse-learning-mvp',
-        modules: [
+        modules: expect.arrayContaining([
           expect.objectContaining({
             slug: 'financial-goals',
-            units: [
+            units: expect.arrayContaining([
               expect.objectContaining({
                 slug: 'values-and-goals',
               }),
-            ],
+              expect.objectContaining({
+                slug: 'impulsive-purchases',
+              }),
+            ]),
           }),
-        ],
+        ]),
       })
 
       const lessonResponse = await app.inject('/api/lessons/why-values-matter')
@@ -264,6 +364,24 @@ describe('backend API', () => {
           cards: expect.arrayContaining([
             expect.objectContaining({
               id: 'card_01_04_goal_choice',
+            }),
+          ]),
+        }),
+      })
+
+      const newLessonResponse = await app.inject('/api/lessons/pause-before-purchase')
+      expect(newLessonResponse.statusCode).toBe(200)
+      expect(newLessonResponse.json()).toMatchObject({
+        module: expect.objectContaining({ slug: 'financial-goals' }),
+        unit: expect.objectContaining({ slug: 'impulsive-purchases' }),
+        lesson: expect.objectContaining({
+          slug: 'pause-before-purchase',
+          cards: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'card_09_01_scenario_discount',
+            }),
+            expect.objectContaining({
+              id: 'card_09_07_summary_pause',
             }),
           ]),
         }),

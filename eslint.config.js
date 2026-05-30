@@ -26,6 +26,24 @@ export default defineConfig([
     },
   },
   {
+    files: ['**/*.stories.tsx', 'src/features/storybook/**/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['.storybook/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
     files: ['server/**/*.ts', 'vite.config.ts'],
     languageOptions: {
       globals: globals.node,

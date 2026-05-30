@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { Navigate, useParams } from 'react-router'
 
 import { api, type ApiUser, type ProgressResponse } from '@/api/client'
@@ -17,10 +17,22 @@ export function LessonPage({
   markCardProgress: (cardId: string, payload: { viewed?: boolean; completed?: boolean }) => Promise<void>
 }) {
   const { lessonSlug } = useParams()
+  const viewedLessonSlugsRef = useRef(new Set<string>())
   const lessonQuery = useApiQuery(() => api.getLesson(lessonSlug ?? ''), [lessonSlug])
+  const handleCardCompleted = useCallback(
+    (cardId: string) => markCardProgress(cardId, { completed: true }),
+    [markCardProgress],
+  )
+  const handleCardViewed = useCallback((cardId: string) => markCardProgress(cardId, { viewed: true }), [markCardProgress])
+  const handleLessonCompleted = useCallback(
+    (slug: string) => markLessonProgress(slug, { completed: true }),
+    [markLessonProgress],
+  )
 
   useEffect(() => {
     if (!user || !lessonSlug) return
+    if (viewedLessonSlugsRef.current.has(lessonSlug)) return
+    viewedLessonSlugsRef.current.add(lessonSlug)
     void markLessonProgress(lessonSlug, { viewed: true })
   }, [lessonSlug, markLessonProgress, user])
 
@@ -46,9 +58,9 @@ export function LessonPage({
       canSaveProgress={Boolean(user)}
       details={current}
       isLessonCompleted={isCompleted}
-      onCardCompleted={user ? (cardId) => markCardProgress(cardId, { completed: true }) : undefined}
-      onCardViewed={user ? (cardId) => markCardProgress(cardId, { viewed: true }) : undefined}
-      onLessonCompleted={user ? (slug) => markLessonProgress(slug, { completed: true }) : undefined}
+      onCardCompleted={user ? handleCardCompleted : undefined}
+      onCardViewed={user ? handleCardViewed : undefined}
+      onLessonCompleted={user ? handleLessonCompleted : undefined}
     />
   )
 }
