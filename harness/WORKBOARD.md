@@ -37,6 +37,8 @@ Use task files and PR/diff summaries.
 
 | ID | Status | Task | Intended write set | Notes |
 |---|---:|---|---|---|
+| T-018 | review | Hosted Storybook UI catalog | `package.json`, lockfile, `.storybook/**`, `src/**/*.stories.tsx`, docs/harness updates | Storybook builds to `dist/storybook/` for `/storybook/`; `npm run verify`, `npm run build:storybook`, `npm run build:all`, and local browser smoke passed. |
+| T-017 | review | Duolingo-like learning path UX | `src/App.tsx`, `src/pages/**`, `src/features/program-navigation/**`, `src/features/lesson-reader/**`, focused tests, `harness/**` | Home/module routes now render a guided learning path; lesson feedback is sticky with the CTA. `npm run verify` and 390px browser smoke passed. |
 | T-016 | review | Lesson card experience | `src/features/lesson-reader/**`, `src/pages/LessonPage.tsx`, focused tests, `harness/tasks/**`, `harness/WORKBOARD.md`, `harness/PROJECT_STATE.md` | Focused lesson session UI implemented; `npm run verify` and browser smoke passed; backend/API contract unchanged. |
 
 ## Done tasks
@@ -51,3 +53,4 @@ Use task files and PR/diff summaries.
 | T-013 | done | Stage 2 verification and PR polish | docs/harness updates, README, PR evidence | Security/content reviews and browser smoke passed; final `npm run verify` passed. |
 | T-014 | done | Add API contract guards | `src/content/program.ts`, `server/**` tests, `scripts/**`, `package.json`, `harness/**` | Shared API contract tests and rendered app content import guard added; `npm run verify` passed. |
 | T-015 | done | Clean friendly-learning design system | `docs/DESIGN_SYSTEM.md`, `harness/**` | Friendly-learning design-system draft adapted to FinPulse; MVP-safe lesson/card guidance kept, rewards/streaks/challenges deferred. |
+| T-019 | done | Sky blue token rename | `src/index.css`, `docs/DESIGN_SYSTEM.md`, direct UI/Storybook token references, `harness/**` | Accent token family renamed to `sky`; values set to `#5BC0EB`, `#1E9BD7`, `#1479B8`; `npm run verify` passed. |

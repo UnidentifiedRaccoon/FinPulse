@@ -10,6 +10,7 @@ import type { Card } from '@/content/program'
 import { LessonBottomAction } from './LessonBottomAction'
 import { LessonCardFrame } from './LessonCardFrame'
 import { LessonCardRenderer, type LessonCardInteractionProps } from './LessonCardRenderer'
+import { LessonFeedback } from './LessonFeedback'
 import { LessonProgressHeader } from './LessonProgressHeader'
 import type { ArtifactState, ChecklistState, ChoiceState, ReflectionState } from './lessonInteraction'
 import {
@@ -18,6 +19,7 @@ import {
   emptyChoiceState,
   emptyReflectionState,
   getCorrectOption,
+  getChoiceOptions,
   isInteractiveChoice,
 } from './lessonInteraction'
 
@@ -64,6 +66,7 @@ export function LessonSession({
   }
 
   const action = getPrimaryAction(activeCard, choiceStates[activeCard.id] ?? emptyChoiceState, isLastCard)
+  const bottomFeedback = getBottomFeedback(activeCard, choiceStates[activeCard.id] ?? emptyChoiceState)
   const interaction = getInteractionProps({
     card: activeCard,
     choiceStates,
@@ -111,10 +114,10 @@ export function LessonSession({
 
   if (isComplete) {
     return (
-      <div className="-mx-4 -my-6 min-h-[calc(100svh-88px)] bg-[var(--fr-surface-canvas)] px-4 pb-8 sm:mx-0 sm:rounded-3xl">
+      <div className="-mx-4 -my-6 min-h-svh bg-[var(--fr-surface-canvas)] px-4 pb-8 sm:mx-0 sm:rounded-3xl">
         <LessonProgressHeader
-          backLabel={`Вернуться к юниту ${details.unit.title}`}
-          backTo={`/modules/${details.module.slug}/units/${details.unit.slug}`}
+          backLabel={`Вернуться к модулю ${details.module.title}`}
+          backTo={`/modules/${details.module.slug}`}
           context={context}
           current={cards.length}
           isComplete
@@ -147,7 +150,7 @@ export function LessonSession({
               </Button>
             ) : (
               <Button asChild className="min-h-12 rounded-xl" variant="outline">
-                <Link to={`/modules/${details.module.slug}/units/${details.unit.slug}`}>Вернуться к юниту</Link>
+                <Link to={`/modules/${details.module.slug}`}>Вернуться к модулю</Link>
               </Button>
             )}
           </div>
@@ -157,10 +160,10 @@ export function LessonSession({
   }
 
   return (
-    <article className="-mx-4 -my-6 min-h-[calc(100svh-88px)] bg-[var(--fr-surface-canvas)] px-4 sm:mx-0 sm:rounded-3xl">
+    <article className="-mx-4 -my-6 min-h-svh bg-[var(--fr-surface-canvas)] px-4 sm:mx-0 sm:rounded-3xl">
       <LessonProgressHeader
-        backLabel={`Вернуться к юниту ${details.unit.title}`}
-        backTo={`/modules/${details.module.slug}/units/${details.unit.slug}`}
+        backLabel={`Вернуться к модулю ${details.module.title}`}
+        backTo={`/modules/${details.module.slug}`}
         context={context}
         current={currentPosition}
         isComplete={false}
@@ -183,7 +186,7 @@ export function LessonSession({
         ) : null}
 
         <LessonCardFrame card={activeCard} current={currentPosition} total={cards.length}>
-          <LessonCardRenderer card={activeCard} interaction={interaction} />
+          <LessonCardRenderer card={activeCard} interaction={interaction} showInlineFeedback={false} />
         </LessonCardFrame>
 
         {canSaveProgress ? (
@@ -194,6 +197,7 @@ export function LessonSession({
       </div>
 
       <LessonBottomAction
+        feedback={bottomFeedback}
         isBusy={isSaving}
         onPrimary={handlePrimaryAction}
         onSecondary={activeIndex > 0 ? () => setActiveIndex((current) => Math.max(current - 1, 0)) : undefined}
@@ -284,7 +288,7 @@ function getPrimaryAction(card: Card, choiceState: ChoiceState, isLastCard: bool
     }
 
     return {
-      label: isLastCard ? 'Завершить' : 'Продолжить',
+      label: isLastCard ? 'Завершить' : 'Далее',
       tone: isLastCard ? ('finish' as const) : ('continue' as const),
       mode: 'advance' as const,
       disabled: !hasSelectedOption,
@@ -292,11 +296,57 @@ function getPrimaryAction(card: Card, choiceState: ChoiceState, isLastCard: bool
   }
 
   return {
-    label: isLastCard ? 'Завершить' : 'Продолжить',
+    label: isLastCard ? 'Завершить' : 'Далее',
     tone: isLastCard ? ('finish' as const) : ('continue' as const),
     mode: 'advance' as const,
     disabled: false,
   }
+}
+
+function getBottomFeedback(card: Card, choiceState: ChoiceState) {
+  if (!isInteractiveChoice(card) || !choiceState.isChecked || !choiceState.selectedOptionId) return null
+
+  const options = getChoiceOptions(card)
+  const correctOption = getCorrectOption(card)
+  const selectedOption = options.find((option) => option.id === choiceState.selectedOptionId)
+  if (!selectedOption) return null
+
+  const hasObjectiveAnswer = Boolean(correctOption)
+  const isCorrect = Boolean(correctOption && selectedOption.id === correctOption.id)
+  const feedbackId = `${card.id}-choice-feedback`
+
+  if (!hasObjectiveAnswer) {
+    return (
+      <LessonFeedback id={feedbackId} tone={selectedOption.feedback || card.feedback ? 'almost' : 'info'}>
+        {selectedOption.feedback ? <p>{selectedOption.feedback}</p> : null}
+        {card.feedback ? <p>{card.feedback}</p> : null}
+        {!selectedOption.feedback && !card.feedback ? <p>Выбор отмечен. Можно продолжать.</p> : null}
+      </LessonFeedback>
+    )
+  }
+
+  if (isCorrect) {
+    return (
+      <LessonFeedback id={feedbackId} tone="correct">
+        {selectedOption.feedback ? <p>{selectedOption.feedback}</p> : null}
+        {card.feedback ? <p>{card.feedback}</p> : null}
+        {!selectedOption.feedback && !card.feedback ? <p>Эта формулировка лучше всего подходит к шагу.</p> : null}
+      </LessonFeedback>
+    )
+  }
+
+  return (
+    <LessonFeedback id={feedbackId} tone="retry">
+      {correctOption?.label ? (
+        <p>
+          Лучше подходит: <span className="font-semibold text-[var(--fr-text-primary)]">{correctOption.label}</span>.
+        </p>
+      ) : null}
+      {selectedOption.feedback ? <p>{selectedOption.feedback}</p> : null}
+      {card.feedback ? <p>{card.feedback}</p> : null}
+      {!selectedOption.feedback && !card.feedback ? <p>Посмотри на вариант, где есть смысл, срок или связь с ценностью.</p> : null}
+    </LessonFeedback>
+  )
 }
 
 function getOrderedCards(lesson: LessonDetails['lesson']) {

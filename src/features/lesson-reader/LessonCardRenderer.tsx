@@ -20,13 +20,22 @@ export type LessonCardInteractionProps = {
   onArtifactChange?: (state: ArtifactState) => void
 }
 
-export function LessonCardRenderer({ card, interaction }: { card: Card; interaction?: LessonCardInteractionProps }) {
+export function LessonCardRenderer({
+  card,
+  interaction,
+  showInlineFeedback = true,
+}: {
+  card: Card
+  interaction?: LessonCardInteractionProps
+  showInlineFeedback?: boolean
+}) {
   if (card.type === 'single_choice') {
     if (!card.readOnly) {
       return (
         <ChoiceCard
           card={card}
           onSelect={interaction?.onChoiceSelect ?? noop}
+          showFeedback={showInlineFeedback}
           state={interaction?.choiceState ?? emptyChoiceState}
         />
       )
@@ -47,6 +56,7 @@ export function LessonCardRenderer({ card, interaction }: { card: Card; interact
         <ChoiceCard
           card={card}
           onSelect={interaction?.onChoiceSelect ?? noop}
+          showFeedback={showInlineFeedback}
           state={interaction?.choiceState ?? emptyChoiceState}
         />
       )

@@ -1,10 +1,13 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router'
 
 import { api, type ProgressResponse } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
 import { Button } from '@/components/ui/button'
-import { getOrderedLessons } from '@/content/program'
+import { CurrentStepCta } from '@/features/program-navigation/CurrentStepCta'
+import { buildUnitLearningPath } from '@/features/program-navigation/learningPath'
+import { PathProgressSummary } from '@/features/program-navigation/PathProgressSummary'
+import { PathStepNode } from '@/features/program-navigation/PathStepNode'
 
 export function UnitPage({ progress }: { progress: ProgressResponse | null }) {
   const { moduleSlug, unitSlug } = useParams()
@@ -28,12 +31,12 @@ export function UnitPage({ progress }: { progress: ProgressResponse | null }) {
     return <Navigate to={`/modules/${module.slug}/units/${unit.slug}`} replace />
   }
 
-  const completedLessons = new Set(
-    progress?.lessons.filter((lessonProgress) => lessonProgress.completed).map((lessonProgress) => lessonProgress.lessonSlug),
-  )
+  const path = buildUnitLearningPath(module, unit, progress)
+  const unitPath = path.modules[0]?.units[0]
+  const firstLesson = unitPath?.lessons[0]?.lesson ?? null
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-8">
       <Button asChild variant="ghost" className="w-fit">
         <Link to={`/modules/${module.slug}`}>
           <ChevronLeft data-icon="inline-start" />
@@ -42,39 +45,33 @@ export function UnitPage({ progress }: { progress: ProgressResponse | null }) {
       </Button>
 
       <section className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-muted-foreground">Юнит {unit.order}</p>
-        <h1 className="text-3xl font-semibold leading-tight tracking-normal">{unit.title}</h1>
+        <p className="text-sm font-semibold text-[var(--fr-color-brand-700)]">Блок {unit.order}</p>
+        <h1 className="text-3xl font-bold leading-tight tracking-normal text-[var(--fr-text-primary)]">{unit.title}</h1>
         {unit.description ? (
-          <p className="text-base leading-7 text-muted-foreground">{unit.description}</p>
+          <p className="text-base leading-7 text-[var(--fr-text-secondary)]">{unit.description}</p>
         ) : null}
       </section>
 
-      <section className="flex flex-col gap-3" aria-label={`${unit.title}: уроки`}>
-        {getOrderedLessons(unit).map((lesson) => {
-          const isCompleted = completedLessons.has(lesson.slug)
+      <PathProgressSummary completed={path.completedLessons} label="Прогресс блока" total={path.totalLessons} />
 
-          return (
-            <Link
-              className="rounded-lg border border-border bg-card p-4 text-card-foreground transition-colors hover:bg-muted"
-              key={lesson.id}
-              to={`/lessons/${lesson.slug}`}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-lg font-semibold">{lesson.title}</h2>
-                  {lesson.description ? (
-                    <p className="text-sm leading-6 text-muted-foreground">{lesson.description}</p>
-                  ) : null}
-                  <p className="text-xs text-muted-foreground">
-                    {lesson.estimatedMinutes ? `${lesson.estimatedMinutes} мин` : 'Урок'}
-                    {isCompleted ? ' · завершён' : ''}
-                  </p>
-                </div>
-                <ChevronRight aria-hidden="true" className="mt-1 text-muted-foreground" />
-              </div>
-            </Link>
-          )
-        })}
+      <CurrentStepCta
+        fallbackTo={`/modules/${module.slug}/units/${unit.slug}`}
+        isComplete={path.isComplete}
+        lesson={path.currentLesson?.lesson ?? firstLesson}
+      />
+
+      <section className="flex flex-col gap-3" aria-label={`${unit.title}: уроки`}>
+        {unitPath?.lessons.map((lessonItem) => (
+          <PathStepNode
+            description={lessonItem.lesson.description}
+            index={lessonItem.lesson.order}
+            key={lessonItem.lesson.id}
+            meta={lessonItem.lesson.estimatedMinutes ? `${lessonItem.lesson.estimatedMinutes} мин` : undefined}
+            state={lessonItem.state}
+            title={lessonItem.lesson.title}
+            to={`/lessons/${lessonItem.lesson.slug}`}
+          />
+        ))}
       </section>
     </div>
   )
@@ -82,9 +79,9 @@ export function UnitPage({ progress }: { progress: ProgressResponse | null }) {
 
 function PageState({ title, description }: { title: string; description?: string }) {
   return (
-    <section className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4 text-card-foreground">
-      <h1 className="text-xl font-semibold">{title}</h1>
-      {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
+    <section className="flex flex-col gap-2 rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
+      <h1 className="text-xl font-bold">{title}</h1>
+      {description ? <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">{description}</p> : null}
     </section>
   )
 }

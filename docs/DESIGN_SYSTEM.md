@@ -139,12 +139,12 @@ Avoid:
 
 ## 4. Color System
 
-The MVP palette is light, clean, and calm: white, soft blue, cyan, and a few semantic learning accents.
+The MVP palette is light, clean, and calm: white, soft blue, sky blue, and a few semantic learning accents.
 
 Typical mobile screen proportion:
 - 70-80% white or near-white surfaces;
 - 10-15% soft learning surfaces;
-- 5-10% active blue/cyan;
+- 5-10% active blue/sky accents;
 - up to 5% semantic learning accents.
 
 ### 4.1. Brand Colors
@@ -159,8 +159,9 @@ Typical mobile screen proportion:
 | `brand.500` | `#1787F2` | Primary action blue. |
 | `brand.600` | `#0D6FE8` | Pressed/active state. |
 | `brand.700` | `#0758C7` | High-contrast blue text. |
-| `cyan.400` | `#43C9D6` | Progress and illustration accent. |
-| `cyan.500` | `#24B8C8` | Completed accent. |
+| `sky.400` | `#5BC0EB` | Progress and illustration accent. |
+| `sky.500` | `#1E9BD7` | Completed and current-step accent. |
+| `sky.600` | `#1479B8` | Hover and pressed accent state. |
 
 ### 4.2. Neutral Colors
 
@@ -427,7 +428,7 @@ Linear progress:
 - height: `4-8px`;
 - radius: `999px`;
 - track: `brand.100` or `border.default`;
-- fill: `brand.500`, `cyan.400`, or `learn.correct.500`.
+- fill: `brand.500`, `sky.400`, or `learn.correct.500`.
 
 Use for lesson progress and onboarding-like flows.
 
@@ -660,8 +661,9 @@ Starting token set for implementation:
   --fr-color-brand-600: #0D6FE8;
   --fr-color-brand-700: #0758C7;
 
-  --fr-color-cyan-400: #43C9D6;
-  --fr-color-cyan-500: #24B8C8;
+  --fr-color-sky-400: #5BC0EB;
+  --fr-color-sky-500: #1E9BD7;
+  --fr-color-sky-600: #1479B8;
 
   --fr-color-learn-correct-50: #EAFBF4;
   --fr-color-learn-correct-500: #26C895;
@@ -743,6 +745,8 @@ UI quality:
 - Does the primary CTA match the current step?
 
 ## 17. Implementation Notes
+
+The live component catalog is Storybook. Run `npm run storybook` locally and build the hosted static artifact with `npm run build:storybook`; deployment should serve it from `/storybook/` outside the learner SPA route tree. Component ownership and anti-duplication rules live in `docs/engineering/ui-component-policy.md`.
 
 For the next UI PR, start with the lesson/card experience:
 - one-card-at-a-time lesson session;

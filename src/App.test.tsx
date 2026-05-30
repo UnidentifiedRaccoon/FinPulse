@@ -81,17 +81,19 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'FinPulse' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: /Финансовые цели/i })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Финансовые цели' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: /Зачем финансовым целям нужны ценности/i })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Продолжить' })).toBeTruthy()
   })
 
-  it('renders module units', async () => {
+  it('renders the module lesson path', async () => {
     window.history.pushState({}, '', '/modules/financial-goals')
 
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Финансовые цели' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: /Ваши базовые ценности/i })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Ваши базовые ценности' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: /Зачем финансовым целям нужны ценности/i })).toBeTruthy()
   })
 
   it('renders a lesson with cards', async () => {
@@ -111,7 +113,7 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Практика 1M$' })).toBeTruthy()
     for (let index = 0; index < 5; index += 1) {
-      await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+      await user.click(screen.getByRole('button', { name: 'Далее' }))
     }
 
     expect(screen.getByRole('heading', { name: 'Красные флаги цели' })).toBeTruthy()

@@ -58,7 +58,7 @@ describe('LessonSession', () => {
       },
     ])
 
-    await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
 
     expect(screen.getByRole('heading', { name: 'Выбор' })).toBeInTheDocument()
     expect(screen.getByText('2 из 2')).toBeInTheDocument()
@@ -179,7 +179,7 @@ describe('LessonSession', () => {
 
     await waitFor(() => expect(onCardViewed).toHaveBeenCalledWith('card-one'))
 
-    await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
     await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-one'))
     await waitFor(() => expect(onCardViewed).toHaveBeenCalledWith('card-two'))
 

@@ -16,7 +16,10 @@
     "check:content": "node scripts/check-content-json.mjs",
     "check:runtime-imports": "node scripts/check-runtime-content-imports.mjs",
     "verify": "bash ./scripts/verify.sh",
-    "task:new": "node scripts/create-agent-task.mjs"
+    "task:new": "node scripts/create-agent-task.mjs",
+    "storybook": "storybook dev -p 6006 --disable-telemetry",
+    "build:storybook": "storybook build -o dist/storybook --disable-telemetry",
+    "build:all": "npm run build && npm run build:storybook"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
@@ -40,6 +43,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@storybook/addon-docs": "^10.4.1",
+    "@storybook/react-vite": "^10.4.1",
     "@tailwindcss/vite": "^4.3.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -55,6 +60,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "jsdom": "^29.1.1",
+    "storybook": "^10.4.1",
     "tailwindcss": "^4.3.0",
     "tsx": "^4.22.3",
     "typescript": "~6.0.2",

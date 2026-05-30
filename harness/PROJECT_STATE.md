@@ -1,10 +1,10 @@
 # Project State — FinPulse Learning MVP
 
-Last updated: 2026-05-26
+Last updated: 2026-05-30
 
 ## Current phase
 
-Stage 2 backend MVP is on `main`; T-016 lesson/card experience is implemented on `feat/lesson-card-experience` for draft PR review.
+Stage 2 backend MVP is on `main`; T-016 lesson/card experience is implemented on `feat/lesson-card-experience` for draft PR review. T-017 learning path UX is implemented in the current workspace for review.
 
 The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a mobile content-reader surface. Runtime content now uses split JSON files with the hierarchy Program -> Module -> Unit -> Lesson -> Card. ADR-0006 accepts a narrow Stage 2 backend: Fastify + SQLite, simple learner login, httpOnly cookie sessions, backend-owned progress markers, and read-only content API delivery from validated JSON.
 
@@ -62,6 +62,12 @@ T-014 added shared content API contract tests and a runtime content import guard
 T-015 adapted the friendly-learning design-system draft to FinPulse. `docs/DESIGN_SYSTEM.md` now defines MVP-safe lesson/card experience guidance and keeps rewards, streaks, challenges, shops, mascot-led experience, and retention loops deferred.
 
 T-016 implements the first friendly-learning lesson/card UI slice: one active card per lesson session, a progress header, sticky bottom CTA, supportive choice feedback, local checklist/reflection/artifact interaction state, and existing viewed/completed progress markers only. `npm run verify` passed; browser smoke passed on desktop-ish and 360px with no horizontal overflow or console errors.
+
+T-017 reworks the rendered frontend into a guided learning path without changing JSON/content/API contracts: `/` now emphasizes the current module, next step, progress, and lesson path preview; `/modules/:moduleSlug` renders units inline as a vertical lesson path; `/modules/:moduleSlug/units/:unitSlug` remains a compatible focused unit path; lesson checked-answer feedback is shown in the sticky bottom action area above `Далее`. Future/locked states are visual guidance only, not access control. `npm run verify` passed; 390px browser smoke passed for home, module path, and checked-answer lesson feedback with no horizontal overflow or console errors.
+
+T-018 adds Storybook as a separate hosted UI catalog for foundations and current FinPulse components. The learner SPA remains at `/`; Storybook is built as a static artifact into `dist/storybook/` for hosting at `/storybook/` and is not a React Router route. `npm run verify`, `npm run build:storybook`, `npm run build:all`, and local Storybook browser smoke passed.
+
+T-019 replaces the legacy accent token family with `sky`: `--fr-color-sky-400: #5BC0EB`, `--fr-color-sky-500: #1E9BD7`, and `--fr-color-sky-600: #1479B8`. Direct UI and Storybook token references now use `--fr-color-sky-*`; `npm run verify` passed.
 
 ## State update rules
 

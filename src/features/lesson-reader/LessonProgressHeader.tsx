@@ -58,7 +58,7 @@ export function LessonProgressHeader({
               'h-full rounded-full transition-[width] duration-500 motion-reduce:transition-none',
               isComplete || isSavedComplete
                 ? 'bg-[var(--fr-color-learn-correct-500)]'
-                : 'bg-[var(--fr-color-brand-500)]',
+                : 'bg-[var(--fr-color-sky-500)]',
             )}
             style={{ width: `${progressValue}%` }}
           />
