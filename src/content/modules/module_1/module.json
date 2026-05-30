@@ -14,6 +14,14 @@
       "description": "Юнит помогает отличить покупку от ценности и связать ценности с финансовыми целями.",
       "order": 1,
       "path": "units/unit_01_values_and_goals.json"
+    },
+    {
+      "id": "unit_02_impulsive_purchases",
+      "slug": "impulsive-purchases",
+      "title": "Импульсивные покупки",
+      "description": "Как заметить триггер покупки и защитить финансовую цель короткой паузой.",
+      "order": 2,
+      "path": "units/unit_02_impulsive_purchases.json"
     }
   ]
 }

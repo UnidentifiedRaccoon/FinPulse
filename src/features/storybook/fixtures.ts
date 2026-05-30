@@ -38,9 +38,22 @@ export const choiceCard = {
   ],
 } satisfies Extract<Card, { type: 'single_choice' }>
 
+export const videoCard = {
+  id: 'story-video-card',
+  order: 3,
+  type: 'video',
+  title: 'Видео: базовые ценности и финансовые цели',
+  src: 'https://rutube.ru/play/embed/98b1d47fb6794e189e48bc2d16496429/?p=YZO74pElZsnRBGF7kooKIQ',
+  provider: 'rutube',
+  timecodes: [
+    { time: '00:20', label: 'О важности постановки финансовых целей' },
+    { time: '01:05', label: 'Как поставить финансовую цель' },
+  ],
+} satisfies Extract<Card, { type: 'video' }>
+
 export const scenarioCard = {
   id: 'story-scenario-card',
-  order: 3,
+  order: 4,
   type: 'scenario',
   title: 'Ситуация',
   body: 'В конце месяца осталось немного свободных денег. Нужно выбрать действие, которое поддержит спокойный прогресс.',
@@ -56,7 +69,7 @@ export const scenarioCard = {
 
 export const checklistCard = {
   id: 'story-checklist-card',
-  order: 4,
+  order: 5,
   type: 'checklist',
   title: 'Мини-проверка цели',
   body: 'Отметьте признаки, которые уже есть в вашей формулировке.',
@@ -65,7 +78,7 @@ export const checklistCard = {
 
 export const reflectionCard = {
   id: 'story-reflection-card',
-  order: 5,
+  order: 6,
   type: 'reflection',
   title: 'Личное наблюдение',
   prompt: 'Какая денежная цель сейчас кажется достаточно маленькой, чтобы начать без напряжения?',
@@ -75,7 +88,7 @@ export const reflectionCard = {
 
 export const reflectionSelectCard = {
   id: 'story-reflection-select-card',
-  order: 6,
+  order: 7,
   type: 'reflection',
   title: 'Выбор фокуса',
   prompt: 'Что важнее поддержать в ближайшие две недели?',
@@ -86,7 +99,7 @@ export const reflectionSelectCard = {
 
 export const reflectionMultiCard = {
   id: 'story-reflection-multi-card',
-  order: 7,
+  order: 8,
   type: 'reflection',
   title: 'Опоры',
   prompt: 'Какие опоры уже есть?',
@@ -96,7 +109,7 @@ export const reflectionMultiCard = {
 
 export const artifactCard = {
   id: 'story-artifact-card',
-  order: 8,
+  order: 9,
   type: 'artifact',
   title: 'Черновик плана',
   body: 'Соберите короткий план на неделю. Данные не сохраняются за пределами текущего экрана.',
@@ -106,7 +119,7 @@ export const artifactCard = {
 
 export const summaryCard = {
   id: 'story-summary-card',
-  order: 9,
+  order: 10,
   type: 'summary',
   title: 'Что забрать с собой',
   body: 'Спокойный прогресс начинается с небольшой конкретной формулировки.',
@@ -128,6 +141,7 @@ export const lessonFixture = {
   cards: [
     theoryCard,
     choiceCard,
+    videoCard,
     scenarioCard,
     checklistCard,
     reflectionCard,

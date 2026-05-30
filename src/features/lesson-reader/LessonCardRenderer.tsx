@@ -5,6 +5,7 @@ import { ChecklistCard } from './card-renderers/ChecklistCard'
 import { ChoiceCard } from './card-renderers/ChoiceCard'
 import { ReflectionCard } from './card-renderers/ReflectionCard'
 import { TheoryCard } from './card-renderers/TheoryCard'
+import { VideoCard } from './card-renderers/VideoCard'
 import { StaticChoiceList } from './card-renderers/shared'
 import type { ArtifactState, ChecklistState, ChoiceState, ReflectionState } from './lessonInteraction'
 import { createArtifactState, emptyChecklistState, emptyChoiceState, emptyReflectionState } from './lessonInteraction'
@@ -29,6 +30,10 @@ export function LessonCardRenderer({
   interaction?: LessonCardInteractionProps
   showInlineFeedback?: boolean
 }) {
+  if (card.type === 'video') {
+    return <VideoCard card={card} key={card.id} />
+  }
+
   if (card.type === 'single_choice') {
     if (!card.readOnly) {
       return (

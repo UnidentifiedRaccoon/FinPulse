@@ -1,13 +1,24 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { StrictMode } from 'react'
 import { afterEach, beforeEach, vi } from 'vitest'
 
+import type { ApiUser, ProgressResponse } from '@/api/client'
 import { parsedProgram } from '@/content/loadProgram'
 import { getAllLessons, getOrderedModules, getOrderedUnits } from '@/content/program'
 
 import App from './App'
 
 const program = parsedProgram.success ? parsedProgram.data : null
+const emptyProgress: ProgressResponse = {
+  lessons: [],
+  cards: [],
+}
+
+type ApiResponseOptions = {
+  currentUser?: ApiUser | null
+  progress?: ProgressResponse
+}
 
 function jsonResponse(data: unknown, status = 200) {
   return Promise.resolve(
@@ -20,14 +31,35 @@ function jsonResponse(data: unknown, status = 200) {
   )
 }
 
-function apiResponse(url: string) {
+function apiResponse(url: string, options: ApiResponseOptions, init: RequestInit = {}) {
   if (!program) {
     return jsonResponse({ error: { code: 'content_error', message: 'Program content is invalid' } }, 500)
   }
 
   const path = new URL(url, 'http://localhost').pathname
+  const method = init.method?.toUpperCase() ?? 'GET'
 
   if (path === '/api/auth/me') {
+    if (options.currentUser) {
+      return jsonResponse({ user: options.currentUser })
+    }
+
+    return jsonResponse({ error: { code: 'unauthenticated', message: 'Authentication is required' } }, 401)
+  }
+
+  if (path === '/api/progress') {
+    if (options.currentUser) {
+      return jsonResponse(options.progress ?? emptyProgress)
+    }
+
+    return jsonResponse({ error: { code: 'unauthenticated', message: 'Authentication is required' } }, 401)
+  }
+
+  if (method === 'PUT' && (path.startsWith('/api/progress/lessons/') || path.startsWith('/api/progress/cards/'))) {
+    if (options.currentUser) {
+      return jsonResponse(options.progress ?? emptyProgress)
+    }
+
     return jsonResponse({ error: { code: 'unauthenticated', message: 'Authentication is required' } }, 401)
   }
 
@@ -68,32 +100,68 @@ function apiResponse(url: string) {
 }
 
 describe('App', () => {
+  let apiOptions: ApiResponseOptions
+
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => apiResponse(String(input))))
+    apiOptions = {}
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL, init?: RequestInit) => apiResponse(String(input), apiOptions, init)))
   })
 
   afterEach(() => {
     vi.unstubAllGlobals()
   })
 
-  it('renders the real program overview', async () => {
+  it('renders the login and registration entry screen by default', async () => {
     window.history.pushState({}, '', '/')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Финансовые цели' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: /Зачем финансовым целям нужны ценности/i })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Продолжить' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Войти' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Регистрация' })).toBeTruthy()
   })
 
-  it('renders the module lesson path', async () => {
+  it('renders the welcome entry screen for an existing session', async () => {
+    apiOptions.currentUser = { id: 'user-1', login: 'learner' }
+    apiOptions.progress = emptyProgress
+    window.history.pushState({}, '', '/')
+
+    render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+
+    expect(await screen.findByRole('heading', { name: 'С возвращением, learner' })).toBeTruthy()
+    expect((await screen.findByRole('link', { name: /Продолжить/i })).getAttribute('href')).toBe(
+      '/lessons/why-values-matter',
+    )
+    expect(await screen.findByText(/0 из \d+ уроков/)).toBeTruthy()
+  })
+
+  it('renders the real program overview', async () => {
+    window.history.pushState({}, '', '/program')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Финансовые цели' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/modules/financial-goals')
+  })
+
+  it('opens lesson details from the module lesson path before navigation', async () => {
+    const user = userEvent.setup()
     window.history.pushState({}, '', '/modules/financial-goals')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Финансовые цели' })).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Ваши базовые ценности' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: /Зачем финансовым целям нужны ценности/i })).toBeTruthy()
+    expect((await screen.findAllByRole('heading', { name: 'Ваши базовые ценности' })).length).toBeGreaterThan(0)
+    await user.click(await screen.findByRole('button', { name: /Зачем финансовым целям нужны ценности/i }))
+
+    expect(await screen.findByRole('dialog')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
+    expect(screen.getByText(/Финансовая цель — это жизненная цель/i)).toBeTruthy()
+    expect(screen.getByRole('link', { name: /Продолжить урок/i }).getAttribute('href')).toBe('/lessons/why-values-matter')
   })
 
   it('renders a lesson with cards', async () => {
@@ -103,6 +171,25 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
     expect(screen.getByText(/Два человека хотят/i)).toBeTruthy()
+  })
+
+  it('saves initial lesson and active card progress once for an authenticated lesson reader', async () => {
+    apiOptions.currentUser = { id: 'user-1', login: 'learner' }
+    apiOptions.progress = emptyProgress
+    window.history.pushState({}, '', '/lessons/why-values-matter')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
+
+    await waitFor(() => {
+      expect(getProgressWriteCount('/api/progress/lessons/why-values-matter')).toBe(1)
+      expect(getProgressWriteCount('/api/progress/cards/card_01_01_scenario_apartment')).toBe(1)
+    })
+    await new Promise((resolve) => setTimeout(resolve, 25))
+
+    expect(getProgressWriteCount('/api/progress/lessons/why-values-matter')).toBe(1)
+    expect(getProgressWriteCount('/api/progress/cards/card_01_01_scenario_apartment')).toBe(1)
   })
 
   it('renders checklist cards in the reader flow', async () => {
@@ -120,3 +207,12 @@ describe('App', () => {
     expect(screen.getByText(/Хочу много денег/)).toBeTruthy()
   })
 })
+
+function getProgressWriteCount(path: string) {
+  return vi
+    .mocked(fetch)
+    .mock.calls.filter(([input, init]) => {
+      const requestPath = new URL(String(input), 'http://localhost').pathname
+      return requestPath === path && init?.method === 'PUT'
+    }).length
+}

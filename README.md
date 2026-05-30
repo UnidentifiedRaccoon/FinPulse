@@ -34,9 +34,13 @@ Copy `.env.example` to `.env` only when local values need to change. Defaults:
 FINPULSE_API_HOST=127.0.0.1
 FINPULSE_API_PORT=3001
 FINPULSE_DB_PATH=data/finpulse.sqlite
-FINPULSE_CORS_ORIGIN=http://localhost:5173
+FINPULSE_CORS_ORIGIN=
 FINPULSE_COOKIE_SECURE=false
 ```
+
+When `FINPULSE_CORS_ORIGIN` is empty, the local API allows loopback browser origins such as
+`http://localhost:5173` and `http://127.0.0.1:5174`. Set it to a comma-separated exact origin
+list when you need to restrict or override local defaults.
 
 SQLite files under `data/` are local runtime state and are ignored by git. The backend creates the schema on startup from `server/db/schema.sql`.
 

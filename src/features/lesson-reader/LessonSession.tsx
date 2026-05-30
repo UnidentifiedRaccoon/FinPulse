@@ -1,6 +1,6 @@
-import { CheckCircle2, ChevronRight } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import type { Dispatch, SetStateAction } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import type { LessonDetails } from '@/api/client'
@@ -46,15 +46,18 @@ export function LessonSession({
   const [checklistStates, setChecklistStates] = useState<Record<string, ChecklistState>>({})
   const [reflectionStates, setReflectionStates] = useState<Record<string, ReflectionState>>({})
   const [artifactStates, setArtifactStates] = useState<Record<string, ArtifactState>>({})
+  const viewedCardIdsRef = useRef(new Set<string>())
 
   const activeCard = cards[activeIndex]
   const isLastCard = activeIndex === cards.length - 1
   const currentPosition = Math.min(activeIndex + 1, cards.length)
   const context = `${details.module.title} · ${details.unit.title}`
+  const showLessonIntro = activeIndex === 0 && (details.lesson.description || details.lesson.learningGoal)
 
   useEffect(() => {
-    if (!activeCard) return
-    void onCardViewed?.(activeCard.id)
+    if (!activeCard || !onCardViewed || viewedCardIdsRef.current.has(activeCard.id)) return
+    viewedCardIdsRef.current.add(activeCard.id)
+    void onCardViewed(activeCard.id)
   }, [activeCard, onCardViewed])
 
   if (!activeCard) {
@@ -145,7 +148,6 @@ export function LessonSession({
               >
                 <Link to={`/lessons/${details.next.lesson.slug}`}>
                   Следующий урок
-                  <ChevronRight data-icon="inline-end" />
                 </Link>
               </Button>
             ) : (
@@ -173,7 +175,7 @@ export function LessonSession({
       />
 
       <div className="mx-auto flex w-full max-w-[520px] flex-col gap-5 py-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
-        {details.lesson.description || details.lesson.learningGoal ? (
+        {showLessonIntro ? (
           <div className="flex flex-col gap-2 rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
             {details.lesson.description ? <p>{details.lesson.description}</p> : null}
             {details.lesson.learningGoal ? (
@@ -188,12 +190,6 @@ export function LessonSession({
         <LessonCardFrame card={activeCard} current={currentPosition} total={cards.length}>
           <LessonCardRenderer card={activeCard} interaction={interaction} showInlineFeedback={false} />
         </LessonCardFrame>
-
-        {canSaveProgress ? (
-          <p className="text-center text-xs leading-5 text-[var(--fr-text-tertiary)]">
-            Сохраняются только отметки просмотра и завершения карточек.
-          </p>
-        ) : null}
       </div>
 
       <LessonBottomAction

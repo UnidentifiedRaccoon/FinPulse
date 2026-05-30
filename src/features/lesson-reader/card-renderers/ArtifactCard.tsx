@@ -101,7 +101,7 @@ export function ArtifactCard({
                       ),
                     })
                   }
-                  placeholder="Заполни локально на этом экране"
+                  placeholder="Заполни здесь"
                   rows={2}
                   value={state.templateValues[index] ?? ''}
                 />
@@ -119,17 +119,20 @@ export function ArtifactCard({
             className="min-h-32 w-full resize-y rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] px-4 py-3 text-sm leading-6 text-[var(--fr-text-primary)] outline-none transition focus-visible:border-[var(--fr-color-brand-500)] focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
             id={`${card.id}-artifact-textarea`}
             onChange={(event) => onChange({ ...state, fallbackValue: event.target.value })}
-            placeholder="Заполни артефакт здесь"
+            placeholder="Заполни здесь"
             rows={4}
             value={state.fallbackValue}
           />
         </>
       )}
 
-      <p aria-live="polite" className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={statusId} role="status">
-        {isArtifactActive(state)
-          ? 'Рабочий блок заполнен локально. После перезагрузки он очистится.'
-          : 'Ответ пока не заполнен.'}
+      <p
+        aria-live="polite"
+        className={cn('text-sm leading-6 text-[var(--fr-text-secondary)]', !isArtifactActive(state) && 'sr-only')}
+        id={statusId}
+        role="status"
+      >
+        {isArtifactActive(state) ? 'Рабочий блок заполнен.' : 'Ответ пока не заполнен.'}
       </p>
     </div>
   )

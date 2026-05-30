@@ -1,5 +1,3 @@
-import { CheckCircle2, Circle } from 'lucide-react'
-
 import { LessonFeedback } from '@/features/lesson-reader/LessonFeedback'
 import type { ChoiceCard as ChoiceCardType, ChoiceState } from '@/features/lesson-reader/lessonInteraction'
 import { getChoiceOptions, getChoiceQuestion, getCorrectOption } from '@/features/lesson-reader/lessonInteraction'
@@ -66,19 +64,6 @@ export function ChoiceCard({
                   />
                   <span className="flex min-w-0 flex-col gap-1">
                     <span>{option.label}</span>
-                    {showStatus ? (
-                      <span
-                        className={cn(
-                          'inline-flex items-center gap-1 text-xs font-semibold',
-                          optionIsCorrect
-                            ? 'text-[var(--fr-color-learn-correct-500)]'
-                            : 'text-[var(--fr-color-brand-700)]',
-                        )}
-                      >
-                        {optionIsCorrect ? <CheckCircle2 aria-hidden="true" /> : <Circle aria-hidden="true" />}
-                        {optionIsCorrect ? 'Подходит' : 'Есть нюанс'}
-                      </span>
-                    ) : null}
                   </span>
                 </label>
               </li>

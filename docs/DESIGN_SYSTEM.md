@@ -48,13 +48,14 @@ Active MVP patterns:
 - progress indicators for lessons/cards;
 - choice, checklist, reflection, and feedback states;
 - supportive empty/loading/error/success states;
-- simple auth/progress UI only where needed for saved progress.
+- simple auth/progress UI only where needed for saved progress;
+- documented mascot visual reference as an optional identity asset.
 
 Deferred patterns:
 - points, XP, badges, streaks, rewards, shops;
 - challenges and daily quests;
 - leaderboards or comparisons;
-- mascot-led product experience;
+- mascot-led product experience and mascot-driven mechanics;
 - notifications and retention loops.
 
 Deferred patterns may remain as design direction notes, but must not be implemented until product scope explicitly allows them.
@@ -325,6 +326,14 @@ Illustrations are optional in MVP. If used, they should be:
 - relevant to learning, safety, planning, or confidence.
 
 Avoid photorealism, casino-like visuals, aggressive red/black accents, and mascot dependency.
+
+### 7.4. Mascot
+
+The accepted mascot direction is documented in `docs/MASCOT.md`: a small cream-and-sky-blue fennec/fox guide with a compass badge.
+
+The mascot may support welcome, empty, transition, route, and completion states as an optional visual identity asset. It must not become a reward, streak, pressure, or retention mechanic in the MVP.
+
+Use the existing `brand.*` and `sky.*` palette for UI integration where possible. Do not introduce a separate mascot token system unless multiple production asset variants create a concrete implementation need.
 
 ## 8. Base Components
 

@@ -1,19 +1,12 @@
-import { ArrowLeft, ArrowRight, Check, RotateCcw } from 'lucide-react'
+import { ArrowLeft, RotateCcw } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
 
 type PrimaryActionTone = 'continue' | 'check' | 'finish'
 
-const actionIcons = {
-  continue: ArrowRight,
-  check: Check,
-  finish: Check,
-} satisfies Record<PrimaryActionTone, typeof ArrowRight>
-
 export function LessonBottomAction({
   primaryLabel,
-  primaryTone,
   primaryDisabled,
   isBusy,
   secondaryLabel,
@@ -30,8 +23,6 @@ export function LessonBottomAction({
   onPrimary: () => void
   onSecondary?: () => void
 }) {
-  const Icon = actionIcons[primaryTone]
-
   return (
     <div
       className="sticky bottom-0 z-20 -mx-4 border-t border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)]/95 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(18,52,89,0.06)] backdrop-blur sm:mx-0 sm:rounded-t-2xl sm:border-x"
@@ -59,7 +50,6 @@ export function LessonBottomAction({
             type="button"
           >
             {primaryLabel}
-            <Icon data-icon="inline-end" />
           </Button>
         </div>
       </div>

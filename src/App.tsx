@@ -5,6 +5,7 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react
 import { api, ApiError, type ApiUser, type ProgressResponse } from '@/api/client'
 import { AuthControls } from '@/features/auth/AuthControls'
 import { LessonPage } from '@/pages/LessonPage'
+import { EntryPage } from '@/pages/EntryPage'
 import { ModulePage } from '@/pages/ModulePage'
 import { ProgramOverviewPage } from '@/pages/ProgramOverviewPage'
 import { UnitPage } from '@/pages/UnitPage'
@@ -15,6 +16,7 @@ function App() {
   const [progressError, setProgressError] = useState('')
   const [progress, setProgress] = useState<ProgressResponse | null>(null)
   const [isAuthBusy, setIsAuthBusy] = useState(false)
+  const [isAuthReady, setIsAuthReady] = useState(false)
 
   const refreshProgress = useCallback(async () => {
     try {
@@ -46,6 +48,10 @@ function App() {
           return
         }
         setAuthError(getApiMessage(error))
+      })
+      .finally(() => {
+        if (!isActive) return
+        setIsAuthReady(true)
       })
 
     return () => {
@@ -138,6 +144,7 @@ function App() {
     <BrowserRouter>
       <AppShell
         authError={authError}
+        isAuthReady={isAuthReady}
         isAuthBusy={isAuthBusy}
         markCardProgress={markCardProgress}
         markLessonProgress={markLessonProgress}
@@ -158,6 +165,7 @@ function AppShell({
   progressError,
   progress,
   isAuthBusy,
+  isAuthReady,
   onLogin,
   onRegister,
   onLogout,
@@ -169,6 +177,7 @@ function AppShell({
   progressError: string
   progress: ProgressResponse | null
   isAuthBusy: boolean
+  isAuthReady: boolean
   onLogin: (login: string, password: string) => Promise<void>
   onRegister: (login: string, password: string) => Promise<void>
   onLogout: () => Promise<void>
@@ -177,6 +186,7 @@ function AppShell({
 }) {
   const location = useLocation()
   const isLessonRoute = location.pathname.startsWith('/lessons/')
+  const isEntryRoute = location.pathname === '/'
 
   return (
     <div className="min-h-svh bg-[var(--fr-surface-canvas)] text-[var(--fr-text-primary)]">
@@ -189,7 +199,7 @@ function AppShell({
               </span>
               <span>FinPulse</span>
             </Link>
-            {user ? (
+            {isEntryRoute && !user ? null : user ? (
               <AuthControls
                 error={authError}
                 isBusy={isAuthBusy}
@@ -238,7 +248,21 @@ function AppShell({
           </p>
         ) : null}
         <Routes>
-          <Route path="/" element={<ProgramOverviewPage progress={progress} />} />
+          <Route
+            path="/"
+            element={
+              <EntryPage
+                authError={authError}
+                isAuthBusy={isAuthBusy}
+                isAuthReady={isAuthReady}
+                onLogin={onLogin}
+                onRegister={onRegister}
+                progress={progress}
+                user={user}
+              />
+            }
+          />
+          <Route path="/program" element={<ProgramOverviewPage progress={progress} />} />
           <Route path="/modules/:moduleSlug" element={<ModulePage progress={progress} />} />
           <Route path="/modules/:moduleSlug/units/:unitSlug" element={<UnitPage progress={progress} />} />
           <Route

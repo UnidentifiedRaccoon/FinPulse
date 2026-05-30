@@ -155,6 +155,7 @@ Minimal type-specific fields:
 
 - `theory`: `body`, optional `examples`.
 - `video`: `src`, `title`, optional `provider`, `timecodes`, `transcript`.
+  For RUTUBE, use the platform embed URL (`https://rutube.ru/play/embed/...`); the reader renders it inline and keeps a source link as fallback.
 - `callout`: `body`, optional `tone`.
 - `single_choice`: `question`, `options`, optional `correctOptionId`, `feedback`, `readOnly`.
 - `reflection`: `prompt`, optional `options`, `inputType`, `saveKey`, `guidance`, `readOnly`.

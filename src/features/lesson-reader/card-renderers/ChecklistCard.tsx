@@ -45,8 +45,15 @@ export function ChecklistCard({
           })}
         </ul>
       </fieldset>
-      <p aria-live="polite" className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={statusId} role="status">
-        Отмечено {state.checkedItems.length} из {card.items.length}. Отметки хранятся только на этом экране.
+      <p
+        aria-live="polite"
+        className={cn('text-sm leading-6 text-[var(--fr-text-secondary)]', state.checkedItems.length === 0 && 'sr-only')}
+        id={statusId}
+        role="status"
+      >
+        {state.checkedItems.length > 0
+          ? `Отмечено ${state.checkedItems.length} из ${card.items.length}.`
+          : 'Пункты пока не отмечены.'}
       </p>
     </div>
   )
