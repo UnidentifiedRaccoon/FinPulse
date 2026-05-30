@@ -64,6 +64,9 @@ export function LessonSession({
     return (
       <section className="rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5">
         <h1 className="text-xl font-bold text-[var(--fr-text-primary)]">В уроке пока нет карточек</h1>
+        <p className="mt-1 text-sm leading-6 text-[var(--fr-text-secondary)]">
+          Материалы появятся после обновления программы.
+        </p>
       </section>
     )
   }
@@ -130,16 +133,18 @@ export function LessonSession({
         />
         <section className="mx-auto flex w-full max-w-[520px] flex-col gap-5 pt-8">
           <div className="flex flex-col items-start gap-4 rounded-[20px] border border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)] p-5 shadow-[var(--fr-shadow-md)]">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--fr-color-learn-correct-50)] text-[var(--fr-color-learn-correct-500)]">
-              <CheckCircle2 aria-hidden="true" />
-            </span>
-            <div className="flex flex-col gap-2">
-              <h1 className="text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">Урок завершён</h1>
-              <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">
-                {canSaveProgress
-                  ? 'Прогресс урока сохранён как завершённый.'
-                  : 'Контент доступен без входа. Для сохранения прогресса можно войти в аккаунт.'}
-              </p>
+            <div className="flex min-w-0 flex-col gap-4">
+              <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--fr-color-learn-correct-50)] text-[var(--fr-color-learn-correct-500)]">
+                <CheckCircle2 aria-hidden="true" />
+              </span>
+              <div className="flex flex-col gap-2">
+                <h1 className="text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">Урок завершён</h1>
+                <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">
+                  {canSaveProgress
+                    ? 'Прогресс урока сохранён как завершённый.'
+                    : 'Контент доступен без входа. Для сохранения прогресса можно войти в аккаунт.'}
+                </p>
+              </div>
             </div>
             {details.next ? (
               <Button
@@ -176,10 +181,10 @@ export function LessonSession({
 
       <div className="mx-auto flex w-full max-w-[520px] flex-col gap-5 py-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
         {showLessonIntro ? (
-          <div className="flex flex-col gap-2 rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
+          <div className="rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
             {details.lesson.description ? <p>{details.lesson.description}</p> : null}
             {details.lesson.learningGoal ? (
-              <p>
+              <p className={details.lesson.description ? 'mt-2' : undefined}>
                 <span className="font-semibold text-[var(--fr-text-primary)]">Цель: </span>
                 {details.lesson.learningGoal}
               </p>

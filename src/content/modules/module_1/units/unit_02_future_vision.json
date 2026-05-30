@@ -1,0 +1,411 @@
+{
+  "schemaVersion": 1,
+  "id": "unit_02_future_vision",
+  "slug": "future-vision",
+  "title": "01.02 Видение будущего",
+  "description": "Раздел 01.02 помогает связать жизненный цикл, неопределённость и образ будущего с финансовыми целями.",
+  "order": 2,
+  "source": "docs/modules/module_1/lesson_02_future_vision/README.md",
+  "lessons": [
+    {
+      "id": "lesson_0102_01_life_cycle_and_money",
+      "slug": "life-cycle-and-money",
+      "title": "Жизненный цикл и деньги",
+      "description": "Жизненные этапы меняют потребности, отношение к деньгам и планы.",
+      "order": 1,
+      "estimatedMinutes": 4,
+      "learningGoal": "Понять, почему финансовые цели стоит пересматривать при изменении жизненного этапа.",
+      "mainSkill": "Связывать ближайшие финансовые потребности с этапом жизненного цикла.",
+      "tags": ["видение будущего", "жизненный цикл", "планирование"],
+      "sourceSection": "0102 / Этапы жизненного цикла",
+      "cards": [
+        {
+          "id": "card_0102_01_scenario_static_plan",
+          "type": "scenario",
+          "order": 1,
+          "title": "Один план на всю жизнь",
+          "sourceSection": "0102 / Тема №2",
+          "thinkingType": "understanding",
+          "develops": "hard skills + psychology",
+          "checkability": "mixed",
+          "body": "Человек составил финансовый план на несколько лет и больше к нему не возвращался. За это время изменились работа, семья и расходы, но цели остались записаны как раньше.",
+          "question": "Что в этой ситуации важно заметить?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Финансовый план стоит сверять с новым жизненным этапом",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "label": "Если цель однажды записана, её нельзя менять"
+            },
+            {
+              "id": "c",
+              "label": "Жизненные события не влияют на финансовые потребности"
+            }
+          ],
+          "correctOptionId": "a",
+          "feedback": "Верно. Жизненный этап меняет желания, потребности, отношение к деньгам и горизонт планирования."
+        },
+        {
+          "id": "card_0102_02_video_life_cycle",
+          "type": "video",
+          "order": 2,
+          "title": "Видео: видение будущего и жизненный цикл",
+          "sourceSection": "0102 / Тема №2",
+          "src": "https://rutube.ru/play/embed/053ce3eebdde532a3b55b1d4f667d22b/?p=-R9QmaazPFeanEzTCuw0Ww",
+          "provider": "rutube",
+          "timecodes": [
+            {
+              "time": "00:10",
+              "label": "Видение будущего и этапы жизненного цикла"
+            },
+            {
+              "time": "00:55",
+              "label": "Этап создания семьи"
+            },
+            {
+              "time": "01:24",
+              "label": "Третий и четвёртый этапы"
+            },
+            {
+              "time": "02:23",
+              "label": "VUCA-мир"
+            },
+            {
+              "time": "03:58",
+              "label": "Задачи на будущее"
+            }
+          ]
+        },
+        {
+          "id": "card_0102_03_theory_life_cycle",
+          "type": "theory",
+          "order": 3,
+          "title": "Что меняется на жизненном этапе",
+          "sourceSection": "0102 / Этапы жизненного цикла",
+          "thinkingType": "understanding",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Жизненный цикл — это последовательность этапов, через которые проходит человек или семья. На разных этапах меняются желания, потребности, планы на будущее и отношение к деньгам."
+        },
+        {
+          "id": "card_0102_04_reflection_current_stage",
+          "type": "reflection",
+          "order": 4,
+          "title": "Текущий этап",
+          "sourceSection": "0102 / Сделайте упражнение «Ваш жизненный цикл»",
+          "thinkingType": "personal world",
+          "develops": "psychology + hard skills",
+          "checkability": "subjective",
+          "prompt": "Какой жизненный этап сейчас сильнее всего влияет на твои денежные решения?",
+          "inputType": "single_select",
+          "options": ["самостоятельная жизнь", "создание семьи", "дети или забота о близких", "новый карьерный этап", "переезд или смена среды", "пока не знаю"],
+          "saveKey": "current_life_cycle_stage",
+          "guidance": "Это не тест. Выбери ближайший вариант, чтобы увидеть, какие потребности сейчас требуют внимания."
+        },
+        {
+          "id": "card_0102_05_artifact_life_cycle",
+          "type": "artifact",
+          "order": 5,
+          "title": "Черновик жизненного цикла",
+          "sourceSection": "0102 / Сделайте упражнение «Ваш жизненный цикл»",
+          "thinkingType": "artifact",
+          "develops": "hard skills + psychology",
+          "checkability": "subjective",
+          "body": "Заполни короткий черновик. Он останется локально в уроке и поможет подготовить карту будущих целей.",
+          "template": [
+            "Что уже меняется в моей жизни",
+            "Какие события могут быть впереди",
+            "Как могут измениться мои потребности в деньгах",
+            "Какие планы стоит пересмотреть"
+          ]
+        },
+        {
+          "id": "card_0102_06_summary_life_cycle",
+          "type": "summary",
+          "order": 6,
+          "title": "Микро-правило",
+          "sourceSection": "0102 / Выводы",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "subjective",
+          "points": [
+            "Финансовая цель живёт внутри жизненного этапа.",
+            "Когда меняется этап, полезно пересмотреть потребности, сроки и ресурсы."
+          ],
+          "nextStep": "Дальше проверим, зачем видение будущего особенно важно в нестабильной среде."
+        }
+      ]
+    },
+    {
+      "id": "lesson_0102_02_vuca_future_view",
+      "slug": "vuca-future-view",
+      "title": "Будущее в нестабильном мире",
+      "description": "Видение будущего помогает смотреть вперёд и корректировать цели.",
+      "order": 2,
+      "estimatedMinutes": 4,
+      "learningGoal": "Понять, как образ будущего помогает не застревать в текущих проблемах.",
+      "mainSkill": "Формулировать опорные точки будущего без жёсткой привязки к одному сценарию.",
+      "tags": ["видение будущего", "VUCA", "цели"],
+      "sourceSection": "0102 / Прочитайте гайд «VUCA - МИР»",
+      "cards": [
+        {
+          "id": "card_0102_07_scenario_unstable_world",
+          "type": "scenario",
+          "order": 1,
+          "title": "Когда мир меняется быстрее плана",
+          "sourceSection": "0102 / Прочитайте гайд «VUCA - МИР»",
+          "thinkingType": "real world B",
+          "develops": "psychology + habits",
+          "checkability": "mixed",
+          "body": "План был понятным: копить на обучение через два года. Потом изменились доходы и формат работы. Старый план уже не подходит, но сама цель всё ещё важна.",
+          "question": "Что поможет не бросить цель полностью?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Уточнить образ будущего и пересобрать ближайшие шаги",
+              "isCorrect": true
+            },
+            {
+              "id": "b",
+              "label": "Признать, что любые планы бесполезны"
+            },
+            {
+              "id": "c",
+              "label": "Игнорировать изменения, чтобы не сбиться"
+            }
+          ],
+          "correctOptionId": "a",
+          "feedback": "В нестабильной среде важен не жёсткий сценарий, а способность держать направление и корректировать шаги."
+        },
+        {
+          "id": "card_0102_08_theory_future_view",
+          "type": "theory",
+          "order": 2,
+          "title": "Зачем нужно видение",
+          "sourceSection": "0102 / и сделайте упражнение «Виденье будущего»",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "objective",
+          "body": "Видение будущего — это образ желаемой жизни, который помогает строить сегодняшние действия. Оно не отменяет неопределённость, но даёт направление: что важно сохранить, развить и поддержать деньгами."
+        },
+        {
+          "id": "card_0102_09_choice_future_anchor",
+          "type": "single_choice",
+          "order": 3,
+          "title": "Что является опорой",
+          "sourceSection": "0102 / Выводы",
+          "thinkingType": "understanding",
+          "develops": "hard skills + psychology",
+          "checkability": "objective",
+          "question": "Что лучше всего подходит на роль опорной точки будущего?",
+          "options": [
+            {
+              "id": "a",
+              "label": "Одна случайная покупка, которую захотелось сегодня"
+            },
+            {
+              "id": "b",
+              "label": "Повторяющаяся ценность и понятный образ жизни, который хочется поддержать",
+              "isCorrect": true
+            },
+            {
+              "id": "c",
+              "label": "Чужой список целей без связи с моей ситуацией"
+            }
+          ],
+          "correctOptionId": "b",
+          "feedback": "Опорная точка связывает ценности, образ жизни и будущие цели, а не просто фиксирует случайное желание."
+        },
+        {
+          "id": "card_0102_10_checklist_future_update",
+          "type": "checklist",
+          "order": 4,
+          "title": "Как обновлять взгляд вперёд",
+          "sourceSection": "0102 / Выводы",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "subjective",
+          "body": "Отметь, что можно использовать при следующем пересмотре целей.",
+          "items": [
+            "Проверить, какие ценности остались важными",
+            "Посмотреть, какие обстоятельства изменились",
+            "Сформулировать 1-2 ближайших действия вместо идеального плана",
+            "Оставить место для корректировки сроков и способов"
+          ]
+        },
+        {
+          "id": "card_0102_11_summary_vuca",
+          "type": "summary",
+          "order": 5,
+          "title": "Итог",
+          "sourceSection": "0102 / Выводы",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "subjective",
+          "points": [
+            "Видение будущего не обещает контроль над всем.",
+            "Оно помогает не зацикливаться на текущей проблеме и продолжать смотреть вперёд."
+          ],
+          "nextStep": "Теперь опишем образ будущего через конкретный день."
+        }
+      ]
+    },
+    {
+      "id": "lesson_0102_03_day_in_future",
+      "slug": "day-in-future",
+      "title": "День из будущего",
+      "description": "Образ будущего становится полезнее, когда он описан конкретно.",
+      "order": 3,
+      "estimatedMinutes": 5,
+      "learningGoal": "Научиться описывать будущий день и сверять его с личными ценностями.",
+      "mainSkill": "Переводить абстрактное будущее в наблюдаемые детали и финансовые опоры.",
+      "tags": ["видение будущего", "ценности", "артефакт"],
+      "sourceSection": "0102 / Итоговое задание",
+      "cards": [
+        {
+          "id": "card_0102_12_video_future_exercise",
+          "type": "video",
+          "order": 1,
+          "title": "Видео: упражнение «Видение будущего»",
+          "sourceSection": "0102 / и сделайте упражнение «Виденье будущего»",
+          "src": "https://rutube.ru/play/embed/9fc0bfc5eaf41206f0cdef1fb52ce16c/?p=F8V_6ITEtI6uxBolWsesCA",
+          "provider": "rutube"
+        },
+        {
+          "id": "card_0102_13_theory_future_cone",
+          "type": "theory",
+          "order": 2,
+          "title": "Конус вероятностей",
+          "sourceSection": "0102 / и сделайте упражнение «Виденье будущего»",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "objective",
+          "body": "Будущее можно представить как конус вероятностей. Задача — не угадать единственный вариант, а наметить опорные точки: где ты живёшь, что умеешь, кто рядом, что важно и какие цели поддерживают этот образ."
+        },
+        {
+          "id": "card_0102_14_artifact_future_day",
+          "type": "artifact",
+          "order": 3,
+          "title": "Черновик дня из будущего",
+          "sourceSection": "0102 / Итоговое задание",
+          "thinkingType": "artifact",
+          "develops": "psychology + habits",
+          "checkability": "subjective",
+          "body": "Опиши по одному фрагменту дня из будущего. Достаточно коротких заметок, не идеального эссе.",
+          "template": [
+            "Через 1 год: где я, что делаю, какой результат вижу",
+            "Через 3 года: что изменилось в работе, доходах или окружении",
+            "Через 7 лет: какой образ жизни я поддерживаю",
+            "Какие ценности должны быть видны во всех трёх описаниях"
+          ]
+        },
+        {
+          "id": "card_0102_15_reflection_values_check",
+          "type": "reflection",
+          "order": 4,
+          "title": "Проверка через ценности",
+          "sourceSection": "0102 / Итоговое задание",
+          "thinkingType": "personal world",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "prompt": "Какая одна ценность должна точно присутствовать в твоём будущем образе?",
+          "inputType": "freeform",
+          "saveKey": "future_value_anchor",
+          "guidance": "Можно написать одно слово или короткую фразу. Здесь нет неправильной ценности."
+        },
+        {
+          "id": "card_0102_16_checklist_future_questions",
+          "type": "checklist",
+          "order": 5,
+          "title": "Вопросы к описанию",
+          "sourceSection": "0102 / Итоговое задание",
+          "thinkingType": "artifact",
+          "develops": "hard skills + psychology",
+          "checkability": "subjective",
+          "items": [
+            "Где я нахожусь?",
+            "Кто рядом со мной?",
+            "Как и над чем я работаю?",
+            "Каких результатов я достиг?",
+            "Каковы источники моих доходов?",
+            "Как я отдыхаю?"
+          ]
+        },
+        {
+          "id": "card_0102_17_summary_future_day",
+          "type": "summary",
+          "order": 6,
+          "title": "Результат раздела",
+          "sourceSection": "0102 / Выводы",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "subjective",
+          "points": [
+            "Будущее начинается с сегодняшних действий.",
+            "Образ будущего полезен, когда в нём видны ценности, люди, работа, доходы и отдых.",
+            "Следующий шаг — превратить этот образ в финансовые цели."
+          ],
+          "nextStep": "В следующем разделе соберём карту финансовых целей."
+        }
+      ]
+    }
+  ],
+  "supplemental": {
+    "strategy": "Гайды, изображения и шаблоны сохранены как источник для редактора и будущих расширений; основной путь содержит только короткие карточные уроки.",
+    "sourceFiles": [
+      "docs/methodology/finzdorov_module_01/0102-videnie-budushchego.md",
+      "docs/methodology/finzdorov_module_01/materials/0102-life-cycle-stages.png",
+      "docs/methodology/finzdorov_module_01/materials/0102-life-cycle-stages-guide.pdf",
+      "docs/methodology/finzdorov_module_01/materials/0102-vuca-world-guide.pdf",
+      "docs/methodology/finzdorov_module_01/materials/0102-future-vision-cone.png",
+      "docs/methodology/finzdorov_module_01/materials/0102-final-assignment.docx",
+      "docs/methodology/finzdorov_module_01/materials/0102-final-assignment.pdf"
+    ],
+    "trainings": [
+      {
+        "id": "supp_0102_life_cycle_guide",
+        "title": "Гайд «Этапы жизненного цикла»",
+        "sourceSection": "0102 / Изучите гайд «Этапы жизненного цикла»",
+        "type": "source_document",
+        "summary": "PDF-гайд о жизненных этапах и связанных с ними финансовых потребностях.",
+        "content": ["Локальный файл: docs/methodology/finzdorov_module_01/materials/0102-life-cycle-stages-guide.pdf"]
+      },
+      {
+        "id": "supp_0102_vuca_guide",
+        "title": "Гайд «VUCA - МИР»",
+        "sourceSection": "0102 / Прочитайте гайд «VUCA - МИР»",
+        "type": "source_document",
+        "summary": "PDF-гайд для расширения темы неопределённости и корректировки взгляда в перспективу.",
+        "content": ["Локальный файл: docs/methodology/finzdorov_module_01/materials/0102-vuca-world-guide.pdf"]
+      },
+      {
+        "id": "supp_0102_final_assignment",
+        "title": "Итоговое задание 1/3/7 лет",
+        "sourceSection": "0102 / Итоговое задание",
+        "type": "assignment_template",
+        "summary": "DOCX/PDF-шаблон эссе о дне из жизни через 1, 3 и 7 лет.",
+        "content": [
+          "Локальный файл: docs/methodology/finzdorov_module_01/materials/0102-final-assignment.docx",
+          "Локальный файл: docs/methodology/finzdorov_module_01/materials/0102-final-assignment.pdf"
+        ]
+      }
+    ],
+    "glossary": [
+      {
+        "term": "Жизненный цикл",
+        "definition": "Последовательность жизненных этапов, на которых меняются потребности, планы и отношение к деньгам."
+      },
+      {
+        "term": "Видение будущего",
+        "definition": "Образ желаемой жизни, который помогает выбирать сегодняшние действия и финансовые цели."
+      }
+    ],
+    "outcome": [
+      "Пользователь связывает текущий жизненный этап с денежными потребностями.",
+      "Пользователь формулирует опорные точки будущего и готов перейти к карте финансовых целей."
+    ]
+  }
+}

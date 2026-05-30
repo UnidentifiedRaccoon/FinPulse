@@ -1,4 +1,3 @@
-import { Check, Lock, Play } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Button } from '@/components/ui/button'
@@ -13,7 +12,6 @@ const stateCopy = {
 } satisfies Record<PathItemState, string>
 
 export function ModulePathNode({ item, index }: { item: ModulePathItem; index: number }) {
-  const Icon = item.state === 'completed' ? Check : item.state === 'locked' ? Lock : Play
   const percent = getProgressPercent(item.completedLessons, item.totalLessons)
   const actionLabel = item.state === 'completed' ? 'Повторение' : item.state === 'current' ? 'Далее' : 'К модулю'
 
@@ -28,23 +26,11 @@ export function ModulePathNode({ item, index }: { item: ModulePathItem; index: n
       )}
     >
       <div className="relative flex min-h-[132px] flex-col justify-between gap-5">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-          <div className="min-w-0">
-            <p className="text-sm font-bold leading-5 tracking-normal text-[var(--fr-text-tertiary)]">Модуль {index}</p>
-            <h2 className="mt-1 text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">
-              {item.module.title}
-            </h2>
-          </div>
-          <span
-            className={cn(
-              'flex size-12 items-center justify-center rounded-2xl border bg-[var(--fr-surface-card)] text-[var(--fr-text-tertiary)] shadow-[var(--fr-shadow-sm)]',
-              item.state === 'completed' &&
-                'border-[var(--fr-color-learn-correct-500)] bg-[var(--fr-color-learn-correct-500)] text-white',
-              item.state === 'current' && 'border-[var(--fr-color-sky-500)] bg-[var(--fr-color-sky-500)] text-white',
-            )}
-          >
-            {item.state === 'completed' ? <Icon aria-hidden="true" /> : item.state === 'current' ? index : <Icon aria-hidden="true" />}
-          </span>
+        <div className="min-w-0">
+          <p className="text-sm font-bold leading-5 tracking-normal text-[var(--fr-text-tertiary)]">Модуль {index}</p>
+          <h2 className="mt-1 text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">
+            {item.module.title}
+          </h2>
         </div>
 
         {item.module.description ? (

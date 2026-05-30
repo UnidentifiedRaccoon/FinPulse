@@ -339,22 +339,37 @@ describe('backend API', () => {
       expect(programResponse.statusCode).toBe(200)
       expect(programResponse.json()).toMatchObject({
         slug: 'finpulse-learning-mvp',
-        modules: expect.arrayContaining([
+        modules: [
           expect.objectContaining({
             slug: 'financial-goals',
-            units: expect.arrayContaining([
+            units: [
               expect.objectContaining({
                 slug: 'values-and-goals',
+                title: '01.01 Ваши базовые ценности',
               }),
               expect.objectContaining({
-                slug: 'impulsive-purchases',
+                slug: 'future-vision',
+                title: '01.02 Видение будущего',
               }),
-            ]),
+              expect.objectContaining({
+                slug: 'financial-goals-map',
+                title: '01.03 Финансовые цели',
+              }),
+              expect.objectContaining({
+                slug: 'goal-motivation',
+                title: '01.04 Мотивация достижения целей',
+              }),
+            ],
           }),
-        ]),
+        ],
       })
 
+      const valuesUnitResponse = await app.inject('/api/units/values-and-goals')
       const lessonResponse = await app.inject('/api/lessons/why-values-matter')
+      const compactValuesLessons = valuesUnitResponse.json().unit.lessons.map((lesson: { slug: string }) => lesson.slug)
+
+      expect(valuesUnitResponse.statusCode).toBe(200)
+      expect(compactValuesLessons).toEqual(['why-values-matter', 'what-are-values', 'values-conflict', 'practice-1m'])
       expect(lessonResponse.statusCode).toBe(200)
       expect(lessonResponse.json()).toMatchObject({
         module: expect.objectContaining({ slug: 'financial-goals' }),
@@ -369,23 +384,39 @@ describe('backend API', () => {
         }),
       })
 
-      const newLessonResponse = await app.inject('/api/lessons/pause-before-purchase')
-      expect(newLessonResponse.statusCode).toBe(200)
-      expect(newLessonResponse.json()).toMatchObject({
+      const newUnitResponse = await app.inject('/api/units/future-vision')
+      expect(newUnitResponse.statusCode).toBe(200)
+      expect(newUnitResponse.json()).toMatchObject({
         module: expect.objectContaining({ slug: 'financial-goals' }),
-        unit: expect.objectContaining({ slug: 'impulsive-purchases' }),
-        lesson: expect.objectContaining({
-          slug: 'pause-before-purchase',
-          cards: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'card_09_01_scenario_discount',
-            }),
-            expect.objectContaining({
-              id: 'card_09_07_summary_pause',
-            }),
+        unit: expect.objectContaining({
+          slug: 'future-vision',
+          lessons: expect.arrayContaining([
+            expect.objectContaining({ slug: 'day-in-future' }),
           ]),
         }),
       })
+
+      const newLessonResponse = await app.inject('/api/lessons/goal-levels')
+      expect(newLessonResponse.statusCode).toBe(200)
+      expect(newLessonResponse.json()).toMatchObject({
+        module: expect.objectContaining({ slug: 'financial-goals' }),
+        unit: expect.objectContaining({ slug: 'goal-motivation' }),
+        lesson: expect.objectContaining({
+          slug: 'goal-levels',
+          cards: expect.arrayContaining([
+            expect.objectContaining({ id: 'card_0104_18_artifact_local_goal' }),
+            expect.objectContaining({ id: 'card_0104_21_summary_goal_levels' }),
+          ]),
+        }),
+      })
+
+      const removedUnitResponse = await app.inject('/api/units/impulsive-purchases')
+      const removedLessonResponse = await app.inject('/api/lessons/pause-before-purchase')
+      const removedModuleResponse = await app.inject('/api/modules/budget-without-shame')
+
+      expect(removedUnitResponse.statusCode).toBe(404)
+      expect(removedLessonResponse.statusCode).toBe(404)
+      expect(removedModuleResponse.statusCode).toBe(404)
     } finally {
       await app.close()
     }

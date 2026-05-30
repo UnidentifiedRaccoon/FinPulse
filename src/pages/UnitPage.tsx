@@ -5,7 +5,7 @@ import { api, type ProgressResponse } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
 import { Button } from '@/components/ui/button'
 import { LessonPathMap } from '@/features/program-navigation/LessonPathMap'
-import { buildUnitLearningPath, getProgressPercent } from '@/features/program-navigation/learningPath'
+import { buildUnitLearningPath } from '@/features/program-navigation/learningPath'
 import { buildLessonPathSections } from '@/features/program-navigation/lessonPathSections'
 
 export function UnitPage({ progress }: { progress: ProgressResponse | null }) {
@@ -34,7 +34,7 @@ export function UnitPage({ progress }: { progress: ProgressResponse | null }) {
   const unitPath = path.modules[0]?.units[0]
   const sections = buildLessonPathSections(unitPath ? [unitPath] : [])
   const activeSection = sections.find((section) => section.state === 'current') ?? sections.find((section) => section.state === 'locked') ?? sections[0]
-  const percent = getProgressPercent(path.completedLessons, path.totalLessons)
+  const moduleContext = `Модуль ${module.order}`
 
   return (
     <div className="flex flex-col gap-8 pb-10" id="unit-top">
@@ -42,38 +42,19 @@ export function UnitPage({ progress }: { progress: ProgressResponse | null }) {
         <div className="flex items-start">
           <Button
             asChild
-            className="min-h-10 rounded-2xl px-0 text-base font-bold text-white hover:bg-white/10 hover:text-white"
+            className="min-h-10 rounded-2xl px-0 text-sm font-bold uppercase leading-5 tracking-normal text-white/75 hover:bg-white/10 hover:text-white/75"
             variant="ghost"
           >
             <Link to={`/modules/${module.slug}`}>
               <ChevronLeft data-icon="inline-start" />
-              Модуль {module.order}
+              {moduleContext}
             </Link>
           </Button>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
           <div>
-            <p className="text-sm font-bold uppercase leading-5 tracking-normal text-white/75">
-              Модуль {module.order}, раздел {activeSection?.number ?? unit.order}
-            </p>
-            <h1 className="mt-1 text-3xl font-bold leading-tight tracking-normal">{activeSection?.title ?? unit.title}</h1>
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-3 text-sm font-bold leading-5 text-white/85">
-              <span className="sr-only">Прогресс раздела</span>
-              <span>{percent}%</span>
-            </div>
-            <div
-              aria-label={`${percent}% раздела завершено`}
-              aria-valuemax={100}
-              aria-valuemin={0}
-              aria-valuenow={percent}
-              className="h-3 overflow-hidden rounded-full bg-white/30"
-              role="progressbar"
-            >
-              <div className="h-full rounded-full bg-white" style={{ width: `${percent}%` }} />
-            </div>
+            <h1 className="text-3xl font-bold leading-tight tracking-normal">{activeSection?.title ?? unit.title}</h1>
           </div>
         </div>
       </section>

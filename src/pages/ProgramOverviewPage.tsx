@@ -42,9 +42,9 @@ export function ProgramOverviewPage({ progress }: { progress: ProgressResponse |
 
 function PageState({ title, description }: { title: string; description?: string }) {
   return (
-    <section className="flex flex-col gap-2 rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
+    <section className="rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
       <h1 className="text-xl font-bold">{title}</h1>
-      {description ? <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">{description}</p> : null}
+      {description ? <p className="mt-1 text-sm leading-6 text-[var(--fr-text-secondary)]">{description}</p> : null}
     </section>
   )
 }

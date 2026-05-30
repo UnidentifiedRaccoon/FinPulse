@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { LogOut } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { api, type ApiUser, type ProgressResponse } from '@/api/client'
@@ -14,6 +15,7 @@ export function EntryPage({
   isAuthReady,
   progress,
   onLogin,
+  onLogout,
   onRegister,
 }: {
   user: ApiUser | null
@@ -22,19 +24,22 @@ export function EntryPage({
   isAuthReady: boolean
   progress: ProgressResponse | null
   onLogin: (login: string, password: string) => Promise<void>
+  onLogout: () => Promise<void>
   onRegister: (login: string, password: string) => Promise<void>
 }) {
   if (!isAuthReady) {
     return (
       <EntrySection>
         <div className="rounded-[24px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 shadow-[var(--fr-shadow-sm)]">
-          <p className="text-sm font-semibold text-[var(--fr-color-brand-700)]">FinPulse</p>
-          <h1 className="mt-2 text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">
-            Проверяем сессию
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-[var(--fr-text-secondary)]">
-            Сейчас откроем нужный стартовый экран.
-          </p>
+          <div className="min-w-0">
+            <img alt="" aria-hidden="true" className="h-10 w-[116px] object-contain" src="/finpulse-logo.png" />
+            <h1 className="mt-2 text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">
+              Проверяем сессию
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-[var(--fr-text-secondary)]">
+              Сейчас откроем нужный стартовый экран.
+            </p>
+          </div>
         </div>
       </EntrySection>
     )
@@ -44,7 +49,8 @@ export function EntryPage({
     return (
       <EntrySection>
         <section className="flex flex-col gap-5" aria-labelledby="auth-entry-heading">
-          <div className="flex flex-col gap-2">
+          <div className="flex min-w-0 flex-col gap-2">
+            <img alt="" aria-hidden="true" className="h-12 w-[132px] object-contain" src="/finpulse-logo.png" />
             <h1
               id="auth-entry-heading"
               className="text-[2rem] font-bold leading-9 tracking-normal text-[var(--fr-text-primary)] [overflow-wrap:anywhere]"
@@ -72,10 +78,22 @@ export function EntryPage({
     )
   }
 
-  return <WelcomeEntry progress={progress} user={user} />
+  return <WelcomeEntry authError={authError} isAuthBusy={isAuthBusy} onLogout={onLogout} progress={progress} user={user} />
 }
 
-function WelcomeEntry({ user, progress }: { user: ApiUser; progress: ProgressResponse | null }) {
+function WelcomeEntry({
+  authError,
+  isAuthBusy,
+  onLogout,
+  user,
+  progress,
+}: {
+  authError: string
+  isAuthBusy: boolean
+  onLogout: () => Promise<void>
+  user: ApiUser
+  progress: ProgressResponse | null
+}) {
   const programQuery = useApiQuery(api.getProgram, [])
 
   if (programQuery.status === 'loading') {
@@ -83,6 +101,7 @@ function WelcomeEntry({ user, progress }: { user: ApiUser; progress: ProgressRes
       <EntrySection>
         <WelcomeFrame title={`С возвращением, ${user.login}`}>
           <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">Загружаем ваш маршрут обучения.</p>
+          <MobileAccountLogout authError={authError} isAuthBusy={isAuthBusy} onLogout={onLogout} />
         </WelcomeFrame>
       </EntrySection>
     )
@@ -96,6 +115,7 @@ function WelcomeEntry({ user, progress }: { user: ApiUser; progress: ProgressRes
           <Button asChild className="mt-4 min-h-11 w-full" size="lg">
             <Link to="/program">Открыть программу</Link>
           </Button>
+          <MobileAccountLogout authError={authError} isAuthBusy={isAuthBusy} onLogout={onLogout} />
         </WelcomeFrame>
       </EntrySection>
     )
@@ -143,9 +163,30 @@ function WelcomeEntry({ user, progress }: { user: ApiUser; progress: ProgressRes
               <Link to="/program">Программа</Link>
             </Button>
           </div>
+          <MobileAccountLogout authError={authError} isAuthBusy={isAuthBusy} onLogout={onLogout} />
         </div>
       </WelcomeFrame>
     </EntrySection>
+  )
+}
+
+function MobileAccountLogout({
+  authError,
+  isAuthBusy,
+  onLogout,
+}: {
+  authError: string
+  isAuthBusy: boolean
+  onLogout: () => Promise<void>
+}) {
+  return (
+    <div className="flex flex-col gap-2 lg:hidden">
+      {authError ? <p className="text-sm leading-5 text-[var(--fr-color-danger-500)]">{authError}</p> : null}
+      <Button className="min-h-11 w-full rounded-[18px]" disabled={isAuthBusy} onClick={onLogout} size="lg" type="button" variant="outline">
+        <LogOut data-icon="inline-start" />
+        Выйти
+      </Button>
+    </div>
   )
 }
 
@@ -167,7 +208,7 @@ function WelcomeFrame({
     >
       <h1
         id="welcome-entry-heading"
-        className="text-[2rem] font-bold leading-9 tracking-normal text-[var(--fr-text-primary)] [overflow-wrap:anywhere]"
+        className="text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)] [overflow-wrap:anywhere] sm:text-[2rem] sm:leading-9"
       >
         {title}
       </h1>

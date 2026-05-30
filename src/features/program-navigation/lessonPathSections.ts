@@ -6,50 +6,34 @@ export type LessonPathSection = {
   title: string
   description?: string
   state: PathItemState
+  firstLessonNumber: number
   completedLessons: number
   totalLessons: number
   lessons: LessonPathItem[]
 }
 
-export const lessonsPerVisualSection = 3
-
 export function buildLessonPathSections(units: UnitPathItem[]): LessonPathSection[] {
-  let sectionNumber = 1
+  let firstLessonNumber = 1
 
-  return units.flatMap((unitItem) => {
-    const chunks = splitLessons(unitItem.lessons)
+  return units.map((unitItem) => {
+    const completedLessons = unitItem.lessons.filter((item) => item.state === 'completed').length
+    const state = getSectionState(unitItem.lessons)
+    const sectionFirstLessonNumber = firstLessonNumber
 
-    return chunks.map((lessons, chunkIndex) => {
-      const firstLesson = lessons[0]?.lesson
-      const completedLessons = lessons.filter((item) => item.state === 'completed').length
-      const state = getSectionState(lessons)
+    firstLessonNumber += unitItem.lessons.length
 
-      return {
-        id: `${unitItem.unit.id}-${chunkIndex + 1}`,
-        number: sectionNumber++,
-        title: chunkIndex === 0 ? unitItem.unit.title : (firstLesson?.title ?? unitItem.unit.title),
-        description:
-          chunkIndex === 0
-            ? unitItem.unit.description
-            : (firstLesson?.learningGoal ?? firstLesson?.description ?? unitItem.unit.description),
-        state,
-        completedLessons,
-        totalLessons: lessons.length,
-        lessons,
-      }
-    })
+    return {
+      id: unitItem.unit.id,
+      number: unitItem.unit.order,
+      title: getSectionDisplayTitle(unitItem.unit.title),
+      description: unitItem.unit.description,
+      state,
+      firstLessonNumber: sectionFirstLessonNumber,
+      completedLessons,
+      totalLessons: unitItem.lessons.length,
+      lessons: unitItem.lessons,
+    }
   })
-}
-
-function splitLessons(lessons: LessonPathItem[]) {
-  if (lessons.length <= lessonsPerVisualSection + 1) return [lessons]
-
-  const chunks: LessonPathItem[][] = []
-  for (let index = 0; index < lessons.length; index += lessonsPerVisualSection) {
-    chunks.push(lessons.slice(index, index + lessonsPerVisualSection))
-  }
-
-  return chunks
 }
 
 function getSectionState(lessons: LessonPathItem[]): PathItemState {
@@ -57,4 +41,8 @@ function getSectionState(lessons: LessonPathItem[]): PathItemState {
   if (lessons.every((lesson) => lesson.state === 'completed')) return 'completed'
   if (lessons.some((lesson) => lesson.state === 'current')) return 'current'
   return 'locked'
+}
+
+function getSectionDisplayTitle(title: string) {
+  return title.replace(/^\s*(?:\d{2}\.\d{2}|\d{4})[\s.-]+/, '').trim() || title
 }

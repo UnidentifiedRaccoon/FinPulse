@@ -1,4 +1,4 @@
-import { Check, Lock, Play } from 'lucide-react'
+import { Check, Clock, Lock, Play } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,7 @@ import type { Module } from '@/content/program'
 import { cn } from '@/lib/utils'
 
 import type { LessonPathItem, PathItemState } from './learningPath'
-import { lessonsPerVisualSection, type LessonPathSection } from './lessonPathSections'
+import type { LessonPathSection } from './lessonPathSections'
 
 type Accent = {
   soft: string
@@ -76,7 +76,6 @@ const stateCopy = {
 } satisfies Record<PathItemState, string>
 
 export function LessonPathMap({
-  moduleOrder,
   sections,
 }: {
   moduleOrder: number
@@ -92,7 +91,6 @@ export function LessonPathMap({
         <PathSection
           accent={accents[sectionIndex % accents.length]}
           key={section.id}
-          moduleOrder={moduleOrder}
           section={section}
           sectionIndex={sectionIndex}
         />
@@ -135,12 +133,10 @@ export function ModuleTransitionCard({ isComplete, nextModule }: { isComplete: b
 
 function PathSection({
   accent,
-  moduleOrder,
   section,
   sectionIndex,
 }: {
   accent: Accent
-  moduleOrder: number
   section: LessonPathSection
   sectionIndex: number
 }) {
@@ -150,7 +146,7 @@ function PathSection({
         <span className="h-px bg-[var(--fr-border-default)]" />
         <div className="min-w-0 text-center">
           <p className="text-xs font-bold uppercase leading-5 tracking-normal text-[var(--fr-text-tertiary)]">
-            Раздел {section.number}
+            Раздел
           </p>
           <h2
             className="max-w-[250px] text-lg font-bold leading-6 tracking-normal text-[var(--fr-text-secondary)]"
@@ -166,12 +162,10 @@ function PathSection({
         {section.lessons.map((lessonItem, lessonIndex) => (
           <LessonNode
             accent={accent}
-            globalIndex={sectionIndex * lessonsPerVisualSection + lessonIndex + 1}
+            globalIndex={section.firstLessonNumber + lessonIndex}
             key={lessonItem.lesson.id}
             lessonItem={lessonItem}
-            moduleOrder={moduleOrder}
             offset={nodeOffsets[(sectionIndex + lessonIndex) % nodeOffsets.length]}
-            section={section}
           />
         ))}
       </div>
@@ -183,22 +177,19 @@ function LessonNode({
   accent,
   globalIndex,
   lessonItem,
-  moduleOrder,
   offset,
-  section,
 }: {
   accent: Accent
   globalIndex: number
   lessonItem: LessonPathItem
-  moduleOrder: number
   offset: string
-  section: LessonPathSection
 }) {
   const { lesson, state } = lessonItem
   const Icon = state === 'completed' ? Check : state === 'current' ? Play : Lock
-  const description = lesson.description ?? lesson.learningGoal ?? 'Короткий урок из текущего раздела.'
+  const isHighlighted = state === 'completed' || state === 'current'
   const primaryAction = state === 'completed' ? 'Повторить урок' : state === 'current' ? 'Продолжить урок' : 'Открыть урок'
   const visibleState = state === 'current' ? 'Сейчас' : state === 'completed' ? stateCopy.completed : null
+  const duration = lesson.estimatedMinutes ? `${lesson.estimatedMinutes} мин` : 'Короткий урок'
 
   return (
     <Dialog>
@@ -219,7 +210,12 @@ function LessonNode({
               state === 'locked' && 'border-[var(--fr-border-strong)] shadow-[0_8px_0_rgba(99,113,136,0.16)]',
             )}
           >
-            <span aria-hidden="true" className="absolute inset-x-4 top-3 h-4 rotate-[-24deg] rounded-full bg-white/25" />
+            {isHighlighted ? (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute left-[-18px] top-[14px] h-[18px] w-[108px] rotate-[-38deg] rounded-full bg-white/24"
+              />
+            ) : null}
             {state === 'current' ? <Icon aria-hidden="true" /> : state === 'completed' ? <Icon aria-hidden="true" /> : globalIndex}
           </span>
           {visibleState ? (
@@ -236,23 +232,18 @@ function LessonNode({
       </DialogTrigger>
 
       <DialogContent className="overflow-hidden rounded-[28px] border-0 p-0 shadow-[0_24px_70px_rgba(16,35,74,0.18)] sm:max-w-[420px]">
-        <div className={cn('flex flex-col gap-4 p-5 text-white', accent.solid)}>
-          <DialogHeader>
-            <p className="text-sm font-bold uppercase leading-5 tracking-normal text-white/80">Модуль {moduleOrder}, раздел {section.number}</p>
+        <div className={cn('flex flex-col gap-4 p-5 pb-6 text-white', accent.solid)}>
+          <DialogHeader className="gap-3 pr-10">
             <DialogTitle className="text-2xl font-bold leading-8 tracking-normal text-white">{lesson.title}</DialogTitle>
-            <DialogDescription className="text-base leading-7 text-white/90">{description}</DialogDescription>
+            <DialogDescription className="sr-only">
+              Откройте урок или вернитесь к карте модуля.
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-2 sm:grid-cols-2">
-            <span className="rounded-2xl bg-white/15 px-3 py-2 text-sm font-semibold leading-5 text-white">
-              {lesson.estimatedMinutes ? `${lesson.estimatedMinutes} мин` : 'Короткий урок'}
-            </span>
-            {lesson.mainSkill ? (
-              <span className="line-clamp-2 rounded-2xl bg-white/15 px-3 py-2 text-sm font-semibold leading-5 text-white">
-                {lesson.mainSkill}
-              </span>
-            ) : null}
-          </div>
+          <span className="inline-flex w-fit items-center gap-2 rounded-2xl bg-white/15 px-3 py-2 text-sm font-semibold leading-5 text-white">
+            <Clock aria-hidden="true" className="size-4" />
+            {duration}
+          </span>
         </div>
 
         <DialogFooter className="m-0 flex-col gap-3 rounded-none border-0 bg-[var(--fr-surface-card)] p-4 sm:flex-col sm:justify-start">
@@ -280,7 +271,9 @@ function LessonNode({
 function EmptyPathState() {
   return (
     <section className="rounded-[24px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 text-center">
-      <h2 className="text-xl font-bold leading-7 tracking-normal text-[var(--fr-text-primary)]">В модуле пока нет уроков</h2>
+      <h2 className="text-xl font-bold leading-7 tracking-normal text-[var(--fr-text-primary)]">
+        В модуле пока нет уроков
+      </h2>
       <p className="mt-2 text-sm leading-6 text-[var(--fr-text-secondary)]">Разделы появятся после обновления программы.</p>
     </section>
   )

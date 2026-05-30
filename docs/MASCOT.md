@@ -10,7 +10,15 @@ Source reference:
 - user-provided mascot image in the 2026-05-30 product/design thread;
 - user-provided text description stored outside the repo in the Codex attachment for that thread.
 
-No production mascot asset is checked into the repository yet. Before using the mascot in the app, add an approved asset file to the repo and confirm source rights for public product use.
+Current app assets:
+- runtime asset: `public/assets/mascot/finpulse-mascot.png`;
+- transparent source copy: `public/assets/mascot/finpulse-mascot-source.png`.
+
+Source rights note:
+- the user supplied `/Users/elena/Downloads/maskot.png` in the 2026-05-30 product/design thread and described it as their mascot;
+- no separate external license file is stored in the repo.
+
+The original user-supplied export had an opaque white background. The current repository PNGs were regenerated locally with an alpha mask from that source so the mascot renders on app surfaces without a visible white square. The mascot shape, colors, eyes, ear details, compass badge, tail, and soft ground shadow are preserved; this was not an AI redraw.
 
 ## Product role
 
@@ -112,18 +120,23 @@ Suggested alt text when non-decorative:
 Friendly cream-and-blue FinPulse fennec mascot with a compass badge.
 ```
 
-## Asset requirements before implementation
+## Asset status
 
-Before the mascot is used in the app:
+Current implementation:
 
-1. Add the approved source or optimized export under `public/assets/mascot/` or another documented asset location.
-2. Prefer transparent-background PNG or WebP exports for app use; keep the original reference file separately if licensing allows it.
-3. Include at least one mobile-safe size and verify it remains readable around `80-160px`.
-4. Confirm whether the white background is intentional or whether a transparent export is required.
-5. Confirm source rights for public product use.
+1. The approved source copy and runtime export live under `public/assets/mascot/`.
+2. The runtime app path is centralized in `src/shared/ui/Mascot.tsx`.
+3. The runtime export is a transparent 640px PNG because the local image tool could not write WebP.
+4. The app uses fixed mascot sizes of `48`, `80`, `120`, and `160` pixels through the reusable component.
+5. The original white background was removed with a local edge-connected background mask and preserved internal white details.
+
+Future production asset preference:
+- native transparent PNG/WebP/SVG from the design source;
+- optimized export around the current `80-160px` display sizes;
+- source-rights note or license file if the asset comes from outside the user.
 
 Open product questions:
 - mascot name;
 - final production asset variants;
 - whether the compass badge should become a broader visual identity motif;
-- exact UI surfaces where the mascot should first appear.
+- whether the transparent PNG should also be exported as WebP/SVG when production source files are available.
