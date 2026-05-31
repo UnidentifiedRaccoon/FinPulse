@@ -84,14 +84,16 @@ On push to `main`, `.github/workflows/deploy.yml` does the following:
     - `NODE_ENV=production`;
     - `FINPULSE_API_HOST=0.0.0.0`;
     - `FINPULSE_STATIC_ROOT=/app/dist`;
-    - DB host/name/user/port/sslmode env vars;
-    - `FINPULSE_DATABASE_PASSWORD_SECRET_ID=e6qdr1f6uh0k9aj2v34c` and key `postgresql_password`;
+    - DB host/name/user/port/password/sslmode env vars;
+    - `FINPULSE_DATABASE_SSL_LIBPQ_COMPAT=true` for Yandex Managed PostgreSQL SSL compatibility;
 11. smoke-tests:
     - `/api/health`;
     - `/api/readyz`;
     - `/`.
 
-The backend applies the committed `server/db/schema.sql` on startup through `openDatabase()` / `runMigrations()`. This is an idempotent schema bootstrap in a transaction, not a versioned migration ledger. In production, the backend reads the DB password from Lockbox at startup through the Serverless Container metadata IAM token; the password payload is not passed through GitHub Actions or committed env.
+The backend applies the committed `server/db/schema.sql` on startup through `openDatabase()` / `runMigrations()`. This is an idempotent schema bootstrap in a transaction, not a versioned migration ledger. In production, GitHub Actions passes the DB password from GitHub secret `FINPULSE_DATABASE_PASSWORD`; the password is not committed or printed.
+
+The DB security group allows the Serverless Containers service subnet range `198.19.0.0/16` on port `6432`. Yandex documents this as the source range used when a Serverless Container is attached to a VPC network.
 
 ## Manual deploy
 
@@ -103,9 +105,8 @@ export YC_REGISTRY_ID=crp5j8penr0hui0ttaum
 export YC_CONTAINER_ID=bbabho5nujsp32c8mvc7
 export YC_RUNTIME_SA_ID=aje0lujm0q1obpn9fbu9
 export YC_NETWORK_ID=enpanp4tbmpj9gckolkg
-export FINPULSE_DATABASE_PASSWORD_SECRET_ID=e6qdr1f6uh0k9aj2v34c
-export FINPULSE_DATABASE_PASSWORD_SECRET_KEY=postgresql_password
 export IMAGE="cr.yandex/${YC_REGISTRY_ID}/finpulse:manual-$(git rev-parse --short HEAD)"
+DB_PASSWORD="$(yc lockbox payload get --id e6qdr1f6uh0k9aj2v34c --key postgresql_password)"
 
 npm run build:container
 docker build --tag "$IMAGE" .
@@ -131,8 +132,9 @@ yc serverless container revision deploy \
   --environment FINPULSE_DATABASE_NAME=finpulse \
   --environment FINPULSE_DATABASE_USER=finpulse_app \
   --environment FINPULSE_DATABASE_SSLMODE=require \
-  --environment FINPULSE_DATABASE_PASSWORD_SECRET_ID="$FINPULSE_DATABASE_PASSWORD_SECRET_ID" \
-  --environment FINPULSE_DATABASE_PASSWORD_SECRET_KEY="$FINPULSE_DATABASE_PASSWORD_SECRET_KEY"
+  --environment FINPULSE_DATABASE_SSL_LIBPQ_COMPAT=true \
+  --environment FINPULSE_DATABASE_PASSWORD="$DB_PASSWORD"
+unset DB_PASSWORD
 ```
 
 ## Smoke checks
@@ -169,6 +171,7 @@ The deploy workflow always invokes the DB start URL before deploying and smoking
 If `/api/readyz` returns `503` after invoking the start URL, check:
 
 - Managed PostgreSQL cluster `c9quhk2n9q3c3vvsp83g` status;
-- Serverless Container revision env vars, especially `FINPULSE_DATABASE_PASSWORD_SECRET_ID`;
-- runtime SA `lockbox.payloadViewer` on secret `e6qdr1f6uh0k9aj2v34c`;
+- Serverless Container revision env vars, especially `FINPULSE_DATABASE_PASSWORD` and `FINPULSE_DATABASE_SSL_LIBPQ_COMPAT`;
+- GitHub secret `FINPULSE_DATABASE_PASSWORD`;
+- DB security group ingress for `198.19.0.0/16` on port `6432`;
 - VPC network attachment on the deployed revision.

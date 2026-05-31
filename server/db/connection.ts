@@ -39,6 +39,7 @@ export type DatabaseEnvironment = {
   FINPULSE_YC_METADATA_TOKEN_URL?: string
   FINPULSE_YC_LOCKBOX_PAYLOAD_BASE_URL?: string
   FINPULSE_DATABASE_SSLMODE?: string
+  FINPULSE_DATABASE_SSL_LIBPQ_COMPAT?: string
   NODE_ENV?: string
 }
 
@@ -146,6 +147,10 @@ function resolveDatabaseUrlFromParts(env: DatabaseEnvironment): string | undefin
 
   if (env.FINPULSE_DATABASE_SSLMODE) {
     url.searchParams.set('sslmode', env.FINPULSE_DATABASE_SSLMODE)
+  }
+
+  if (env.FINPULSE_DATABASE_SSL_LIBPQ_COMPAT === 'true') {
+    url.searchParams.set('uselibpqcompat', 'true')
   }
 
   return url.toString()

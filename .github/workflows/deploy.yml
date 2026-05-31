@@ -29,8 +29,7 @@ env:
   FINPULSE_DATABASE_NAME: finpulse
   FINPULSE_DATABASE_USER: finpulse_app
   FINPULSE_DATABASE_SSLMODE: require
-  FINPULSE_DATABASE_PASSWORD_SECRET_ID: e6qdr1f6uh0k9aj2v34c
-  FINPULSE_DATABASE_PASSWORD_SECRET_KEY: postgresql_password
+  FINPULSE_DATABASE_SSL_LIBPQ_COMPAT: true
   FINPULSE_APP_URL: https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net
 
 jobs:
@@ -127,7 +126,10 @@ jobs:
           jq '{action, status, active_until}' "$RUNNER_TEMP/db-start.json"
 
       - name: Deploy serverless container revision
+        env:
+          FINPULSE_DATABASE_PASSWORD: ${{ secrets.FINPULSE_DATABASE_PASSWORD }}
         run: |
+          test -n "$FINPULSE_DATABASE_PASSWORD"
           yc serverless container revision deploy \
             --container-id "$YC_CONTAINER_ID" \
             --image "$IMAGE" \
@@ -146,8 +148,8 @@ jobs:
             --environment FINPULSE_DATABASE_NAME="$FINPULSE_DATABASE_NAME" \
             --environment FINPULSE_DATABASE_USER="$FINPULSE_DATABASE_USER" \
             --environment FINPULSE_DATABASE_SSLMODE="$FINPULSE_DATABASE_SSLMODE" \
-            --environment FINPULSE_DATABASE_PASSWORD_SECRET_ID="$FINPULSE_DATABASE_PASSWORD_SECRET_ID" \
-            --environment FINPULSE_DATABASE_PASSWORD_SECRET_KEY="$FINPULSE_DATABASE_PASSWORD_SECRET_KEY"
+            --environment FINPULSE_DATABASE_SSL_LIBPQ_COMPAT="$FINPULSE_DATABASE_SSL_LIBPQ_COMPAT" \
+            --environment FINPULSE_DATABASE_PASSWORD="$FINPULSE_DATABASE_PASSWORD"
 
       - name: Smoke test production
         run: |
