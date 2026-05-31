@@ -61,7 +61,7 @@ describe('AuthControls', () => {
         onLogin={vi.fn()}
         onLogout={onLogout}
         onRegister={vi.fn()}
-        user={{ id: 'user-1', login: 'learner' }}
+        user={{ id: 'user-1', login: 'learner', createdAt: '2026-05-30T08:15:00.000Z' }}
       />,
     )
 

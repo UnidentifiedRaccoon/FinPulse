@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { CircleUserRound, LogIn, LogOut, Map, type LucideIcon } from 'lucide-react'
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router'
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
 
-import { api, ApiError, type ApiUser, type ProgressResponse } from '@/api/client'
+import { api, ApiError, type ApiUser, type ProgressResponse, type ReflectionAnswerPayload, type ReflectionAnswersResponse } from '@/api/client'
 import { LessonPage } from '@/pages/LessonPage'
 import { EntryPage } from '@/pages/EntryPage'
 import { ModulePage } from '@/pages/ModulePage'
@@ -15,9 +15,19 @@ function App() {
   const [user, setUser] = useState<ApiUser | null>(null)
   const [authError, setAuthError] = useState('')
   const [progressError, setProgressError] = useState('')
+  const [reflectionError, setReflectionError] = useState('')
   const [progress, setProgress] = useState<ProgressResponse | null>(null)
+  const [reflectionAnswers, setReflectionAnswers] = useState<ReflectionAnswersResponse | null>(null)
   const [isAuthBusy, setIsAuthBusy] = useState(false)
   const [isAuthReady, setIsAuthReady] = useState(false)
+
+  const clearAuthenticatedState = useCallback(() => {
+    setUser(null)
+    setProgress(null)
+    setProgressError('')
+    setReflectionAnswers(null)
+    setReflectionError('')
+  }, [])
 
   const refreshProgress = useCallback(async () => {
     try {
@@ -29,6 +39,16 @@ function App() {
     }
   }, [])
 
+  const refreshReflectionAnswers = useCallback(async () => {
+    try {
+      const nextAnswers = await api.getReflectionAnswers()
+      setReflectionAnswers(nextAnswers)
+      setReflectionError('')
+    } catch (error) {
+      setReflectionError(getApiMessage(error))
+    }
+  }, [])
+
   useEffect(() => {
     let isActive = true
 
@@ -37,15 +57,17 @@ function App() {
       .then(async ({ user: currentUser }) => {
         if (!isActive) return
         setUser(currentUser)
-        const nextProgress = await api.getProgress()
+        const [nextProgress, nextReflectionAnswers] = await Promise.all([api.getProgress(), api.getReflectionAnswers()])
         if (!isActive) return
         setProgress(nextProgress)
+        setReflectionAnswers(nextReflectionAnswers)
       })
       .catch((error: unknown) => {
         if (!isActive) return
         if (error instanceof ApiError && error.status === 401) {
           setUser(null)
           setProgress(null)
+          setReflectionAnswers(null)
           return
         }
         setAuthError(getApiMessage(error))
@@ -66,7 +88,7 @@ function App() {
     try {
       const response = await api.login(login, password)
       setUser(response.user)
-      await refreshProgress()
+      await Promise.all([refreshProgress(), refreshReflectionAnswers()])
     } catch (error) {
       setAuthError(getApiMessage(error))
     } finally {
@@ -80,7 +102,7 @@ function App() {
     try {
       const response = await api.register(login, password)
       setUser(response.user)
-      await refreshProgress()
+      await Promise.all([refreshProgress(), refreshReflectionAnswers()])
     } catch (error) {
       setAuthError(getApiMessage(error))
     } finally {
@@ -93,11 +115,11 @@ function App() {
     setAuthError('')
     try {
       await api.logout()
-      setUser(null)
-      setProgress(null)
-      setProgressError('')
+      clearAuthenticatedState()
+      return true
     } catch (error) {
       setAuthError(getApiMessage(error))
+      return false
     } finally {
       setIsAuthBusy(false)
     }
@@ -112,14 +134,15 @@ function App() {
         setProgressError('')
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
-          setProgress(null)
-          setProgressError('')
+          clearAuthenticatedState()
+          if (payload.completed) throw error
           return
         }
         setProgressError(getApiMessage(error))
+        if (payload.completed) throw error
       }
     },
-    [user],
+    [clearAuthenticatedState, user],
   )
 
   const markCardProgress = useCallback(
@@ -131,14 +154,34 @@ function App() {
         setProgressError('')
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
-          setProgress(null)
-          setProgressError('')
+          clearAuthenticatedState()
+          if (payload.completed) throw error
           return
         }
         setProgressError(getApiMessage(error))
+        if (payload.completed) throw error
       }
     },
-    [user],
+    [clearAuthenticatedState, user],
+  )
+
+  const saveReflectionAnswer = useCallback(
+    async (cardId: string, payload: ReflectionAnswerPayload) => {
+      if (!user) return
+      try {
+        const nextAnswers = await api.saveReflectionAnswer(cardId, payload)
+        setReflectionAnswers(nextAnswers)
+        setReflectionError('')
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          clearAuthenticatedState()
+          throw error
+        }
+        setReflectionError(getApiMessage(error))
+        throw error
+      }
+    },
+    [clearAuthenticatedState, user],
   )
 
   return (
@@ -154,6 +197,9 @@ function App() {
         onRegister={handleRegister}
         progress={progress}
         progressError={progressError}
+        reflectionAnswers={reflectionAnswers}
+        reflectionError={reflectionError}
+        saveReflectionAnswer={saveReflectionAnswer}
         user={user}
       />
     </BrowserRouter>
@@ -164,6 +210,8 @@ function AppShell({
   user,
   authError,
   progressError,
+  reflectionError,
+  reflectionAnswers,
   progress,
   isAuthBusy,
   isAuthReady,
@@ -172,77 +220,120 @@ function AppShell({
   onLogout,
   markLessonProgress,
   markCardProgress,
+  saveReflectionAnswer,
 }: {
   user: ApiUser | null
   authError: string
   progressError: string
+  reflectionError: string
+  reflectionAnswers: ReflectionAnswersResponse | null
   progress: ProgressResponse | null
   isAuthBusy: boolean
   isAuthReady: boolean
   onLogin: (login: string, password: string) => Promise<void>
   onRegister: (login: string, password: string) => Promise<void>
-  onLogout: () => Promise<void>
+  onLogout: () => Promise<boolean>
   markLessonProgress: (lessonSlug: string, payload: { viewed?: boolean; completed?: boolean }) => Promise<void>
   markCardProgress: (cardId: string, payload: { viewed?: boolean; completed?: boolean }) => Promise<void>
+  saveReflectionAnswer: (cardId: string, payload: ReflectionAnswerPayload) => Promise<void>
 }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const isLessonRoute = location.pathname.startsWith('/lessons/')
-  const showMobileNavigation = !isLessonRoute
+  const showAuthenticatedShell = Boolean(user)
+  const showMobileNavigation = showAuthenticatedShell && !isLessonRoute
+  const handleLogoutAndRedirect = useCallback(async () => {
+    const didLogout = await onLogout()
+    if (didLogout) {
+      navigate('/', { replace: true })
+    }
+  }, [navigate, onLogout])
 
   return (
-    <div className="min-h-svh bg-[var(--fr-surface-canvas)] text-[var(--fr-text-primary)] lg:pl-[18rem]">
-      <DesktopAppSidebar
-        authError={authError}
-        isAuthBusy={isAuthBusy}
-        onLogout={onLogout}
-        pathname={location.pathname}
-        user={user}
-      />
+    <div
+      className={cn(
+        'min-h-svh bg-[var(--fr-surface-canvas)] text-[var(--fr-text-primary)]',
+        showAuthenticatedShell && 'lg:pl-[18rem]',
+      )}
+    >
+      {showAuthenticatedShell ? (
+        <DesktopAppSidebar
+          authError={authError}
+          isAuthBusy={isAuthBusy}
+          onLogout={handleLogoutAndRedirect}
+          pathname={location.pathname}
+          user={user}
+        />
+      ) : null}
 
       <main
         className={cn(
           'mx-auto w-full px-4',
-          isLessonRoute ? 'max-w-none py-6 lg:px-8' : 'max-w-[560px] py-5 sm:py-6 lg:max-w-[720px]',
+          showAuthenticatedShell && isLessonRoute
+            ? 'max-w-none py-6 lg:px-8'
+            : 'max-w-[560px] py-5 sm:py-6 lg:max-w-[720px]',
           showMobileNavigation ? 'pb-[calc(6.75rem+env(safe-area-inset-bottom))] lg:pb-8' : null,
         )}
       >
-        {progressError ? (
-          <p className="mb-4 rounded-[18px] border border-[var(--fr-color-danger-500)]/30 bg-[var(--fr-color-danger-50)] p-3 text-sm leading-6 text-[var(--fr-color-danger-500)]">
-            {progressError}
-          </p>
-        ) : null}
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <EntryPage
-                authError={authError}
-                isAuthBusy={isAuthBusy}
-                isAuthReady={isAuthReady}
-                onLogin={onLogin}
-                onLogout={onLogout}
-                onRegister={onRegister}
-                progress={progress}
-                user={user}
-              />
-            }
+        {showAuthenticatedShell
+          ? [progressError, reflectionError].filter(Boolean).map((error) => (
+              <p
+                className="mb-4 rounded-[18px] border border-[var(--fr-color-danger-500)]/30 bg-[var(--fr-color-danger-50)] p-3 text-sm leading-6 text-[var(--fr-color-danger-500)]"
+                key={error}
+              >
+                {error}
+              </p>
+            ))
+          : null}
+        {showAuthenticatedShell ? (
+          <Routes>
+            <Route path="/" element={<Navigate to="/program" replace />} />
+            <Route
+              path="/profile"
+              element={
+                <EntryPage
+                  authError={authError}
+                  isAuthBusy={isAuthBusy}
+                  isAuthReady={isAuthReady}
+                  onLogin={onLogin}
+                  onLogout={handleLogoutAndRedirect}
+                  onRegister={onRegister}
+                  progress={progress}
+                  reflectionAnswers={reflectionAnswers}
+                  user={user}
+                />
+              }
+            />
+            <Route path="/program" element={<ProgramOverviewPage progress={progress} />} />
+            <Route path="/modules/:moduleSlug" element={<ModulePage progress={progress} />} />
+            <Route path="/modules/:moduleSlug/units/:unitSlug" element={<UnitPage progress={progress} />} />
+            <Route
+              path="/lessons/:lessonSlug"
+              element={
+                <LessonPage
+                  markCardProgress={markCardProgress}
+                  markLessonProgress={markLessonProgress}
+                  progress={progress}
+                  saveReflectionAnswer={saveReflectionAnswer}
+                  user={user}
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to="/program" replace />} />
+          </Routes>
+        ) : (
+          <EntryPage
+            authError={authError}
+            isAuthBusy={isAuthBusy}
+            isAuthReady={isAuthReady}
+            onLogin={onLogin}
+            onLogout={handleLogoutAndRedirect}
+            onRegister={onRegister}
+            progress={null}
+            reflectionAnswers={null}
+            user={null}
           />
-          <Route path="/program" element={<ProgramOverviewPage progress={progress} />} />
-          <Route path="/modules/:moduleSlug" element={<ModulePage progress={progress} />} />
-          <Route path="/modules/:moduleSlug/units/:unitSlug" element={<UnitPage progress={progress} />} />
-          <Route
-            path="/lessons/:lessonSlug"
-            element={
-              <LessonPage
-                markCardProgress={markCardProgress}
-                markLessonProgress={markLessonProgress}
-                progress={progress}
-                user={user}
-              />
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        )}
       </main>
 
       {showMobileNavigation ? (
@@ -271,10 +362,10 @@ const learningNavigationItem: NavigationItem = {
 }
 
 const accountNavigationItem: NavigationItem = {
-  label: 'Аккаунт',
-  to: '/',
+  label: 'Профиль',
+  to: '/profile',
   Icon: CircleUserRound,
-  isActive: (pathname) => pathname === '/',
+  isActive: (pathname) => pathname === '/profile',
 }
 
 const desktopNavigationItems: NavigationItem[] = [learningNavigationItem, accountNavigationItem]
@@ -283,10 +374,10 @@ function getMobileNavigationItems(user: ApiUser | null): NavigationItem[] {
   return [
     learningNavigationItem,
     {
-      label: user ? 'Аккаунт' : 'Войти',
-      to: '/',
+      label: user ? 'Профиль' : 'Войти',
+      to: user ? '/profile' : '/',
       Icon: user ? CircleUserRound : LogIn,
-      isActive: (pathname) => pathname === '/',
+      isActive: (pathname) => (user ? pathname === '/profile' : pathname === '/'),
     },
   ]
 }
@@ -319,7 +410,7 @@ function DesktopAppSidebar({
         <Link
           aria-label="FinPulse"
           className="inline-flex rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25"
-          to="/"
+          to="/program"
         >
           <img
             alt=""

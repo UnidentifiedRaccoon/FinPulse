@@ -5,6 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 export type ApiUser = {
   id: string
   login: string
+  createdAt: string
 }
 
 export type ProgressItem = {
@@ -26,6 +27,38 @@ export type CardProgressItem = ProgressItem & {
 export type ProgressResponse = {
   lessons: LessonProgressItem[]
   cards: CardProgressItem[]
+}
+
+export type ReflectionAnswerPayload = {
+  textValue?: string
+  singleValue?: string
+  multiValues?: string[]
+  selectedVariant?: string
+  checkedRows?: string[]
+  templateValues?: string[]
+  fallbackValue?: string
+}
+
+export type ReflectionAnswer = {
+  cardId: string
+  cardType: 'reflection' | 'artifact'
+  saveKey: string | null
+  lessonSlug: string
+  lessonTitle: string
+  unitSlug: string
+  unitTitle: string
+  moduleSlug: string
+  moduleTitle: string
+  cardTitle: string | null
+  prompt: string
+  template: string[] | null
+  answer: ReflectionAnswerPayload
+  createdAt: string
+  updatedAt: string
+}
+
+export type ReflectionAnswersResponse = {
+  answers: ReflectionAnswer[]
 }
 
 export type UnitDetails = {
@@ -79,6 +112,12 @@ export const api = {
       method: 'POST',
     }),
   getProgress: () => request<ProgressResponse>('/api/progress'),
+  getReflectionAnswers: () => request<ReflectionAnswersResponse>('/api/reflections'),
+  saveReflectionAnswer: (cardId: string, payload: ReflectionAnswerPayload) =>
+    request<ReflectionAnswersResponse>(`/api/reflections/${encodeURIComponent(cardId)}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
   markLessonProgress: (lessonSlug: string, payload: ProgressPayload) =>
     request<ProgressResponse>(`/api/progress/lessons/${encodeURIComponent(lessonSlug)}`, {
       method: 'PUT',
@@ -105,7 +144,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     return undefined as T
   }
 
-  const data = await response.json()
+  const data = await parseResponseJson(response)
 
   if (!response.ok) {
     const error = parseApiError(data)
@@ -113,6 +152,14 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   return data as T
+}
+
+async function parseResponseJson(response: Response) {
+  try {
+    return await response.json()
+  } catch {
+    return null
+  }
 }
 
 function parseApiError(data: unknown) {

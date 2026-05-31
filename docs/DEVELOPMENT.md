@@ -55,6 +55,55 @@ or:
 npm run verify
 ```
 
+`npm run verify` runs backend tests as part of the normal Vitest suite. PostgreSQL-backed tests must have a reachable database; CI must provide PostgreSQL instead of skipping those tests.
+
+## Production build artifact
+
+The production artifact is a same-origin container: Fastify serves `/api/**` and the built Vite SPA.
+
+```bash
+npm run build:container
+npm run start
+```
+
+`npm run build:container` builds the Vite client into `dist/` and the server bundle into `dist-server/`. `npm run start` expects PostgreSQL env vars and, when static serving is needed, `FINPULSE_STATIC_ROOT` pointing at the Vite `dist` directory.
+
+The Dockerfile mirrors this flow and sets `PORT=8080`, `FINPULSE_API_HOST=0.0.0.0`, and `FINPULSE_STATIC_ROOT=/app/dist` for Yandex Serverless Containers.
+
+## Local backend database
+
+The Stage 2 backend uses PostgreSQL for learner identity, sessions, progress, and private reflection/artifact answers. JSON files remain the source-of-truth for educational content.
+
+For local development, start PostgreSQL before running backend tests or `npm run dev`. A simple Docker container is enough:
+
+```bash
+docker run --name finpulse-postgres \
+  -e POSTGRES_DB=finpulse \
+  -e POSTGRES_USER=finpulse \
+  -e POSTGRES_PASSWORD=finpulse \
+  -p 5432:5432 \
+  -d postgres:16
+```
+
+Outside `NODE_ENV=production`, the server defaults to the same local URL shown below. Set the database URL in the shell or `.env` when local values differ:
+
+```bash
+FINPULSE_DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse
+DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse
+```
+
+Use `FINPULSE_TEST_DATABASE_URL` when tests should target a separate database:
+
+```bash
+FINPULSE_TEST_DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test
+```
+
+Copy `.env.example` to `.env` only when local values need to change. Local API defaults still use `FINPULSE_API_HOST=127.0.0.1` and `FINPULSE_API_PORT=3001`. For production containers, bind the API to `0.0.0.0` with `FINPULSE_API_HOST=0.0.0.0`; container platforms commonly provide `PORT`, so keep `PORT` available as the external listen port override.
+
+When `FINPULSE_CORS_ORIGIN` is empty, the local API allows loopback browser origins such as `http://localhost:5173` and `http://127.0.0.1:5174`. Set it to a comma-separated exact origin list when you need to restrict or override local defaults.
+
+Yandex Cloud production deployment resources are documented in `docs/operations/yandex-cloud-finpulse-deploy.md`. Use a local PostgreSQL instance for development and the GitHub Actions PostgreSQL service for CI.
+
 ## Git and PR workflow
 
 Branch, commit, push, and Pull Request rules live in `docs/engineering/contributing.md`.

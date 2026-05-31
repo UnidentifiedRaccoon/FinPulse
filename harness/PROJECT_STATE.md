@@ -1,14 +1,14 @@
 # Project State — FinPulse Learning MVP
 
-Last updated: 2026-05-30
+Last updated: 2026-05-31
 
 ## Current phase
 
-Stage 2 backend MVP is on `main`; T-016 lesson/card experience is implemented on `feat/lesson-card-experience` for draft PR review. The current workspace contains stacked review changes through T-044, including learning path, entry auth, inline video, local auth/CORS fixes, UI cleanup, mascot identity docs and asset/component work, popup cleanup, methodology content-system work, responsive app navigation, the T-034 content scope cleanup, the T-035 methodology authoring framework, the T-036 desktop sidebar brand wordmark, account/logout navigation polish, lesson-node glare polish, broad mascot placement removal, Finzdorov 01.02-01.04 runtime content conversion, unit-aligned visual sections in the module path, learner-facing removal of redundant section codes, and compacted `01.01` values runtime content.
+Stage 2 backend MVP is on `main`; T-016 lesson/card experience is implemented on `feat/lesson-card-experience` for draft PR review. The current workspace contains stacked review changes through T-052, including learning path, entry auth, inline video, local auth/CORS fixes, UI cleanup, mascot identity docs and asset/component work, popup cleanup, methodology content-system work, responsive app navigation, the T-034 content scope cleanup, the T-035 methodology authoring framework, the T-036 desktop sidebar brand wordmark, account/logout navigation polish, lesson-node glare polish, broad mascot placement removal, Finzdorov 01.02-01.04 runtime content conversion, unit-aligned visual sections in the module path, learner-facing removal of redundant section codes, compacted `01.01` values runtime content, scroll-aware module header polish, logout redirect cleanup, the profile entry route, private reflection/artifact answer persistence, the expanded QA user scenario map, the full-scenario QA fixes, mobile lesson CTA bottom alignment, and PostgreSQL persistence migration.
 
-The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a mobile content-reader surface. Runtime content now uses split JSON files with the hierarchy Program -> Module -> Unit -> Lesson -> Card. ADR-0006 accepts a narrow Stage 2 backend: Fastify + SQLite, simple learner login, httpOnly cookie sessions, backend-owned progress markers, and read-only content API delivery from validated JSON.
+The app scaffold exists as a Vite React TypeScript SPA with Tailwind CSS, shadcn/ui, React Router, Vitest, and a mobile content-reader surface. Runtime content now uses split JSON files with the hierarchy Program -> Module -> Unit -> Lesson -> Card. ADR-0006 accepts a narrow Stage 2 backend: Fastify, simple learner login, httpOnly cookie sessions, backend-owned progress markers, and read-only content API delivery from validated JSON. ADR-0007 accepts private persisted reflection/artifact answers for authenticated learners only. ADR-0008 supersedes the SQLite persistence portion of ADR-0006 with PostgreSQL behind async repositories.
 
-The Fastify backend and frontend API migration are implemented on `feat/stage-2-backend-mvp`. Frontend rendered pages now fetch program/module/unit/lesson data through `/api/**`; authenticated users can save viewed/completed lesson/card progress. Security/content contract reviews, `npm run verify`, and browser smoke passed.
+The Fastify backend and frontend API migration are implemented on `feat/stage-2-backend-mvp`. Frontend rendered pages now fetch program/module/unit/lesson data through `/api/**`; authenticated users can save viewed/completed lesson/card progress and private reflection/artifact answers. Security/content contract reviews, `npm run verify`, and browser smoke passed.
 
 ## Locked MVP assumptions
 
@@ -18,10 +18,11 @@ The Fastify backend and frontend API migration are implemented on `feat/stage-2-
 - React + TypeScript.
 - SPA/Vite preferred.
 - Fastify backend accepted for Stage 2.
-- SQLite persistence accepted for Stage 2 learner/session/progress state.
+- PostgreSQL persistence accepted for Stage 2 learner/session/progress/reflection state.
 - Zustand for small client-side state.
 - Tailwind + shadcn/ui.
 - Minimal learner login is allowed for saved progress; full user cabinets remain out of scope.
+- Authenticated learner reflection/artifact answers are allowed as a private personal artifact, not diagnostics, scoring, analytics, or recommendations.
 - The selected mascot visual reference is a cream/sky-blue fennec or fox guide with a compass badge; mascot-led mechanics remain out of scope.
 - No diagnostics.
 - No rewards.
@@ -38,15 +39,15 @@ The Fastify backend and frontend API migration are implemented on `feat/stage-2-
 - Exact content taxonomy beyond the initial lesson block types.
 - Deployment target.
 - Production secret/session hardening and rate limiting.
-- Whether persisted artifact/reflection answers ever become product scope.
+- Export/delete controls and richer metadata for saved personal answers.
 
 ## Current verification state
 
 `./scripts/verify.sh` exists as the generic entry point and runs content validation, typecheck, lint, tests, and production build through available package scripts.
 
-`npm run dev` now starts both the Fastify backend and Vite frontend. Vite proxies `/api` to `http://127.0.0.1:3001` for local development.
+`npm run dev` now starts both the Fastify backend and Vite frontend. Vite proxies `/api` to `http://127.0.0.1:3001` for local development. The backend uses PostgreSQL for learner-owned state and defaults to `postgres://finpulse:finpulse@127.0.0.1:5432/finpulse` outside production unless `FINPULSE_DATABASE_URL` or `DATABASE_URL` is set.
 
-GitHub Actions runs `npm ci` and `npm run verify` for pull requests and pushes to `main`.
+GitHub Actions runs `npm ci` and `npm run verify` for pull requests and pushes to `main`, with a PostgreSQL service available to backend tests through `FINPULSE_TEST_DATABASE_URL`.
 
 `src/content/program.json` is a program manifest. Module and unit runtime content live under `src/content/modules/**`. The content validator also validates the example split graph, rejects unknown keys, requires normalized relative JSON paths, checks sorted unique `order` values, and verifies scenario `correctOptionId` values have matching options.
 
@@ -117,6 +118,24 @@ T-042 aligns the visual module path with the runtime unit structure without movi
 T-043 removes redundant visible Finzdorov section codes from learner-facing module/unit path section headings without changing runtime JSON, content schema, API, auth, progress, or lesson reader behavior. Section titles now render as `Ваши базовые ценности`, `Видение будущего`, `Финансовые цели`, and `Мотивация достижения целей`, while the eyebrow remains `Раздел` without a numeric suffix. `npm run test:run -- src/App.test.tsx src/features/program-navigation/learningPath.test.ts`, `npm run verify`, and Browser smoke on `/modules/financial-goals` passed.
 
 T-044 compacts `01.01 Ваши базовые ценности` from eight runtime lessons to four balanced lessons without changing schema, API, UI renderers, auth, or progress contracts. The section now contains `why-values-matter`, `what-are-values`, `values-conflict`, and `practice-1m`; deeper source slices remain documented under `docs/modules/module_1/lesson_01/` and supplemental metadata. `npm run check:content`, focused API/app tests, `npm run verify`, Browser smoke on `/modules/financial-goals`, `/lessons/why-values-matter`, and `/lessons/practice-1m` passed; local dev was restarted on backend `3002` and frontend `5175`.
+
+T-045 polishes the module path sticky header without changing content, API, auth, progress, or routing contracts. The header back button now renders `Модуль 1 раздел N` for the section currently visible during scroll, the header title follows the visible section title, the title block has zero top margin, and the module button has comfortable horizontal padding. `npm run test:run -- src/App.test.tsx`, `npm run verify`, and Browser desktop/mobile smoke on `/modules/financial-goals` passed.
+
+T-047 changes the authenticated entry behavior and account surface without adding profile management, achievements, followers, rewards, diagnostics, analytics, or content changes. Authenticated `/` now redirects to `/program`; the navigation label is `Профиль` and points to `/profile`; the old welcome screen is replaced by a Duolingo-like profile showing avatar area, email/login, registration date from `users.created_at`, shortened learner ID, and existing learning-progress stats only. Auth responses now include `createdAt`. Focused auth/app tests, `npm run verify`, and Browser desktop/390px smoke passed.
+
+T-048 adds private saved answers for authenticated `reflection` and `artifact` cards without adding diagnostics, scoring, recommendations, analytics, rewards, or anonymous persistence. The backend exposes `GET /api/reflections` and `PUT /api/reflections/:cardId`, deriving ownership from the current session and storing neutral answer fields by `(user_id, card_id)`. The lesson reader requires meaningful reflection/artifact input before completion, saves the answer before marking the card complete, and leaves anonymous answers transient. `/profile` now includes `Мой финансовый ориентир`, grouped from existing unit context. `npm run check:content`, focused backend/frontend tests, `npm run verify`, and Browser 390px smoke passed.
+
+T-049 adds `docs/QA_USER_SCENARIO_MAP.md`, a comprehensive QA scenario map for registration/login/logout, app shell navigation, program/module/unit paths, lesson/card flows, progress persistence, private reflection/artifact answers, profile display, API/session errors, accessibility, and mobile/desktop responsive coverage. No runtime code, content JSON, API, auth, progress, or profile behavior changed. `npm run verify` passed.
+
+T-050 runs the full scenario QA pass against `docs/QA_USER_SCENARIO_MAP.md` without expanding MVP scope or changing content JSON. Browser QA covered P0 M-390/D-1440 flows, M-360 overflow, two-user privacy isolation, and full traversal of all 15 current lessons; API smoke covered content, protected endpoints, reflection validation, unknown lesson, and CORS preflight. Confirmed fixes make required completed progress writes fail closed, clear authenticated/private state on session-expired progress/reflection 401s, normalize non-JSON API errors, and show an empty program state when no modules are returned. Focused tests and `npm run verify` passed.
+
+T-051 fixes mobile lesson CTA positioning on short cards without changing content, API, auth, progress, or routing contracts. The lesson session now uses a vertical flex layout so the existing sticky bottom action is pushed to the viewport bottom even when the active card content is shorter than the screen. `npm run test:run -- src/features/lesson-reader/LessonCardRenderer.test.tsx`, `npm run verify`, and Browser 390px/desktop smoke passed.
+
+T-052 migrates backend persistence from SQLite/`better-sqlite3` to PostgreSQL/`pg` without changing frontend API contracts, product scope, or JSON content source-of-truth. The backend now uses an async repository boundary for users, sessions, progress, and private reflection answers; PostgreSQL DDL uses `uuid`, `text`, `timestamptz`, and `jsonb`; tests use isolated PostgreSQL schemas; CI provides a PostgreSQL service. `npm run typecheck`, `npm run lint`, focused backend tests, and `npm run verify` passed against PostgreSQL.
+
+T-053 deploys the Yandex Cloud on-demand Managed PostgreSQL control layer. YC rejected uppercase `FinPulse`, so the target folder is `finpulse` (`b1gpl04msqva2tsff46k`). `finpulse-db` (`c9quhk2n9q3c3vvsp83g`) is PostgreSQL `16.13`, one public-IP host in `ru-central1-a`, `s2.micro`, `network-ssd`, 10 GB, with serverless access and dedicated security group `finpulse-db-sg` (`enpfi1mqc28vo7tc71kn`). Generated credentials are stored through Connection Manager/Lockbox metadata (`a59otq7kc4275f8onsdm` / `e6qdr1f6uh0k9aj2v34c`), without reading the payload. `finpulse-db-start` (`https://functions.yandexcloud.net/d4e0o3h9gnq59inscpns`) is public and opens/extends a 2-hour lease; `finpulse-db-autostop` runs from trigger `finpulse-db-autostop-5m` every 5 minutes. Verification invoked the public start URL once, confirmed `active_until=1780262473`, created the first required backup, manually stopped the cluster, and confirmed final status `STOPPED`. Full `npm run verify` remains blocked locally until a PostgreSQL test database URL is provided.
+
+T-054 through T-058 add the production CI/CD deploy path. FinPulse now uses a same-origin single-container deployment shape: Fastify serves `/api/**` and the built Vite SPA from `dist/`; `Dockerfile`, `.dockerignore`, `vite.server.config.ts`, `npm run build:server`, `npm run build:container`, and `npm run start` define the production artifact. The backend exposes DB-free `/api/health` and DB-backed `/api/readyz`, can compose the PostgreSQL URL from non-secret env pieces plus a Lockbox-injected `FINPULSE_DATABASE_PASSWORD`, and continues to run the idempotent `server/db/schema.sql` bootstrap at startup. Yandex deploy resources created on 2026-05-31: Container Registry `finpulse` (`crp5j8penr0hui0ttaum`), Serverless Container `finpulse-app` (`bbabho5nujsp32c8mvc7`, URL `https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/`), runtime SA `aje0lujm0q1obpn9fbu9`, deploy SA `ajeboe0h7j2k9vtfi06j`, WIF federation `ajeuttdtpqdudd97n6ei`, and federated credential `ajeci1l3l7qhus6vjqhk`. `.github/workflows/deploy.yml` runs on push to `main`: verify, GitHub OIDC to YC IAM token exchange, image build/push, DB start via `YC_DB_START_URL`, Serverless Container revision deploy with Lockbox secret binding, and smoke checks for frontend, `/api/health`, and `/api/readyz`. Operations runbook: `docs/operations/yandex-cloud-finpulse-deploy.md`. Local verification passed with a temporary PostgreSQL database: `npm run verify`, `npm run build:server`, and compiled production server smoke for `/`, `/api/health`, and `/api/readyz`. No production revision was deployed locally because the local Docker daemon was unavailable; first push/dispatch after adding GitHub secret `YC_DB_START_URL` should create the initial revision.
 
 ## State update rules
 

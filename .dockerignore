@@ -1,0 +1,11 @@
+.git
+.github
+.DS_Store
+coverage
+dist
+dist-server
+node_modules
+npm-debug.log*
+*.tsbuildinfo
+.env
+.env.*

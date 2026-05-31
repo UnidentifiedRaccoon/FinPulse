@@ -24,11 +24,12 @@ Included:
 - Stage 2 backend API for content delivery;
 - Stage 2 simple learner registration/login for saved progress;
 - Stage 2 persisted viewed/completed progress for lessons/cards;
+- Stage 2 private saved answers for authenticated reflection/artifact cards as a personal artifact;
 - responsive mobile-first design;
 - JSON as content source.
 
 Excluded:
-- user cabinets/profile management beyond minimal learner login;
+- user cabinets/profile management beyond the minimal learner login, learning progress, and private answer artifact;
 - diagnostics/tests as a product system;
 - rewards/gamification;
 - analytics dashboards;
@@ -46,12 +47,14 @@ Excluded:
 5. User consumes the lesson material.
 6. User navigates to the next or previous lesson.
 7. In Stage 2, signed-in users can keep basic progress across reloads.
+8. In Stage 2, signed-in users can return to their own reflection/artifact answers in the profile.
 
 ## Product principles
 
 - Content first.
 - Fast on mobile.
 - No unnecessary sign-in friction: content remains readable without auth, and auth exists only for saved progress.
+- Personal answers are a private learner artifact, not a test, score, inferred profile, or recommendation surface.
 - No hidden complexity disguised as MVP.
 - Accessible by default.
 - Architecture should not block later expansion into accounts, diagnostics, analytics, or richer backend content delivery, but those must stay behind explicit decisions.

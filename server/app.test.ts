@@ -1,18 +1,50 @@
 // @vitest-environment node
+import { randomUUID } from 'node:crypto'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { createApp } from './app'
 import { verifyPassword } from './lib/password'
 
-async function setupTestApp() {
+async function setupTestApp(options: { staticRoot?: string } = {}) {
   const created = await createApp({
-    dbPath: ':memory:',
+    databaseUrl: getTestDatabaseUrl(),
+    databaseSchema: createTestSchemaName(),
+    resetDatabaseSchema: true,
+    dropDatabaseSchemaOnClose: true,
+    databasePoolMax: 1,
+    staticRoot: options.staticRoot,
     cookieSecure: false,
     corsOrigin: 'http://localhost:5173',
   })
   await created.app.ready()
 
   return created
+}
+
+function getTestDatabaseUrl() {
+  const databaseUrl =
+    process.env.FINPULSE_TEST_DATABASE_URL ?? process.env.FINPULSE_DATABASE_URL ?? process.env.DATABASE_URL
+
+  if (!databaseUrl) {
+    throw new Error('FINPULSE_TEST_DATABASE_URL, FINPULSE_DATABASE_URL, or DATABASE_URL is required for backend tests')
+  }
+
+  return databaseUrl
+}
+
+function createTestSchemaName() {
+  return `test_${randomUUID().replaceAll('-', '_')}`
+}
+
+async function createStaticRoot() {
+  const root = await mkdtemp(join(tmpdir(), 'finpulse-static-'))
+  await mkdir(join(root, 'assets'))
+  await writeFile(join(root, 'index.html'), '<!doctype html><html><body><div id="root"></div></body></html>')
+  await writeFile(join(root, 'assets', 'app.js'), 'window.__finpulse = true')
+  return root
 }
 
 function sessionCookie(response: { headers: Record<string, number | string | string[] | undefined> }) {
@@ -27,9 +59,66 @@ function sessionCookie(response: { headers: Record<string, number | string | str
 }
 
 describe('backend API', () => {
+  it('separates process health from database readiness', async () => {
+    const { app } = await setupTestApp()
+
+    try {
+      const healthResponse = await app.inject('/api/health')
+      expect(healthResponse.statusCode).toBe(200)
+      expect(healthResponse.json()).toEqual({
+        ok: true,
+      })
+
+      const readyResponse = await app.inject('/api/readyz')
+      expect(readyResponse.statusCode).toBe(200)
+      expect(readyResponse.json()).toEqual({
+        ok: true,
+        database: true,
+      })
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('serves the built SPA without overriding API 404 responses', async () => {
+    const staticRoot = await createStaticRoot()
+    const { app } = await setupTestApp({ staticRoot })
+
+    try {
+      const rootResponse = await app.inject('/')
+      expect(rootResponse.statusCode).toBe(200)
+      expect(rootResponse.headers['content-type']).toContain('text/html')
+      expect(rootResponse.body).toContain('<div id="root"></div>')
+
+      const routeFallbackResponse = await app.inject('/profile')
+      expect(routeFallbackResponse.statusCode).toBe(200)
+      expect(routeFallbackResponse.headers['content-type']).toContain('text/html')
+
+      const assetResponse = await app.inject('/assets/app.js')
+      expect(assetResponse.statusCode).toBe(200)
+      expect(assetResponse.headers['content-type']).toContain('text/javascript')
+      expect(assetResponse.body).toContain('window.__finpulse')
+
+      const apiNotFoundResponse = await app.inject('/api/missing')
+      expect(apiNotFoundResponse.statusCode).toBe(404)
+      expect(apiNotFoundResponse.json()).toMatchObject({
+        error: {
+          code: 'not_found',
+        },
+      })
+    } finally {
+      await app.close()
+      await rm(staticRoot, { recursive: true, force: true })
+    }
+  })
+
   it('allows local loopback CORS origins by default', async () => {
     const { app } = await createApp({
-      dbPath: ':memory:',
+      databaseUrl: getTestDatabaseUrl(),
+      databaseSchema: createTestSchemaName(),
+      resetDatabaseSchema: true,
+      dropDatabaseSchemaOnClose: true,
+      databasePoolMax: 1,
       cookieSecure: false,
     })
     await app.ready()
@@ -101,14 +190,13 @@ describe('backend API', () => {
       expect(registerResponse.json()).toMatchObject({
         user: {
           login: 'learner.one',
+          createdAt: expect.any(String),
         },
       })
 
-      const row = db
-        .prepare('SELECT login, password_hash FROM users WHERE login = ?')
-        .get('learner.one') as { login: string; password_hash: string }
-      expect(row.password_hash).not.toBe('secure-passphrase')
-      await expect(verifyPassword('secure-passphrase', row.password_hash)).resolves.toBe(true)
+      const row = await db.users.findUserByLogin('learner.one')
+      expect(row?.passwordHash).not.toBe('secure-passphrase')
+      await expect(verifyPassword('secure-passphrase', row?.passwordHash ?? '')).resolves.toBe(true)
 
       const meResponse = await app.inject({
         method: 'GET',
@@ -122,6 +210,7 @@ describe('backend API', () => {
       expect(meResponse.json()).toMatchObject({
         user: {
           login: 'learner.one',
+          createdAt: row?.createdAt,
         },
       })
     } finally {
@@ -146,6 +235,7 @@ describe('backend API', () => {
       expect(registerResponse.json()).toMatchObject({
         user: {
           login: 'learner.email+one@example.com',
+          createdAt: expect.any(String),
         },
       })
 
@@ -162,6 +252,7 @@ describe('backend API', () => {
       expect(loginResponse.json()).toMatchObject({
         user: {
           login: 'learner.email+one@example.com',
+          createdAt: registerResponse.json().user.createdAt,
         },
       })
     } finally {
@@ -325,6 +416,285 @@ describe('backend API', () => {
       expect(secondProgress.json()).toEqual({
         lessons: [],
         cards: [],
+      })
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('protects reflection answers and stores reflection/artifact answers per user', async () => {
+    const { app, db } = await setupTestApp()
+
+    try {
+      const blockedGetResponse = await app.inject({
+        method: 'GET',
+        url: '/api/reflections',
+      })
+      expect(blockedGetResponse.statusCode).toBe(401)
+
+      const blockedPutResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_01_05_reflection_dream',
+        payload: { singleValue: 'Свобода выбора' },
+      })
+      expect(blockedPutResponse.statusCode).toBe(401)
+
+      const firstRegister = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'reflection-user-one',
+          password: 'secure-passphrase',
+        },
+      })
+      const firstCookie = sessionCookie(firstRegister)
+
+      const rejectedUserIdPayload = await app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_01_05_reflection_dream',
+        headers: { cookie: firstCookie },
+        payload: {
+          singleValue: 'Свобода выбора',
+          userId: 'not-current-user',
+        },
+      })
+      expect(rejectedUserIdPayload.statusCode).toBe(400)
+      expect(rejectedUserIdPayload.json()).toMatchObject({
+        error: {
+          code: 'invalid_reflection_payload',
+        },
+      })
+
+      const rejectedEmptyPayload = await app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_01_05_reflection_dream',
+        headers: { cookie: firstCookie },
+        payload: {
+          singleValue: '   ',
+        },
+      })
+      expect(rejectedEmptyPayload.statusCode).toBe(400)
+      expect(rejectedEmptyPayload.json()).toMatchObject({
+        error: {
+          code: 'empty_reflection_answer',
+        },
+      })
+
+      const createReflectionResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_01_05_reflection_dream',
+        headers: { cookie: firstCookie },
+        payload: {
+          singleValue: 'Свобода выбора',
+          fallbackValue: 'Личный ориентир',
+        },
+      })
+      expect(createReflectionResponse.statusCode).toBe(200)
+      expect(createReflectionResponse.json()).toMatchObject({
+        answers: [
+          expect.objectContaining({
+            cardId: 'card_01_05_reflection_dream',
+            saveKey: 'first_financial_dream',
+            lessonSlug: 'why-values-matter',
+            moduleSlug: 'financial-goals',
+            unitSlug: 'values-and-goals',
+            cardType: 'reflection',
+            prompt: expect.any(String),
+            answer: {
+              singleValue: 'Свобода выбора',
+              fallbackValue: 'Личный ориентир',
+            },
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          }),
+        ],
+      })
+
+      type StoredReflectionRow = {
+        user_id: string
+        card_id: string
+        save_key: string
+        lesson_slug: string
+        answer_json: Record<string, unknown>
+      }
+      const storedResult = await db.query<StoredReflectionRow>(
+        'SELECT user_id, card_id, save_key, lesson_slug, answer_json FROM reflection_answers WHERE card_id = $1',
+        ['card_01_05_reflection_dream'],
+      )
+      const storedRow = storedResult.rows[0]
+      expect(storedRow).toMatchObject({
+        user_id: firstRegister.json().user.id,
+        card_id: 'card_01_05_reflection_dream',
+        save_key: 'first_financial_dream',
+        lesson_slug: 'why-values-matter',
+      })
+      expect(storedRow?.answer_json).toEqual({
+        singleValue: 'Свобода выбора',
+        fallbackValue: 'Личный ориентир',
+      })
+
+      const updateReflectionResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_01_05_reflection_dream',
+        headers: { cookie: firstCookie },
+        payload: {
+          singleValue: 'здоровье',
+        },
+      })
+      expect(updateReflectionResponse.statusCode).toBe(200)
+      expect(updateReflectionResponse.json()).toMatchObject({
+        answers: [
+          expect.objectContaining({
+            cardId: 'card_01_05_reflection_dream',
+            answer: {
+              singleValue: 'здоровье',
+            },
+          }),
+        ],
+      })
+
+      const createArtifactResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_02_03_matching_examples',
+        headers: { cookie: firstCookie },
+        payload: {
+          multiValues: ['Обучение', 'Рост'],
+          selectedVariant: 'Сравнить покупку с ценностью',
+          checkedRows: ['need', 'value'],
+          templateValues: ['Покупка курса', 'Развитие'],
+        },
+      })
+      expect(createArtifactResponse.statusCode).toBe(200)
+      expect(createArtifactResponse.json()).toMatchObject({
+        answers: expect.arrayContaining([
+          expect.objectContaining({
+            cardId: 'card_02_03_matching_examples',
+            saveKey: null,
+            lessonSlug: 'what-are-values',
+            cardType: 'artifact',
+            answer: {
+              multiValues: ['Обучение', 'Рост'],
+              selectedVariant: 'Сравнить покупку с ценностью',
+              checkedRows: ['need', 'value'],
+              templateValues: ['Покупка курса', 'Развитие'],
+            },
+          }),
+        ]),
+      })
+
+      const firstAnswersResponse = await app.inject({
+        method: 'GET',
+        url: '/api/reflections',
+        headers: { cookie: firstCookie },
+      })
+      expect(firstAnswersResponse.statusCode).toBe(200)
+      expect(firstAnswersResponse.json().answers).toHaveLength(2)
+      expect(firstAnswersResponse.json().answers).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            cardId: 'card_01_05_reflection_dream',
+            answer: {
+              singleValue: 'здоровье',
+            },
+          }),
+          expect.objectContaining({
+            cardId: 'card_02_03_matching_examples',
+            cardType: 'artifact',
+          }),
+        ]),
+      )
+
+      const secondRegister = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'reflection-user-two',
+          password: 'secure-passphrase',
+        },
+      })
+      const secondCookie = sessionCookie(secondRegister)
+
+      const emptySecondAnswersResponse = await app.inject({
+        method: 'GET',
+        url: '/api/reflections',
+        headers: { cookie: secondCookie },
+      })
+      expect(emptySecondAnswersResponse.statusCode).toBe(200)
+      expect(emptySecondAnswersResponse.json()).toEqual({
+        answers: [],
+      })
+
+      const secondReflectionResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_01_05_reflection_dream',
+        headers: { cookie: secondCookie },
+        payload: {
+          singleValue: 'Свой отдельный ориентир',
+        },
+      })
+      expect(secondReflectionResponse.statusCode).toBe(200)
+
+      const firstAnswersAfterSecondWrite = await app.inject({
+        method: 'GET',
+        url: '/api/reflections',
+        headers: { cookie: firstCookie },
+      })
+      expect(firstAnswersAfterSecondWrite.json().answers).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            cardId: 'card_01_05_reflection_dream',
+            answer: {
+              singleValue: 'здоровье',
+            },
+          }),
+        ]),
+      )
+
+      const secondAnswersResponse = await app.inject({
+        method: 'GET',
+        url: '/api/reflections',
+        headers: { cookie: secondCookie },
+      })
+      expect(secondAnswersResponse.json()).toMatchObject({
+        answers: [
+          {
+            cardId: 'card_01_05_reflection_dream',
+            answer: {
+              singleValue: 'Свой отдельный ориентир',
+            },
+          },
+        ],
+      })
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('rejects non-reflection cards for personal answer persistence', async () => {
+    const { app } = await setupTestApp()
+
+    try {
+      const registerResponse = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'non-reflection-user',
+          password: 'secure-passphrase',
+        },
+      })
+
+      const response = await app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_01_04_goal_choice',
+        headers: { cookie: sessionCookie(registerResponse) },
+        payload: { singleValue: 'any answer' },
+      })
+
+      expect(response.statusCode).toBe(400)
+      expect(response.json()).toMatchObject({
+        error: {
+          code: 'non_persistable_card',
+        },
       })
     } finally {
       await app.close()

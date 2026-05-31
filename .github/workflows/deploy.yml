@@ -1,0 +1,185 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: finpulse-production-deploy
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 24
+  YC_CLOUD_ID: b1gmnnjgdcc1b7qhjmlk
+  YC_FOLDER_ID: b1gpl04msqva2tsff46k
+  YC_REGISTRY_ID: crp5j8penr0hui0ttaum
+  YC_CONTAINER_ID: bbabho5nujsp32c8mvc7
+  YC_RUNTIME_SA_ID: aje0lujm0q1obpn9fbu9
+  YC_DEPLOY_SA_ID: ajeboe0h7j2k9vtfi06j
+  YC_WIF_AUDIENCE: https://github.com/UnidentifiedRaccoon
+  YC_DB_SECRET_ID: e6qdr1f6uh0k9aj2v34c
+  YC_NETWORK_ID: enpanp4tbmpj9gckolkg
+  YC_SUBNET_ID: e9bl6as7h109ghbo9c33
+  FINPULSE_DATABASE_HOST: rc1a-ua11qmcqokpra171.mdb.yandexcloud.net
+  FINPULSE_DATABASE_PORT: 6432
+  FINPULSE_DATABASE_NAME: finpulse
+  FINPULSE_DATABASE_USER: finpulse_app
+  FINPULSE_DATABASE_SSLMODE: require
+  FINPULSE_APP_URL: https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net
+
+jobs:
+  deploy:
+    name: Verify, build, deploy, smoke
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: finpulse_test
+          POSTGRES_USER: finpulse
+          POSTGRES_PASSWORD: finpulse
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U finpulse -d finpulse_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      FINPULSE_TEST_DATABASE_URL: postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test
+      FINPULSE_DATABASE_URL: postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test
+      DATABASE_URL: postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test
+      IMAGE: cr.yandex/crp5j8penr0hui0ttaum/finpulse:${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run verification
+        run: npm run verify
+
+      - name: Install Yandex Cloud CLI
+        run: |
+          curl -fsSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -i "$HOME/yandex-cloud" -n
+          echo "$HOME/yandex-cloud/bin" >> "$GITHUB_PATH"
+
+      - name: Exchange GitHub OIDC token for Yandex IAM token
+        id: yc-token
+        run: |
+          encoded_audience="$(jq -rn --arg value "$YC_WIF_AUDIENCE" '$value|@uri')"
+          oidc_token="$(curl -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${encoded_audience}" | jq -r '.value')"
+
+          iam_token="$(curl -fsS -X POST "https://auth.yandex.cloud/oauth/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            --data-urlencode "grant_type=urn:ietf:params:oauth:grant-type:token-exchange" \
+            --data-urlencode "requested_token_type=urn:ietf:params:oauth:token-type:access_token" \
+            --data-urlencode "audience=$YC_DEPLOY_SA_ID" \
+            --data-urlencode "subject_token=$oidc_token" \
+            --data-urlencode "subject_token_type=urn:ietf:params:oauth:token-type:id_token" | jq -r '.access_token')"
+
+          if [ -z "$iam_token" ] || [ "$iam_token" = "null" ]; then
+            echo "Failed to exchange GitHub OIDC token for Yandex IAM token" >&2
+            exit 1
+          fi
+          echo "::add-mask::$iam_token"
+          echo "token=$iam_token" >> "$GITHUB_OUTPUT"
+
+      - name: Configure Yandex Cloud CLI
+        run: |
+          yc config profile create finpulse-ci
+          yc config profile activate finpulse-ci
+          yc config set token "${{ steps.yc-token.outputs.token }}"
+          yc config set cloud-id "$YC_CLOUD_ID"
+          yc config set folder-id "$YC_FOLDER_ID"
+
+      - name: Configure Docker for Yandex Container Registry
+        run: yc container registry configure-docker
+
+      - name: Build production image
+        run: docker build --tag "$IMAGE" .
+
+      - name: Push production image
+        run: docker push "$IMAGE"
+
+      - name: Start database
+        env:
+          YC_DB_START_URL: ${{ secrets.YC_DB_START_URL }}
+        run: |
+          test -n "$YC_DB_START_URL"
+          curl -fsS -X POST "$YC_DB_START_URL" -o "$RUNNER_TEMP/db-start.json"
+          jq '{action, status, active_until}' "$RUNNER_TEMP/db-start.json"
+
+      - name: Deploy serverless container revision
+        run: |
+          yc serverless container revision deploy \
+            --container-id "$YC_CONTAINER_ID" \
+            --image "$IMAGE" \
+            --cores 1 \
+            --memory 512MB \
+            --concurrency 8 \
+            --execution-timeout 30s \
+            --service-account-id "$YC_RUNTIME_SA_ID" \
+            --network-id "$YC_NETWORK_ID" \
+            --subnets "$YC_SUBNET_ID" \
+            --environment NODE_ENV=production \
+            --environment PORT=8080 \
+            --environment FINPULSE_API_HOST=0.0.0.0 \
+            --environment FINPULSE_STATIC_ROOT=/app/dist \
+            --environment FINPULSE_COOKIE_SECURE=true \
+            --environment FINPULSE_DATABASE_HOST="$FINPULSE_DATABASE_HOST" \
+            --environment FINPULSE_DATABASE_PORT="$FINPULSE_DATABASE_PORT" \
+            --environment FINPULSE_DATABASE_NAME="$FINPULSE_DATABASE_NAME" \
+            --environment FINPULSE_DATABASE_USER="$FINPULSE_DATABASE_USER" \
+            --environment FINPULSE_DATABASE_SSLMODE="$FINPULSE_DATABASE_SSLMODE" \
+            --secret id="$YC_DB_SECRET_ID",key=postgresql_password,environment-variable=FINPULSE_DATABASE_PASSWORD
+
+      - name: Smoke test production
+        run: |
+          check_url() {
+            local label="$1"
+            local url="$2"
+            local body="$RUNNER_TEMP/${label}.body"
+            local code=""
+
+            for attempt in $(seq 1 30); do
+              code="$(curl -fsS -o "$body" -w "%{http_code}" "$url" || true)"
+              if [ "$code" = "200" ]; then
+                return 0
+              fi
+              sleep 5
+            done
+
+            echo "Smoke check failed: $label returned HTTP ${code:-none}" >&2
+            sed -n '1,80p' "$body" >&2 || true
+            return 1
+          }
+
+          check_url "health" "$FINPULSE_APP_URL/api/health"
+          check_url "readyz" "$FINPULSE_APP_URL/api/readyz"
+          check_url "frontend" "$FINPULSE_APP_URL/"
+          grep -qi '<html' "$RUNNER_TEMP/frontend.body"
+
+          {
+            echo "## FinPulse deployment"
+            echo ""
+            echo "- Image: \`$IMAGE\`"
+            echo "- URL: $FINPULSE_APP_URL"
+            echo "- Smoke: health, readyz, frontend passed"
+          } >> "$GITHUB_STEP_SUMMARY"

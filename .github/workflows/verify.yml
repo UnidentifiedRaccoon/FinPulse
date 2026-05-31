@@ -13,6 +13,24 @@ jobs:
   verify:
     name: npm run verify
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: finpulse_test
+          POSTGRES_USER: finpulse
+          POSTGRES_PASSWORD: finpulse
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U finpulse -d finpulse_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      FINPULSE_TEST_DATABASE_URL: postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test
+      FINPULSE_DATABASE_URL: postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test
+      DATABASE_URL: postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test
 
     steps:
       - name: Checkout

@@ -2,7 +2,7 @@
 
 ## Decision summary
 
-Use a Vite React + TypeScript SPA for the frontend. Starting in Stage 2, add a small Fastify + SQLite backend for learner identity, session-backed progress, and read-only content API delivery.
+Use a Vite React + TypeScript SPA for the frontend. Starting in Stage 2, use a small Fastify + PostgreSQL backend for learner identity, session-backed progress, private reflection/artifact answers, and read-only content API delivery.
 
 Rationale:
 - content remains canonical static JSON;
@@ -35,11 +35,11 @@ Tests:          Vitest + Testing Library when components stabilize
 
 ```txt
 HTTP server:    Fastify
-Persistence:    SQLite
+Persistence:    PostgreSQL through async repositories
 Auth:           login/password with hashed passwords
 Sessions:       server-side session id in httpOnly cookie
 Content API:    read-only responses hydrated from validated JSON files
-Tests:          Vitest integration tests against isolated SQLite files
+Tests:          Vitest integration tests against isolated PostgreSQL schemas/databases
 ```
 
 ## Recommended project structure
@@ -81,10 +81,16 @@ server/
     connection.ts
     migrate.ts
     schema.sql
+    query.ts
+    usersRepository.ts
+    sessionsRepository.ts
+    progressRepository.ts
+    reflectionAnswersRepository.ts
   modules/
     auth/
     content/
     progress/
+    reflections/
   lib/
     password.ts
     sessions.ts
@@ -113,8 +119,18 @@ JSON content file
 Learner interaction
   -> frontend event handler
   -> authenticated progress API
-  -> SQLite progress row owned by current session user
+  -> async PostgreSQL repository
+  -> progress row owned by current session user
   -> frontend progress refresh or optimistic local UI update
+```
+
+```txt
+Reflection/artifact answer
+  -> frontend validates meaningful input before continuing
+  -> authenticated reflection API
+  -> async PostgreSQL repository
+  -> answer row owned by current session user and card.id
+  -> profile fetches only the current learner's answers
 ```
 
 ## State policy
@@ -164,7 +180,7 @@ GET /api/units/:unitSlug
 GET /api/lessons/:lessonSlug
 ```
 
-Initial auth/progress routes:
+Initial auth/progress/reflection routes:
 
 ```txt
 POST /api/auth/register
@@ -174,14 +190,37 @@ GET  /api/auth/me
 GET  /api/progress
 PUT  /api/progress/lessons/:lessonSlug
 PUT  /api/progress/cards/:cardId
+GET  /api/reflections
+PUT  /api/reflections/:cardId
 ```
 
-Auth and progress policy:
+Auth, progress, and reflection answer policy:
 - content routes may remain public;
-- progress routes require a valid httpOnly cookie session;
+- progress and reflection routes require a valid httpOnly cookie session;
 - route handlers derive the user id from the session only;
-- password hashes and session records are stored server-side;
-- progress stores viewed/completed markers, not diagnostics/scoring/analytics.
+- password hashes and session records are stored server-side in PostgreSQL;
+- progress stores viewed/completed markers, not diagnostics/scoring/analytics;
+- reflection answers store neutral answer fields for `reflection`/`artifact` cards only and never store scores, labels, inferred traits, recommendations, or analytics.
+
+Persistence boundary:
+- route handlers should call async repository functions instead of embedding SQL directly;
+- repositories own PostgreSQL queries, connection/pool usage, and persistence-specific error mapping;
+- API request/response contracts should not expose PostgreSQL implementation details;
+- migrations should be deterministic and committed with the backend code;
+- local development and CI should use isolated PostgreSQL schemas/databases rather than generated SQLite files.
+
+## Deployment
+
+Production deployment uses one same-origin Yandex Serverless Container. The Fastify backend serves `/api/**` and the built Vite SPA from `dist/`, so content, auth, progress, and reflection routes share one public origin with the learner frontend.
+
+Runtime expectations:
+- the backend must read `PORT` from the environment and bind to `0.0.0.0` so it can run in container platforms such as future Yandex Serverless Containers;
+- PostgreSQL connection settings and secrets come from environment variables, with the DB password injected from Yandex Lockbox into `FINPULSE_DATABASE_PASSWORD`;
+- no database password, session secret, or connection string should be committed;
+- Yandex Managed PostgreSQL is reachable through the deployed Serverless Container VPC/subnet configuration;
+- the backend applies the committed idempotent schema SQL on startup; introduce a versioned migration ledger before broad schema evolution.
+
+Deploy resources, IAM, required GitHub secrets, smoke checks, rollback, and DB start handling are documented in `docs/operations/yandex-cloud-finpulse-deploy.md`.
 
 ## Error handling
 

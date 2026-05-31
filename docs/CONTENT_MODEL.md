@@ -165,8 +165,9 @@ Minimal type-specific fields:
 - `summary`: `points`, optional `body`, `nextStep`.
 
 `readOnly: true` means the reader must force static rendering even when that card type supports interaction.
-If `readOnly` is omitted or `false`, the card is eligible for the reader's local interactive behavior.
-Interactive state is UI-only unless a future product decision explicitly adds persistence.
+If `readOnly` is omitted or `false`, the card is eligible for the reader's interactive behavior.
+
+Authenticated `reflection` and `artifact` answers may be persisted as the learner's private personal artifact. This persistence uses `card.id`, optional `reflection.saveKey`, and lesson/module/unit context. It must not add answer scoring, diagnostics, labels, inferred traits, analytics, or recommendations.
 
 ## Supplemental content
 
@@ -227,7 +228,9 @@ Stage 2 serves the same hydrated Program -> Module -> Unit -> Lesson -> Card gra
 
 The JSON files remain the canonical source-of-truth. The backend must validate and hydrate the graph with the same model before returning content responses. Frontend routes may fetch program/module/unit/lesson data from the API, but content edits still happen in the repo JSON files and must pass `npm run check:content`.
 
-Saved progress may reference stable `lesson.slug` and `card.id` values only. It must not create a parallel content schema, rewrite lesson/card data, or persist full freeform answers unless a later ADR expands that scope.
+Saved progress may reference stable `lesson.slug` and `card.id` values only. It must not create a parallel content schema or rewrite lesson/card data.
+
+Saved reflection/artifact answers may reference stable `card.id`, optional `saveKey`, and `lesson.slug` for display. Completion of an interactive `reflection`/`artifact` card can require a meaningful non-empty answer or selection. Open answers are accepted by fact of entry and are not checked as right/wrong.
 
 ## Migration rule
 
