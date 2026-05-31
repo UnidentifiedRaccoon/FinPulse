@@ -11,6 +11,8 @@ import { UnitPage } from '@/pages/UnitPage'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+const LOGOUT_MARKER_KEY = 'finpulse:logged-out'
+
 function App() {
   const [user, setUser] = useState<ApiUser | null>(null)
   const [authError, setAuthError] = useState('')
@@ -19,7 +21,7 @@ function App() {
   const [progress, setProgress] = useState<ProgressResponse | null>(null)
   const [reflectionAnswers, setReflectionAnswers] = useState<ReflectionAnswersResponse | null>(null)
   const [isAuthBusy, setIsAuthBusy] = useState(false)
-  const [isAuthReady, setIsAuthReady] = useState(false)
+  const [isAuthReady, setIsAuthReady] = useState(() => hasLogoutMarker())
 
   const clearAuthenticatedState = useCallback(() => {
     setUser(null)
@@ -28,6 +30,13 @@ function App() {
     setReflectionAnswers(null)
     setReflectionError('')
   }, [])
+
+  const syncLoggedOutHistoryState = useCallback(() => {
+    if (!hasLogoutMarker()) return
+    clearAuthenticatedState()
+    setAuthError('')
+    setIsAuthReady(true)
+  }, [clearAuthenticatedState])
 
   const refreshProgress = useCallback(async () => {
     try {
@@ -51,6 +60,12 @@ function App() {
 
   useEffect(() => {
     let isActive = true
+
+    if (hasLogoutMarker()) {
+      return () => {
+        isActive = false
+      }
+    }
 
     api
       .getCurrentUser()
@@ -80,13 +95,24 @@ function App() {
     return () => {
       isActive = false
     }
-  }, [])
+  }, [clearAuthenticatedState])
+
+  useEffect(() => {
+    window.addEventListener('pageshow', syncLoggedOutHistoryState)
+    window.addEventListener('popstate', syncLoggedOutHistoryState)
+
+    return () => {
+      window.removeEventListener('pageshow', syncLoggedOutHistoryState)
+      window.removeEventListener('popstate', syncLoggedOutHistoryState)
+    }
+  }, [syncLoggedOutHistoryState])
 
   const handleLogin = async (login: string, password: string) => {
     setIsAuthBusy(true)
     setAuthError('')
     try {
       const response = await api.login(login, password)
+      clearLogoutMarker()
       setUser(response.user)
       await Promise.all([refreshProgress(), refreshReflectionAnswers()])
     } catch (error) {
@@ -101,6 +127,7 @@ function App() {
     setAuthError('')
     try {
       const response = await api.register(login, password)
+      clearLogoutMarker()
       setUser(response.user)
       await Promise.all([refreshProgress(), refreshReflectionAnswers()])
     } catch (error) {
@@ -115,6 +142,7 @@ function App() {
     setAuthError('')
     try {
       await api.logout()
+      markLogout()
       clearAuthenticatedState()
       return true
     } catch (error) {
@@ -409,7 +437,7 @@ function DesktopAppSidebar({
       <div className="px-6 pb-6 pt-8">
         <Link
           aria-label="FinPulse"
-          className="inline-flex rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25"
+          className="inline-flex min-h-11 items-center rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25"
           to="/program"
         >
           <img
@@ -569,6 +597,30 @@ function getApiMessage(error: unknown) {
   }
 
   return 'Не удалось выполнить запрос.'
+}
+
+function markLogout() {
+  try {
+    window.sessionStorage.setItem(LOGOUT_MARKER_KEY, String(Date.now()))
+  } catch {
+    // Storage can be unavailable in restricted browser modes; state clearing still protects the live app.
+  }
+}
+
+function clearLogoutMarker() {
+  try {
+    window.sessionStorage.removeItem(LOGOUT_MARKER_KEY)
+  } catch {
+    // Storage can be unavailable in restricted browser modes.
+  }
+}
+
+function hasLogoutMarker() {
+  try {
+    return window.sessionStorage.getItem(LOGOUT_MARKER_KEY) !== null
+  } catch {
+    return false
+  }
 }
 
 export default App

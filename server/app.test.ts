@@ -300,6 +300,42 @@ describe('backend API', () => {
     }
   })
 
+  it('treats logout with an empty JSON body as a successful session clear', async () => {
+    const { app } = await setupTestApp()
+
+    try {
+      const registerResponse = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'empty-json-logout-user',
+          password: 'secure-passphrase',
+        },
+      })
+      const cookie = sessionCookie(registerResponse)
+
+      const logoutResponse = await app.inject({
+        method: 'POST',
+        url: '/api/auth/logout',
+        headers: {
+          cookie,
+          'content-type': 'application/json',
+        },
+        payload: '',
+      })
+      expect(logoutResponse.statusCode).toBe(204)
+
+      const meResponse = await app.inject({
+        method: 'GET',
+        url: '/api/auth/me',
+        headers: { cookie },
+      })
+      expect(meResponse.statusCode).toBe(401)
+    } finally {
+      await app.close()
+    }
+  })
+
   it('rejects passwords that bcrypt would truncate', async () => {
     const { app } = await setupTestApp()
 
@@ -572,6 +608,7 @@ describe('backend API', () => {
             saveKey: null,
             lessonSlug: 'what-are-values',
             cardType: 'artifact',
+            template: ['Желание', 'Возможная ценность'],
             answer: {
               multiValues: ['Обучение', 'Рост'],
               selectedVariant: 'Сравнить покупку с ценностью',

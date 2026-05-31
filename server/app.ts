@@ -9,6 +9,7 @@ import { ZodError } from 'zod'
 
 import { openDatabase, type AppDatabase } from './db/connection'
 import { sendError } from './lib/http'
+import { clearSessionCookie, destroySession, SESSION_COOKIE_NAME, type SessionCookieOptions } from './lib/sessions'
 import { registerAuthRoutes } from './modules/auth/routes'
 import { createContentService } from './modules/content/contentService'
 import { registerContentRoutes } from './modules/content/routes'
@@ -56,7 +57,17 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     methods: ['GET', 'POST', 'PUT', 'OPTIONS'],
   })
 
-  app.setErrorHandler((error, _request, reply) => {
+  const sessionCookieOptions: SessionCookieOptions = {
+    secure: options.cookieSecure ?? process.env.FINPULSE_COOKIE_SECURE === 'true',
+  }
+
+  app.setErrorHandler(async (error, request, reply) => {
+    if (isEmptyJsonBodyError(error) && request.method === 'POST' && getRequestPathname(request.url) === '/api/auth/logout') {
+      await destroySession(db, request.cookies[SESSION_COOKIE_NAME])
+      clearSessionCookie(reply, sessionCookieOptions)
+      return reply.code(204).send()
+    }
+
     if (error instanceof ZodError) {
       return sendError(reply, 400, 'invalid_request', 'Request payload is invalid')
     }
@@ -86,9 +97,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     }
   })
 
-  registerAuthRoutes(app, db, {
-    secure: options.cookieSecure ?? process.env.FINPULSE_COOKIE_SECURE === 'true',
-  })
+  registerAuthRoutes(app, db, sessionCookieOptions)
   registerContentRoutes(app, content)
   registerProgressRoutes(app, db, content)
   registerReflectionRoutes(app, db, content)
@@ -100,6 +109,10 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
   registerNotFoundHandler(app, resolveStaticRoot(options.staticRoot))
 
   return { app, db }
+}
+
+function isEmptyJsonBodyError(error: unknown) {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'FST_ERR_CTP_EMPTY_JSON_BODY'
 }
 
 function resolveStaticRoot(configured: string | false | undefined) {

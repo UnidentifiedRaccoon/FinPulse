@@ -42,7 +42,7 @@ export function UnitPage({ progress }: { progress: ProgressResponse | null }) {
         <div className="flex items-start">
           <Button
             asChild
-            className="min-h-10 rounded-2xl px-0 text-sm font-bold uppercase leading-5 tracking-normal text-white/75 hover:bg-white/10 hover:text-white/75"
+            className="min-h-11 rounded-2xl px-4 text-sm font-bold uppercase leading-5 tracking-normal text-white hover:bg-white/10 hover:text-white"
             variant="ghost"
           >
             <Link to={`/modules/${module.slug}`}>

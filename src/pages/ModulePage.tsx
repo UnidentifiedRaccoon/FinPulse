@@ -62,7 +62,7 @@ export function ModulePage({ progress }: { progress: ProgressResponse | null }) 
         <div className="flex items-start">
           <Button
             asChild
-            className="min-h-10 gap-2 rounded-2xl px-4 py-2 text-sm font-bold uppercase leading-5 tracking-normal text-white/75 hover:bg-white/10 hover:text-white/75 has-data-[icon=inline-start]:pl-4"
+            className="min-h-11 gap-2 rounded-2xl px-4 py-2 text-sm font-bold uppercase leading-5 tracking-normal text-white hover:bg-white/10 hover:text-white has-data-[icon=inline-start]:pl-4"
             variant="ghost"
           >
             <Link to="/program">
