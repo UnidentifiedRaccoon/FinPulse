@@ -175,3 +175,117 @@ Revisit when:
 - persisted answers/artifacts become product scope;
 - user cabinet/profile features are intentionally added;
 - production security controls become required.
+
+## ADR-0007 — Persist personal reflection and artifact answers
+
+Status: Accepted
+
+Decision: Persist filled `reflection` and `artifact` card answers for authenticated learners as a private personal artifact shown in the profile as "Мой финансовый ориентир" / "Мои ответы".
+
+This supersedes the ADR-0006 deferred item about full freeform reflection/artifact answers, but only for this narrow scope:
+- answers are owned by the current authenticated session user;
+- routes derive `user_id` from the httpOnly cookie session only;
+- answers are keyed by stable `card.id`, optional `saveKey`, and lesson/module/unit context for display;
+- anonymous learners may still complete cards with transient local state, but their answers are not persisted;
+- completion of interactive `reflection`/`artifact` cards may require a meaningful non-empty answer or selection before the card is marked completed.
+
+API contract:
+
+```txt
+GET /api/reflections
+PUT /api/reflections/:cardId
+```
+
+Payload fields are neutral answer fields only:
+- `textValue`
+- `singleValue`
+- `multiValues`
+- `selectedVariant`
+- `checkedRows`
+- `templateValues`
+- `fallbackValue`
+
+Explicitly out of scope:
+- checking open answers as right or wrong;
+- diagnostics, scoring, labels, levels, recommendations, analytics, or inferred user traits;
+- public access to answers;
+- backend/admin tooling for editing content;
+- storing answers for anonymous users.
+
+Data lifecycle:
+- the learner fills a persistable card;
+- the frontend saves the answer for the current authenticated user before marking the card complete;
+- repeated saves update the same `(user_id, card_id)` row;
+- the profile fetches the learner's own answers and groups them for display by existing content context;
+- deleting users later should cascade personal answers with other learner-owned state.
+
+Security baseline:
+- the API never accepts `userId` from the body;
+- only `reflection` and `artifact` cards are persistable;
+- persisted data must not include score, result labels, inferred categories, or recommendations.
+
+Revisit when:
+- users need export/delete controls for personal answers;
+- explicit per-card answer categories are needed in content JSON;
+- artifact templates need a richer structured model;
+- production privacy controls are defined.
+
+## ADR-0008 — Migrate learner persistence to PostgreSQL
+
+Status: Accepted
+
+Decision: Migrate backend persistence for learner-owned state from SQLite/`better-sqlite3` to PostgreSQL behind an async repository boundary, while preserving the existing Fastify API contracts and keeping JSON files as the canonical educational content source.
+
+This supersedes the SQLite persistence parts of ADR-0006 only. The following decisions remain unchanged:
+- the frontend remains a Vite React SPA, with no Next.js/SSR migration;
+- content routes remain read-only API responses hydrated from validated JSON files in the repo;
+- JSON under `src/content/**` remains the educational content source-of-truth;
+- Zustand remains limited to small client UI state;
+- learner-owned backend state is limited to simple auth/session data, viewed/completed progress markers, and private reflection/artifact answers accepted by ADR-0007.
+
+Rationale:
+- PostgreSQL is a closer fit for future production deployment than a local SQLite file, especially when the app runs in containers with ephemeral filesystems;
+- async database access matches Fastify route handlers and avoids blocking the Node event loop on persistence calls;
+- a repository boundary keeps SQL and pooling details out of auth, progress, and reflection route contracts;
+- using PostgreSQL now reduces later migration risk before the learner-owned state model grows;
+- the migration does not require changing frontend API clients or expanding product scope.
+
+Deployment implications:
+- no Yandex Cloud resources are provisioned in this stage: no Managed PostgreSQL cluster, Container Registry setup, Terraform, networking, or production deployment changes are part of this ADR;
+- the runtime should be compatible with future Yandex Managed PostgreSQL by using standard PostgreSQL connection settings and migrations rather than SQLite file paths;
+- the backend should remain compatible with future Yandex Serverless Containers by binding to `0.0.0.0` and reading `PORT` from the environment;
+- secrets and connection strings must be injected through environment variables in deployment, not committed to the repo;
+- avoid splitting frontend and API across different domains unless cookie, CORS, `sameSite`, and `secure` behavior are intentionally designed and tested.
+
+Implementation stance:
+- replace `better-sqlite3` usage with an async PostgreSQL client/pool;
+- keep the current API route shapes and response semantics stable;
+- keep route handlers deriving ownership from the httpOnly session, never request body user ids;
+- store only current MVP learner state: users, sessions, progress markers, and private reflection/artifact answer fields;
+- do not introduce accounts/profile management beyond the current minimal learner profile, diagnostics, rewards, analytics dashboards, admin/CMS, personalized recommendations, payments, or production financial operations.
+
+Rollback/fallback stance:
+- after migration, PostgreSQL is the only supported runtime persistence backend;
+- do not add a temporary dual-write path or automatic SQLite fallback unless a later explicit task requests it;
+- rollback means reverting the PostgreSQL implementation to the last known good SQLite implementation and restoring data from an intentional backup/export, not silently switching storage at runtime;
+- migration scripts should be deterministic and safe to rerun where practical.
+
+Test strategy:
+- run focused backend integration tests against an isolated PostgreSQL database;
+- cover migrations, session creation/lookup/deletion, user registration/login, progress upsert/fetch, reflection answer upsert/fetch, and ownership isolation;
+- keep shared API contract tests passing so frontend routes do not depend on the persistence engine;
+- keep content validation in the verification path because JSON remains canonical;
+- keep production build/typecheck/lint in the standard verification path.
+
+Risks:
+- local development and CI now need PostgreSQL availability instead of only a local file;
+- async repository migration can introduce missed `await`s, transaction mistakes, or changed error handling;
+- connection pool sizing and cold-start behavior must be tuned later for serverless/container deployment;
+- data migration from any existing SQLite development database is not automated by this ADR;
+- cross-domain deployment without deliberate CORS/cookie design could break session auth.
+
+Revisit when:
+- a real production deployment target and environment topology are selected;
+- Yandex Managed PostgreSQL or Serverless Containers are provisioned;
+- production secrets, backups, observability, rate limiting, and retention policies are defined;
+- a managed content workflow, admin panel, or CMS is intentionally added by a separate ADR.

@@ -127,8 +127,9 @@ describe('LessonSession', () => {
     expect(screen.getByRole('button', { name: 'Завершить' })).toBeEnabled()
   })
 
-  it('keeps reflection text local until the user continues', async () => {
+  it('requires and saves reflection text before completing the card', async () => {
     const user = userEvent.setup()
+    const onReflectionAnswerSave = vi.fn()
     const onCardCompleted = vi.fn()
 
     renderSession(
@@ -143,8 +144,11 @@ describe('LessonSession', () => {
           guidance: 'Подсказка',
         },
       ],
-      { canSaveProgress: true, onCardCompleted },
+      { canSaveProgress: true, onCardCompleted, onReflectionAnswerSave },
     )
+
+    const finishButton = screen.getByRole('button', { name: 'Завершить' })
+    expect(finishButton).toBeDisabled()
 
     const textarea = screen.getByRole('textbox', { name: 'Ответ' })
     await user.type(textarea, 'Мой черновик')
@@ -153,10 +157,44 @@ describe('LessonSession', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Черновик заполнен.')
     expect(onCardCompleted).not.toHaveBeenCalled()
 
+    expect(finishButton).toBeEnabled()
+    await user.click(finishButton)
+
+    await waitFor(() =>
+      expect(onReflectionAnswerSave).toHaveBeenCalledWith('card-reflection', {
+        textValue: 'Мой черновик',
+      }),
+    )
+    await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-reflection'))
+    expect(onReflectionAnswerSave.mock.invocationCallOrder[0]).toBeLessThan(onCardCompleted.mock.invocationCallOrder[0])
+    expect(onCardCompleted).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not complete a reflection card when answer persistence fails', async () => {
+    const user = userEvent.setup()
+    const onReflectionAnswerSave = vi.fn().mockRejectedValue(new Error('Не удалось сохранить ответ.'))
+    const onCardCompleted = vi.fn()
+
+    renderSession(
+      [
+        {
+          id: 'card-reflection',
+          type: 'reflection',
+          order: 1,
+          title: 'Рефлексия',
+          prompt: 'Запиши мысль.',
+          inputType: 'freeform',
+        },
+      ],
+      { canSaveProgress: true, onCardCompleted, onReflectionAnswerSave },
+    )
+
+    await user.type(screen.getByRole('textbox', { name: 'Ответ' }), 'Мой черновик')
     await user.click(screen.getByRole('button', { name: 'Завершить' }))
 
-    await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-reflection'))
-    expect(onCardCompleted).toHaveBeenCalledTimes(1)
+    expect(await screen.findByText('Не удалось сохранить ответ.')).toBeInTheDocument()
+    expect(onCardCompleted).not.toHaveBeenCalled()
+    expect(screen.queryByRole('heading', { name: 'Урок завершён' })).not.toBeInTheDocument()
   })
 
   it('toggles checklist items locally', async () => {
@@ -226,6 +264,7 @@ function renderSession(
     canSaveProgress: boolean
     onCardViewed: (cardId: string) => void | Promise<void>
     onCardCompleted: (cardId: string) => void | Promise<void>
+    onReflectionAnswerSave: (cardId: string, payload: Record<string, unknown>) => void | Promise<void>
     onLessonCompleted: (lessonSlug: string) => void | Promise<void>
   }> = {},
 ) {
@@ -239,6 +278,7 @@ function renderSession(
         isLessonCompleted={false}
         onCardCompleted={overrides.onCardCompleted}
         onCardViewed={overrides.onCardViewed}
+        onReflectionAnswerSave={overrides.onReflectionAnswerSave}
         onLessonCompleted={overrides.onLessonCompleted}
       />
     </MemoryRouter>,

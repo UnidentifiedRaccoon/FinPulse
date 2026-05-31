@@ -29,6 +29,10 @@ export function AuthControls({
   const [password, setPassword] = useState('')
   const isEntry = variant === 'entry'
   const loginLabel = 'Email или логин'
+  const entryPrimaryClass =
+    'min-h-12 flex-1 rounded-xl bg-[var(--fr-color-sky-500)] px-4 text-[15px] font-semibold text-white shadow-[var(--fr-shadow-sm)] hover:bg-[var(--fr-color-sky-600)]'
+  const entrySecondaryClass =
+    'min-h-12 flex-1 rounded-xl border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] px-4 text-[15px] font-semibold text-[var(--fr-color-brand-700)] shadow-[var(--fr-shadow-sm)] hover:bg-[var(--fr-surface-soft)] hover:text-[var(--fr-color-brand-700)]'
 
   if (user) {
     return (
@@ -93,12 +97,18 @@ export function AuthControls({
           />
         </Field>
       </FieldGroup>
-      <div className={cn('flex flex-wrap gap-2', isEntry ? 'flex-col sm:flex-row' : 'justify-end')}>
-        <Button className={cn('min-h-9', isEntry && 'min-h-11 flex-1')} disabled={isBusy} size={isEntry ? 'lg' : 'sm'} type="submit" value="login">
+      <div className={cn('flex flex-wrap gap-2', isEntry ? 'flex-col sm:flex-row sm:gap-3' : 'justify-end')}>
+        <Button
+          className={cn('min-h-9', isEntry && entryPrimaryClass)}
+          disabled={isBusy}
+          size={isEntry ? 'lg' : 'sm'}
+          type="submit"
+          value="login"
+        >
           Войти
         </Button>
         <Button
-          className={cn('min-h-9', isEntry && 'min-h-11 flex-1')}
+          className={cn('min-h-9', isEntry && entrySecondaryClass)}
           disabled={isBusy}
           size={isEntry ? 'lg' : 'sm'}
           type="submit"

@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path'
 
 import {
   getAllLessons,
+  getOrderedCards,
   getOrderedModules,
   getOrderedUnits,
   parseProgram,
@@ -28,6 +29,13 @@ export type LessonDetails = {
 export type UnitDetails = {
   module: Module
   unit: Unit
+}
+
+export type CardDetails = {
+  module: Module
+  unit: Unit
+  lesson: Lesson
+  card: Card
 }
 
 export type ContentService = ReturnType<typeof createContentService>
@@ -68,17 +76,24 @@ export function createContentService(contentRoot = resolve(process.cwd(), 'src/c
       return getAllLessons(program).some(({ lesson }) => lesson.slug === lessonSlug)
     },
     hasCard(cardId: string) {
-      return getAllLessons(program).some(({ lesson }) => lesson.cards.some((card) => card.id === cardId))
+      return getCardDetailsFromProgram(program, cardId) !== null
     },
     getCard(cardId: string): Card | null {
-      for (const { lesson } of getAllLessons(program)) {
-        const card = lesson.cards.find((candidate) => candidate.id === cardId)
-        if (card) return card
-      }
-
-      return null
+      return getCardDetailsFromProgram(program, cardId)?.card ?? null
+    },
+    getCardDetails(cardId: string): CardDetails | null {
+      return getCardDetailsFromProgram(program, cardId)
     },
   }
+}
+
+function getCardDetailsFromProgram(program: Program, cardId: string): CardDetails | null {
+  for (const { module, unit, lesson } of getAllLessons(program)) {
+    const card = getOrderedCards(lesson).find((candidate) => candidate.id === cardId)
+    if (card) return { module, unit, lesson, card }
+  }
+
+  return null
 }
 
 function loadProgramFromFiles(contentRoot: string): Program {

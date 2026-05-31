@@ -1,3 +1,4 @@
+import type { ReflectionAnswerPayload } from '@/api/client'
 import type { Card } from '@/content/program'
 
 export type ChoiceCard = Extract<Card, { type: 'single_choice' }> | Extract<Card, { type: 'scenario' }>
@@ -49,6 +50,50 @@ export function createArtifactState(card: ArtifactCard): ArtifactState {
     templateValues: card.template?.map(() => '') ?? [''],
     fallbackValue: '',
   }
+}
+
+export function buildReflectionAnswerPayload(card: ReflectionCard, state: ReflectionState): ReflectionAnswerPayload {
+  const inputType = card.inputType ?? 'freeform'
+
+  if (inputType === 'single_select') {
+    return { singleValue: state.singleValue }
+  }
+
+  if (inputType === 'multi_select') {
+    return { multiValues: state.multiValues }
+  }
+
+  return { textValue: state.textValue }
+}
+
+export function buildArtifactAnswerPayload(state: ArtifactState): ReflectionAnswerPayload {
+  return {
+    selectedVariant: state.selectedVariant,
+    checkedRows: state.checkedRows,
+    templateValues: state.templateValues,
+    fallbackValue: state.fallbackValue,
+  }
+}
+
+export function isReflectionAnswerFilled(card: ReflectionCard, state: ReflectionState) {
+  if (card.readOnly) return true
+
+  const inputType = card.inputType ?? 'freeform'
+  if (inputType === 'single_select') return state.singleValue.trim().length > 0
+  if (inputType === 'multi_select') return state.multiValues.length > 0
+
+  return state.textValue.trim().length > 0
+}
+
+export function isArtifactAnswerFilled(card: ArtifactCard, state: ArtifactState) {
+  if (card.readOnly) return true
+
+  const hasTemplate = Boolean(card.template?.length)
+  if (hasTemplate) {
+    return state.templateValues.some((value) => value.trim().length > 0)
+  }
+
+  return state.fallbackValue.trim().length > 0 || state.selectedVariant.trim().length > 0
 }
 
 export function isInteractiveChoice(card: Card): card is ChoiceCard {

@@ -44,7 +44,7 @@ export const Reflection: Story = {
     <div className="w-[420px] max-w-full">
       <LessonCardFrame card={reflectionCard} current={5} total={9}>
         <p className="text-base leading-7 text-[var(--fr-text-secondary)]">
-          Рефлексия остается локальной и не превращается в диагностику или скоринг.
+          Рефлексия помогает сформулировать личный ориентир.
         </p>
       </LessonCardFrame>
     </div>

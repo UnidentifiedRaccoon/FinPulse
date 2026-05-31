@@ -544,7 +544,7 @@ If a flow touches personal financial data later:
 - avoid unnecessary persistence;
 - never shame the user for the answer.
 
-In the current MVP, freeform reflection/artifact answers should remain transient unless a later decision says otherwise.
+In the current MVP, authenticated reflection/artifact answers can be saved as a private personal artifact. Anonymous learner answers remain transient.
 
 ### 10.3. Diagnostics And Recommendations
 

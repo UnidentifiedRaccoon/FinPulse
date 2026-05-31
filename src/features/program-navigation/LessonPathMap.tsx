@@ -1,4 +1,4 @@
-import { Check, Clock, Lock, Play } from 'lucide-react'
+import { Check, Clock, Play } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,7 @@ type Accent = {
   solid: string
   hover: string
   shadow: string
+  pressedShadow: string
 }
 
 const accents: Accent[] = [
@@ -37,6 +38,7 @@ const accents: Accent[] = [
     solid: 'bg-[var(--fr-color-learn-correct-500)]',
     hover: 'hover:bg-[var(--fr-color-learn-correct-500)]/90',
     shadow: 'shadow-[0_9px_0_rgba(20,133,95,0.22)]',
+    pressedShadow: 'group-hover:shadow-[0_5px_0_rgba(20,133,95,0.22)] group-active:shadow-[0_3px_0_rgba(20,133,95,0.22)]',
   },
   {
     soft: 'bg-[var(--fr-color-brand-50)]',
@@ -46,6 +48,7 @@ const accents: Accent[] = [
     solid: 'bg-[var(--fr-color-sky-500)]',
     hover: 'hover:bg-[var(--fr-color-sky-600)]',
     shadow: 'shadow-[0_9px_0_rgba(20,121,184,0.22)]',
+    pressedShadow: 'group-hover:shadow-[0_5px_0_rgba(20,121,184,0.22)] group-active:shadow-[0_3px_0_rgba(20,121,184,0.22)]',
   },
   {
     soft: 'bg-[var(--fr-color-learn-almost-50)]',
@@ -55,6 +58,7 @@ const accents: Accent[] = [
     solid: 'bg-[var(--fr-color-learn-almost-500)]',
     hover: 'hover:bg-[var(--fr-color-learn-almost-500)]/90',
     shadow: 'shadow-[0_9px_0_rgba(184,118,20,0.22)]',
+    pressedShadow: 'group-hover:shadow-[0_5px_0_rgba(184,118,20,0.22)] group-active:shadow-[0_3px_0_rgba(184,118,20,0.22)]',
   },
   {
     soft: 'bg-[var(--fr-color-learn-retry-50)]',
@@ -64,6 +68,7 @@ const accents: Accent[] = [
     solid: 'bg-[var(--fr-color-learn-retry-500)]',
     hover: 'hover:bg-[var(--fr-color-learn-retry-500)]/90',
     shadow: 'shadow-[0_9px_0_rgba(184,74,58,0.22)]',
+    pressedShadow: 'group-hover:shadow-[0_5px_0_rgba(184,74,58,0.22)] group-active:shadow-[0_3px_0_rgba(184,74,58,0.22)]',
   },
 ]
 
@@ -72,7 +77,7 @@ const nodeOffsets = ['translate-x-7', '-translate-x-9', 'translate-x-2', 'transl
 const stateCopy = {
   completed: 'Пройден',
   current: 'Текущий урок',
-  locked: 'Будущий урок',
+  locked: 'Недоступный урок',
 } satisfies Record<PathItemState, string>
 
 export function LessonPathMap({
@@ -141,13 +146,15 @@ function PathSection({
   sectionIndex: number
 }) {
   return (
-    <section className="flex flex-col gap-5" aria-labelledby={`section-${section.id}`}>
+    <section
+      className="flex flex-col gap-5"
+      data-path-section-id={section.id}
+      id={`path-section-${section.id}`}
+      aria-labelledby={`section-${section.id}`}
+    >
       <div className="grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-3">
         <span className="h-px bg-[var(--fr-border-default)]" />
         <div className="min-w-0 text-center">
-          <p className="text-xs font-bold uppercase leading-5 tracking-normal text-[var(--fr-text-tertiary)]">
-            Раздел
-          </p>
           <h2
             className="max-w-[250px] text-lg font-bold leading-6 tracking-normal text-[var(--fr-text-secondary)]"
             id={`section-${section.id}`}
@@ -162,9 +169,9 @@ function PathSection({
         {section.lessons.map((lessonItem, lessonIndex) => (
           <LessonNode
             accent={accent}
-            globalIndex={section.firstLessonNumber + lessonIndex}
             key={lessonItem.lesson.id}
             lessonItem={lessonItem}
+            lessonNumber={section.firstLessonNumber + lessonIndex}
             offset={nodeOffsets[(sectionIndex + lessonIndex) % nodeOffsets.length]}
           />
         ))}
@@ -175,20 +182,20 @@ function PathSection({
 
 function LessonNode({
   accent,
-  globalIndex,
   lessonItem,
+  lessonNumber,
   offset,
 }: {
   accent: Accent
-  globalIndex: number
   lessonItem: LessonPathItem
+  lessonNumber: number
   offset: string
 }) {
   const { lesson, state } = lessonItem
-  const Icon = state === 'completed' ? Check : state === 'current' ? Play : Lock
+  const isLocked = state === 'locked'
+  const Icon = state === 'completed' ? Check : Play
   const isHighlighted = state === 'completed' || state === 'current'
   const primaryAction = state === 'completed' ? 'Повторить урок' : state === 'current' ? 'Продолжить урок' : 'Открыть урок'
-  const visibleState = state === 'current' ? 'Сейчас' : state === 'completed' ? stateCopy.completed : null
   const duration = lesson.estimatedMinutes ? `${lesson.estimatedMinutes} мин` : 'Короткий урок'
 
   return (
@@ -197,17 +204,46 @@ function LessonNode({
         <button
           aria-label={`${lesson.title}. ${stateCopy[state]}. Показать описание урока`}
           className={cn(
-            'group relative flex w-[116px] flex-col items-center gap-2 rounded-[24px] px-2 py-2 text-center transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25 motion-reduce:transition-none',
+            'group relative flex w-[116px] cursor-pointer flex-col items-center gap-2 rounded-[24px] px-2 pb-2 text-center transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25 motion-reduce:transition-none',
+            state === 'current' ? 'pt-12' : 'pt-2',
             offset,
           )}
           type="button"
         >
+          {state === 'current' ? (
+            <span
+              aria-hidden="true"
+              className={cn(
+                'pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2',
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'relative block animate-[fr-start-badge-pulse_1.8s_ease-in-out_infinite] rounded-[14px] border-2 bg-[var(--fr-surface-card)] px-4 py-2 text-sm font-black uppercase leading-5 tracking-normal shadow-[0_6px_0_rgba(20,121,184,0.18)] motion-reduce:animate-none',
+                  accent.border,
+                  accent.text,
+                )}
+              >
+                Начать
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'absolute -bottom-[7px] left-1/2 size-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 bg-[var(--fr-surface-card)]',
+                    accent.border,
+                  )}
+                />
+              </span>
+            </span>
+          ) : null}
           <span
             className={cn(
-              'relative flex size-[78px] items-center justify-center overflow-hidden rounded-full border-[6px] bg-[var(--fr-surface-card)] text-xl font-black text-[var(--fr-text-tertiary)] tabular-nums transition group-hover:-translate-y-1 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0',
-              state === 'completed' && cn(accent.border, accent.solid, accent.shadow, 'text-white'),
-              state === 'current' && cn(accent.border, accent.solid, accent.shadow, 'text-white'),
-              state === 'locked' && 'border-[var(--fr-border-strong)] shadow-[0_8px_0_rgba(99,113,136,0.16)]',
+              'relative flex size-[78px] items-center justify-center overflow-hidden rounded-full border-[6px] bg-[var(--fr-surface-card)] text-xl font-black text-[var(--fr-text-tertiary)] tabular-nums transition motion-reduce:transition-none',
+              'group-hover:translate-y-[4px] group-active:translate-y-[6px] motion-reduce:group-hover:translate-y-0 motion-reduce:group-active:translate-y-0',
+              state === 'completed' && cn(accent.border, accent.solid, accent.shadow, accent.pressedShadow, 'text-white'),
+              state === 'current' && cn(accent.border, accent.solid, accent.shadow, accent.pressedShadow, 'text-white'),
+              state === 'locked' &&
+                'border-[var(--fr-border-strong)] bg-[var(--fr-border-default)] text-[var(--fr-text-tertiary)] shadow-[0_8px_0_rgba(99,113,136,0.16)] opacity-80 group-hover:shadow-[0_4px_0_rgba(99,113,136,0.16)] group-active:shadow-[0_2px_0_rgba(99,113,136,0.16)]',
             )}
           >
             {isHighlighted ? (
@@ -216,53 +252,64 @@ function LessonNode({
                 className="pointer-events-none absolute left-[-18px] top-[14px] h-[18px] w-[108px] rotate-[-38deg] rounded-full bg-white/24"
               />
             ) : null}
-            {state === 'current' ? <Icon aria-hidden="true" /> : state === 'completed' ? <Icon aria-hidden="true" /> : globalIndex}
+            {isLocked ? lessonNumber : <Icon aria-hidden="true" />}
           </span>
-          {visibleState ? (
-            <span
-              className={cn(
-                'rounded-full px-2 py-0.5 text-[11px] font-bold leading-4 tracking-normal',
-                state === 'current' ? cn(accent.soft, accent.text) : 'bg-transparent text-[var(--fr-text-tertiary)]',
-              )}
-            >
-              {visibleState}
-            </span>
-          ) : null}
         </button>
       </DialogTrigger>
 
       <DialogContent className="overflow-hidden rounded-[28px] border-0 p-0 shadow-[0_24px_70px_rgba(16,35,74,0.18)] sm:max-w-[420px]">
-        <div className={cn('flex flex-col gap-4 p-5 pb-6 text-white', accent.solid)}>
-          <DialogHeader className="gap-3 pr-10">
-            <DialogTitle className="text-2xl font-bold leading-8 tracking-normal text-white">{lesson.title}</DialogTitle>
-            <DialogDescription className="sr-only">
-              Откройте урок или вернитесь к карте модуля.
-            </DialogDescription>
-          </DialogHeader>
+        {isLocked ? (
+          <div className="flex flex-col gap-5 bg-[var(--fr-surface-muted)] p-5 pb-6">
+            <DialogHeader className="gap-3 pr-10">
+              <DialogTitle className="text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-secondary)]">{lesson.title}</DialogTitle>
+              <DialogDescription className="text-base font-semibold leading-7 text-[var(--fr-text-tertiary)]">
+                Пройдите предыдущие уроки, чтобы открыть доступ.
+              </DialogDescription>
+            </DialogHeader>
 
-          <span className="inline-flex w-fit items-center gap-2 rounded-2xl bg-white/15 px-3 py-2 text-sm font-semibold leading-5 text-white">
-            <Clock aria-hidden="true" className="size-4" />
-            {duration}
-          </span>
-        </div>
-
-        <DialogFooter className="m-0 flex-col gap-3 rounded-none border-0 bg-[var(--fr-surface-card)] p-4 sm:flex-col sm:justify-start">
-          <Button
-            asChild
-            className={cn(
-              'min-h-12 w-full rounded-2xl text-[15px] font-bold text-white shadow-[0_5px_0_rgba(16,35,74,0.16)]',
-              accent.solid,
-              accent.hover,
-            )}
-          >
-            <Link to={`/lessons/${lesson.slug}`}>{primaryAction}</Link>
-          </Button>
-          <DialogClose asChild>
-            <Button className="min-h-11 w-full rounded-2xl" variant="outline">
-              Не сейчас
+            <Button
+              className="min-h-12 w-full rounded-2xl bg-[var(--fr-border-strong)] text-[15px] font-black uppercase tracking-normal text-[var(--fr-text-tertiary)] opacity-100"
+              disabled
+              type="button"
+            >
+              Недоступно
             </Button>
-          </DialogClose>
-        </DialogFooter>
+          </div>
+        ) : (
+          <>
+            <div className={cn('flex flex-col gap-4 p-5 pb-6 text-white', accent.solid)}>
+              <DialogHeader className="gap-3 pr-10">
+                <DialogTitle className="text-2xl font-bold leading-8 tracking-normal text-white">{lesson.title}</DialogTitle>
+                <DialogDescription className="sr-only">
+                  Откройте урок или вернитесь к карте модуля.
+                </DialogDescription>
+              </DialogHeader>
+
+              <span className="inline-flex w-fit items-center gap-2 rounded-2xl bg-white/15 px-3 py-2 text-sm font-semibold leading-5 text-white">
+                <Clock aria-hidden="true" className="size-4" />
+                {duration}
+              </span>
+            </div>
+
+            <DialogFooter className="m-0 flex-col gap-3 rounded-none border-0 bg-[var(--fr-surface-card)] p-4 sm:flex-col sm:justify-start">
+              <Button
+                asChild
+                className={cn(
+                  'min-h-12 w-full rounded-2xl text-[15px] font-bold text-white shadow-[0_5px_0_rgba(16,35,74,0.16)]',
+                  accent.solid,
+                  accent.hover,
+                )}
+              >
+                <Link to={`/lessons/${lesson.slug}`}>{primaryAction}</Link>
+              </Button>
+              <DialogClose asChild>
+                <Button className="min-h-11 w-full rounded-2xl" variant="outline">
+                  Не сейчас
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )

@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { randomUUID } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
@@ -29,13 +30,32 @@ const lessonDetailsSchema = lessonLocationSchema.extend({
 
 async function setupTestApp() {
   const created = await createApp({
-    dbPath: ':memory:',
+    databaseUrl: getTestDatabaseUrl(),
+    databaseSchema: createTestSchemaName(),
+    resetDatabaseSchema: true,
+    dropDatabaseSchemaOnClose: true,
+    databasePoolMax: 1,
     cookieSecure: false,
     corsOrigin: 'http://localhost:5173',
   })
   await created.app.ready()
 
   return created
+}
+
+function getTestDatabaseUrl() {
+  const databaseUrl =
+    process.env.FINPULSE_TEST_DATABASE_URL ?? process.env.FINPULSE_DATABASE_URL ?? process.env.DATABASE_URL
+
+  if (!databaseUrl) {
+    throw new Error('FINPULSE_TEST_DATABASE_URL, FINPULSE_DATABASE_URL, or DATABASE_URL is required for backend tests')
+  }
+
+  return databaseUrl
+}
+
+function createTestSchemaName() {
+  return `test_${randomUUID().replaceAll('-', '_')}`
 }
 
 describe('content API contract', () => {

@@ -1,4 +1,8 @@
-import type { ArtifactCard as ArtifactCardType, ArtifactState } from '@/features/lesson-reader/lessonInteraction'
+import {
+  isArtifactAnswerFilled,
+  type ArtifactCard as ArtifactCardType,
+  type ArtifactState,
+} from '@/features/lesson-reader/lessonInteraction'
 import { cn } from '@/lib/utils'
 
 export function ArtifactCard({
@@ -128,21 +132,12 @@ export function ArtifactCard({
 
       <p
         aria-live="polite"
-        className={cn('text-sm leading-6 text-[var(--fr-text-secondary)]', !isArtifactActive(state) && 'sr-only')}
+        className={cn('text-sm leading-6 text-[var(--fr-text-secondary)]', !isArtifactAnswerFilled(card, state) && 'sr-only')}
         id={statusId}
         role="status"
       >
-        {isArtifactActive(state) ? 'Рабочий блок заполнен.' : 'Ответ пока не заполнен.'}
+        {isArtifactAnswerFilled(card, state) ? 'Рабочий блок заполнен.' : 'Ответ пока не заполнен.'}
       </p>
     </div>
-  )
-}
-
-function isArtifactActive(state: ArtifactState) {
-  return (
-    state.selectedVariant.length > 0 ||
-    state.checkedRows.length > 0 ||
-    state.fallbackValue.trim().length > 0 ||
-    state.templateValues.some((value) => value.trim().length > 0)
   )
 }

@@ -2,7 +2,6 @@ import { api, type ProgressResponse } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
 import { buildProgramLearningPath } from '@/features/program-navigation/learningPath'
 import { ModulePathNode } from '@/features/program-navigation/ModulePathNode'
-import { PathProgressSummary } from '@/features/program-navigation/PathProgressSummary'
 
 export function ProgramOverviewPage({ progress }: { progress: ProgressResponse | null }) {
   const programQuery = useApiQuery(api.getProgram, [])
@@ -22,19 +21,20 @@ export function ProgramOverviewPage({ progress }: { progress: ProgressResponse |
     <div className="flex flex-col gap-6 pb-8">
       <section className="flex flex-col gap-3 pt-2">
         <h1 className="text-[2rem] font-bold leading-9 tracking-normal text-[var(--fr-text-primary)]">Модули</h1>
-        <p className="text-base leading-7 text-[var(--fr-text-secondary)]">
-          {program.description ?? 'Выберите модуль, чтобы открыть разделы и уроки.'}
-        </p>
       </section>
 
-      <PathProgressSummary completed={path.completedLessons} total={path.totalLessons} />
-
       <section className="flex flex-col gap-3" aria-label="Модули программы">
-        <div className="flex flex-col gap-3">
-          {path.modules.map((module, index) => (
-            <ModulePathNode index={index + 1} item={module} key={module.module.id} />
-          ))}
-        </div>
+        {path.modules.length > 0 ? (
+          <div className="flex flex-col gap-3">
+            {path.modules.map((module, index) => (
+              <ModulePathNode index={index + 1} item={module} key={module.module.id} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
+            Материалы программы пока не добавлены.
+          </div>
+        )}
       </section>
     </div>
   )

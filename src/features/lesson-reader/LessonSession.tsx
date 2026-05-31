@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
-import type { LessonDetails } from '@/api/client'
+import type { LessonDetails, ReflectionAnswerPayload } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import type { Card } from '@/content/program'
 
@@ -14,13 +14,17 @@ import { LessonFeedback } from './LessonFeedback'
 import { LessonProgressHeader } from './LessonProgressHeader'
 import type { ArtifactState, ChecklistState, ChoiceState, ReflectionState } from './lessonInteraction'
 import {
+  buildArtifactAnswerPayload,
+  buildReflectionAnswerPayload,
   createArtifactState,
   emptyChecklistState,
   emptyChoiceState,
   emptyReflectionState,
   getCorrectOption,
   getChoiceOptions,
+  isArtifactAnswerFilled,
   isInteractiveChoice,
+  isReflectionAnswerFilled,
 } from './lessonInteraction'
 
 export function LessonSession({
@@ -29,6 +33,7 @@ export function LessonSession({
   canSaveProgress,
   onCardViewed,
   onCardCompleted,
+  onReflectionAnswerSave,
   onLessonCompleted,
 }: {
   details: LessonDetails
@@ -36,12 +41,14 @@ export function LessonSession({
   canSaveProgress: boolean
   onCardViewed?: (cardId: string) => void | Promise<void>
   onCardCompleted?: (cardId: string) => void | Promise<void>
+  onReflectionAnswerSave?: (cardId: string, payload: ReflectionAnswerPayload) => void | Promise<void>
   onLessonCompleted?: (lessonSlug: string) => void | Promise<void>
 }) {
   const cards = useMemo(() => getOrderedCards(details.lesson), [details.lesson])
   const [activeIndex, setActiveIndex] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [actionError, setActionError] = useState('')
   const [choiceStates, setChoiceStates] = useState<Record<string, ChoiceState>>({})
   const [checklistStates, setChecklistStates] = useState<Record<string, ChecklistState>>({})
   const [reflectionStates, setReflectionStates] = useState<Record<string, ReflectionState>>({})
@@ -71,8 +78,11 @@ export function LessonSession({
     )
   }
 
-  const action = getPrimaryAction(activeCard, choiceStates[activeCard.id] ?? emptyChoiceState, isLastCard)
-  const bottomFeedback = getBottomFeedback(activeCard, choiceStates[activeCard.id] ?? emptyChoiceState)
+  const activeChoiceState = choiceStates[activeCard.id] ?? emptyChoiceState
+  const activeReflectionState = reflectionStates[activeCard.id] ?? emptyReflectionState
+  const activeArtifactState = activeCard.type === 'artifact' ? (artifactStates[activeCard.id] ?? createArtifactState(activeCard)) : undefined
+  const action = getPrimaryAction(activeCard, activeChoiceState, activeReflectionState, activeArtifactState, isLastCard)
+  const bottomFeedback = getBottomFeedback(activeCard, activeChoiceState)
   const interaction = getInteractionProps({
     card: activeCard,
     choiceStates,
@@ -87,7 +97,13 @@ export function LessonSession({
 
   const completeAndAdvance = async () => {
     setIsSaving(true)
+    setActionError('')
     try {
+      const answerPayload = getPersistableAnswerPayload(activeCard, reflectionStates, artifactStates)
+      if (answerPayload) {
+        await onReflectionAnswerSave?.(activeCard.id, answerPayload)
+      }
+
       await onCardCompleted?.(activeCard.id)
 
       if (isLastCard) {
@@ -97,6 +113,8 @@ export function LessonSession({
       }
 
       setActiveIndex((current) => Math.min(current + 1, cards.length - 1))
+    } catch (error) {
+      setActionError(getErrorMessage(error))
     } finally {
       setIsSaving(false)
     }
@@ -167,7 +185,7 @@ export function LessonSession({
   }
 
   return (
-    <article className="-mx-4 -my-6 min-h-svh bg-[var(--fr-surface-canvas)] px-4 sm:mx-0 sm:rounded-3xl">
+    <article className="-mx-4 -my-6 flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] px-4 sm:mx-0 sm:rounded-3xl">
       <LessonProgressHeader
         backLabel={`Вернуться к модулю ${details.module.title}`}
         backTo={`/modules/${details.module.slug}`}
@@ -179,7 +197,7 @@ export function LessonSession({
         total={cards.length}
       />
 
-      <div className="mx-auto flex w-full max-w-[520px] flex-col gap-5 py-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
+      <div className="mx-auto flex w-full max-w-[520px] flex-1 flex-col gap-5 py-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
         {showLessonIntro ? (
           <div className="rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
             {details.lesson.description ? <p>{details.lesson.description}</p> : null}
@@ -198,7 +216,7 @@ export function LessonSession({
       </div>
 
       <LessonBottomAction
-        feedback={bottomFeedback}
+        feedback={actionError ? <LessonFeedback tone="retry" title="Не сохранено">{actionError}</LessonFeedback> : bottomFeedback}
         isBusy={isSaving}
         onPrimary={handlePrimaryAction}
         onSecondary={activeIndex > 0 ? () => setActiveIndex((current) => Math.max(current - 1, 0)) : undefined}
@@ -274,7 +292,13 @@ function getInteractionProps({
   }
 }
 
-function getPrimaryAction(card: Card, choiceState: ChoiceState, isLastCard: boolean) {
+function getPrimaryAction(
+  card: Card,
+  choiceState: ChoiceState,
+  reflectionState: ReflectionState,
+  artifactState: ArtifactState | undefined,
+  isLastCard: boolean,
+) {
   if (isInteractiveChoice(card)) {
     const hasSelectedOption = Boolean(choiceState.selectedOptionId)
     const hasObjectiveAnswer = Boolean(getCorrectOption(card))
@@ -296,12 +320,46 @@ function getPrimaryAction(card: Card, choiceState: ChoiceState, isLastCard: bool
     }
   }
 
+  if (card.type === 'reflection') {
+    return {
+      label: isLastCard ? 'Завершить' : 'Далее',
+      tone: isLastCard ? ('finish' as const) : ('continue' as const),
+      mode: 'advance' as const,
+      disabled: !isReflectionAnswerFilled(card, reflectionState),
+    }
+  }
+
+  if (card.type === 'artifact') {
+    return {
+      label: isLastCard ? 'Завершить' : 'Далее',
+      tone: isLastCard ? ('finish' as const) : ('continue' as const),
+      mode: 'advance' as const,
+      disabled: !isArtifactAnswerFilled(card, artifactState ?? createArtifactState(card)),
+    }
+  }
+
   return {
     label: isLastCard ? 'Завершить' : 'Далее',
     tone: isLastCard ? ('finish' as const) : ('continue' as const),
     mode: 'advance' as const,
     disabled: false,
   }
+}
+
+function getPersistableAnswerPayload(
+  card: Card,
+  reflectionStates: Record<string, ReflectionState>,
+  artifactStates: Record<string, ArtifactState>,
+) {
+  if (card.type === 'reflection' && !card.readOnly) {
+    return buildReflectionAnswerPayload(card, reflectionStates[card.id] ?? emptyReflectionState)
+  }
+
+  if (card.type === 'artifact' && !card.readOnly) {
+    return buildArtifactAnswerPayload(artifactStates[card.id] ?? createArtifactState(card))
+  }
+
+  return null
 }
 
 function getBottomFeedback(card: Card, choiceState: ChoiceState) {
@@ -378,4 +436,12 @@ function scrollFeedbackIntoView(cardId: string) {
       }
     })
   }, 0)
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return 'Не удалось сохранить ответ. Попробуйте ещё раз.'
 }
