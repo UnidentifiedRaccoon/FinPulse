@@ -1,0 +1,472 @@
+{
+  "startedAt": "2026-05-31T22:27:25.180Z",
+  "productionUrl": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net",
+  "accounts": {
+    "userA": "qa+prod-orch-a-1780266445180@example.com",
+    "userB": "qa+prod-orch-b-1780266445180@example.com",
+    "desktopUser": "qa+prod-desktop-1780266445180@example.com"
+  },
+  "screenshots": [
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m390-entry-auth.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m390-program-after-register.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m390-module-path.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m390-module-first-lesson-dialog.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m390-first-lesson-start.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m390-first-lesson-complete.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m390-profile-after-first-lesson.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m390-after-logout-back.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m390-profile-second-user-empty.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-d1440-program-shell.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-d1440-profile.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m360-auth.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m360-module-path.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m360-lesson-reader.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m360-profile.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-d1024-module-path.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-d1024-lesson-reader.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-d1024-profile.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m430-module-path.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m430-lesson-reader.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/orchestrator-m430-profile.png"
+  ],
+  "passed": [
+    {
+      "id": "API-01",
+      "evidence": "/api/health returned 200"
+    },
+    {
+      "id": "API-01",
+      "evidence": "/api/readyz returned 200"
+    },
+    {
+      "id": "API-01",
+      "evidence": "/api/program returned 200"
+    },
+    {
+      "id": "API-01",
+      "evidence": "/api/modules returned 200"
+    },
+    {
+      "id": "API-01",
+      "evidence": "/api/modules/financial-goals returned 200"
+    },
+    {
+      "id": "API-01",
+      "evidence": "/api/units/values-and-goals returned 200"
+    },
+    {
+      "id": "API-01",
+      "evidence": "/api/lessons/why-values-matter returned 200"
+    },
+    {
+      "id": "API-02",
+      "evidence": "GET /api/auth/me returned 401 without cookie"
+    },
+    {
+      "id": "API-02",
+      "evidence": "GET /api/progress returned 401 without cookie"
+    },
+    {
+      "id": "API-02",
+      "evidence": "GET /api/reflections returned 401 without cookie"
+    },
+    {
+      "id": "API-04",
+      "evidence": "Non-persistable choice card rejected by reflections API"
+    },
+    {
+      "id": "API-05",
+      "evidence": "Empty reflection answer rejected"
+    },
+    {
+      "id": "API-06",
+      "evidence": "Unknown lesson/card return 404"
+    },
+    {
+      "id": "API-03",
+      "evidence": "Stable slug/card-id writes accepted; script-like answer returned as data"
+    },
+    {
+      "id": "API-11",
+      "evidence": "Stable slug/card-id writes accepted; script-like answer returned as data"
+    },
+    {
+      "id": "API-08",
+      "evidence": "Loopback PUT preflight accepted"
+    },
+    {
+      "id": "ENTRY-01",
+      "evidence": "M-390 anonymous entry form"
+    },
+    {
+      "id": "A11Y-01",
+      "evidence": "Auth fields are reachable by accessible labels"
+    },
+    {
+      "id": "REG-05",
+      "evidence": "Short password rejected without entering app"
+    },
+    {
+      "id": "REG-06",
+      "evidence": "Invalid login rejected and form stays usable"
+    },
+    {
+      "id": "REG-01",
+      "evidence": "User A registration reaches /program on M-390"
+    },
+    {
+      "id": "PROGRAM-01",
+      "evidence": "User A registration reaches /program on M-390"
+    },
+    {
+      "id": "SHELL-02",
+      "evidence": "User A registration reaches /program on M-390"
+    },
+    {
+      "id": "ENTRY-02",
+      "evidence": "Authenticated root redirects/reaches /program after registration"
+    },
+    {
+      "id": "PATH-01",
+      "evidence": "Module path renders first current lesson and later lesson nodes"
+    },
+    {
+      "id": "PROGRAM-06",
+      "evidence": "Module path renders first current lesson and later lesson nodes"
+    },
+    {
+      "id": "RESP-02",
+      "evidence": "Module path renders first current lesson and later lesson nodes"
+    },
+    {
+      "id": "PATH-05",
+      "evidence": "Locked lesson dialog explains unavailable state"
+    },
+    {
+      "id": "PATH-07",
+      "evidence": "Dialog closes with Escape without navigation"
+    },
+    {
+      "id": "PATH-04",
+      "evidence": "Current lesson dialog opens"
+    },
+    {
+      "id": "LESSON-01",
+      "evidence": "First lesson starts with progress and disabled choice CTA before selection"
+    },
+    {
+      "id": "CARD-CHOICE-01",
+      "evidence": "First lesson starts with progress and disabled choice CTA before selection"
+    },
+    {
+      "id": "CARD-THEORY-01",
+      "evidence": "First lesson starts with progress and disabled choice CTA before selection"
+    },
+    {
+      "id": "LESSON-02",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "LESSON-04",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "LESSON-05",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "CARD-VIDEO-01",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "CARD-CHOICE-02",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "CARD-REFLECT-02",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "CARD-SUMMARY-01",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "PROGRESS-01",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "PROGRESS-02",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "PROGRESS-03",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "PROGRESS-04",
+      "evidence": "First lesson completed with video, choice, reflection, summary and persisted progress"
+    },
+    {
+      "id": "ENTRY-03",
+      "evidence": "Profile shows saved progress and reflection"
+    },
+    {
+      "id": "PROFILE-02",
+      "evidence": "Profile shows saved progress and reflection"
+    },
+    {
+      "id": "PROGRESS-05",
+      "evidence": "Profile shows saved progress and reflection"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Profile survives refresh with same private answer"
+    },
+    {
+      "id": "PROGRESS-05",
+      "evidence": "Profile survives refresh with same private answer"
+    },
+    {
+      "id": "LOGOUT-02",
+      "evidence": "Logout returns to anonymous entry and clears profile view"
+    },
+    {
+      "id": "LOGOUT-03",
+      "evidence": "Logout returns to anonymous entry and clears profile view"
+    },
+    {
+      "id": "PROFILE-06",
+      "evidence": "Logout returns to anonymous entry and clears profile view"
+    },
+    {
+      "id": "LOGOUT-05",
+      "evidence": "Back after logout does not resurrect private answer"
+    },
+    {
+      "id": "ROUTE-01",
+      "evidence": "Back after logout does not resurrect private answer"
+    },
+    {
+      "id": "REG-04",
+      "evidence": "Duplicate registration rejected without replacing session"
+    },
+    {
+      "id": "PROFILE-01",
+      "evidence": "Second user profile has no first user progress/private answers"
+    },
+    {
+      "id": "PROFILE-05",
+      "evidence": "Second user profile has no first user progress/private answers"
+    },
+    {
+      "id": "PROGRESS-07",
+      "evidence": "Second user profile has no first user progress/private answers"
+    },
+    {
+      "id": "API-07",
+      "evidence": "Second user profile has no first user progress/private answers"
+    },
+    {
+      "id": "LOGIN-01",
+      "evidence": "User A login restores own progress/private answer only"
+    },
+    {
+      "id": "PROGRESS-06",
+      "evidence": "User A login restores own progress/private answer only"
+    },
+    {
+      "id": "E2E-P0-03",
+      "evidence": "User A login restores own progress/private answer only"
+    },
+    {
+      "id": "LOGIN-03",
+      "evidence": "Wrong password rejected without auth"
+    },
+    {
+      "id": "LOGIN-04",
+      "evidence": "Unknown login rejected without auth"
+    },
+    {
+      "id": "REG-02",
+      "evidence": "Uppercase email normalized; lowercase login succeeds"
+    },
+    {
+      "id": "LOGIN-05",
+      "evidence": "Uppercase email normalized; lowercase login succeeds"
+    },
+    {
+      "id": "REG-03",
+      "evidence": "Username-style account registers and logs in"
+    },
+    {
+      "id": "LOGIN-02",
+      "evidence": "Username-style account registers and logs in"
+    },
+    {
+      "id": "RESP-01",
+      "evidence": "M-360 auth has no horizontal overflow"
+    },
+    {
+      "id": "RESP-02",
+      "evidence": "m360 module path has no horizontal overflow"
+    },
+    {
+      "id": "RESP-03",
+      "evidence": "m360 lesson reader has no horizontal overflow"
+    },
+    {
+      "id": "RESP-04",
+      "evidence": "m360 profile has no horizontal overflow"
+    },
+    {
+      "id": "RESP-06",
+      "evidence": "d1024 module path has no horizontal overflow"
+    },
+    {
+      "id": "RESP-03",
+      "evidence": "d1024 lesson reader has no horizontal overflow"
+    },
+    {
+      "id": "RESP-04",
+      "evidence": "d1024 profile has no horizontal overflow"
+    },
+    {
+      "id": "RESP-02",
+      "evidence": "m430 module path has no horizontal overflow"
+    },
+    {
+      "id": "RESP-07",
+      "evidence": "m430 lesson reader has no horizontal overflow"
+    },
+    {
+      "id": "RESP-04",
+      "evidence": "m430 profile has no horizontal overflow"
+    },
+    {
+      "id": "ROUTE-02",
+      "evidence": "Direct authenticated route /program loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Direct authenticated route /program loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Refresh survived on /program"
+    },
+    {
+      "id": "ROUTE-02",
+      "evidence": "Direct authenticated route /profile loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Direct authenticated route /profile loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Refresh survived on /profile"
+    },
+    {
+      "id": "ROUTE-02",
+      "evidence": "Direct authenticated route /modules/financial-goals loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Direct authenticated route /modules/financial-goals loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Refresh survived on /modules/financial-goals"
+    },
+    {
+      "id": "ROUTE-02",
+      "evidence": "Direct authenticated route /modules/financial-goals/units/values-and-goals loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Direct authenticated route /modules/financial-goals/units/values-and-goals loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Refresh survived on /modules/financial-goals/units/values-and-goals"
+    },
+    {
+      "id": "ROUTE-02",
+      "evidence": "Direct authenticated route /lessons/why-values-matter loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Direct authenticated route /lessons/why-values-matter loaded/refreshed"
+    },
+    {
+      "id": "ENTRY-04",
+      "evidence": "Refresh survived on /lessons/why-values-matter"
+    },
+    {
+      "id": "LESSON-07",
+      "evidence": "Invalid lesson slug shows safe error state"
+    }
+  ],
+  "failed": [
+    {
+      "severity": "High",
+      "id": [
+        "SHELL-01",
+        "RESP-05"
+      ],
+      "error": "Expected text pattern /Обучение[\\s\\S]*Профиль[\\s\\S]*Выйти/ not found",
+      "evidence": "D-1440 authenticated sidebar shell",
+      "fix": "Not fixed in this run"
+    }
+  ],
+  "blocked": [],
+  "observations": [
+    "Retry 1 for /: status=502, text={\"errorMessage\":\"container's server prematurely closed connection\",\"errorType\":\"errorStrin",
+    "Retry 1 for /modules/not-a-module: page.waitForTimeout: Target page, context or browser has been closed"
+  ],
+  "consoleErrors": [
+    {
+      "label": "m390-main",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    },
+    {
+      "label": "m390-main",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    },
+    {
+      "label": "m390-main",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "label": "m390-wrong-login",
+      "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    },
+    {
+      "label": "routing",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "routing",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "label": "routing",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "networkErrors": [
+    {
+      "label": "m390-wrong-login",
+      "status": 502,
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/"
+    }
+  ],
+  "commands": [
+    "curl -fsS -X POST https://functions.yandexcloud.net/d4e0o3h9gnq59inscpns",
+    "curl -fsS https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/health",
+    "curl -fsS https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/readyz",
+    "node /tmp/finpulse-qa-playwright/prod-qa.cjs"
+  ],
+  "finishedAt": "2026-05-31T22:30:02.757Z",
+  "fatal": "page.waitForTimeout: Target page, context or browser has been closed\n    at openStable (/private/tmp/finpulse-qa-playwright/prod-qa.cjs:103:16)\n    at async testRoutingAndInvalids (/private/tmp/finpulse-qa-playwright/prod-qa.cjs:624:3)\n    at async main (/private/tmp/finpulse-qa-playwright/prod-qa.cjs:761:5)"
+}

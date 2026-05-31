@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import type { Card } from '../../../src/content/program'
 import type { AppDatabase } from '../../db/connection'
-import type { ReflectionAnswerUpsert } from '../../db/reflectionAnswersRepository'
+import type { ReflectionAnswerEntry, ReflectionAnswerUpsert } from '../../db/reflectionAnswersRepository'
 import { sendError } from '../../lib/http'
 import { getSessionUser } from '../../lib/sessions'
 import type { CardDetails, ContentService } from '../content/contentService'
@@ -44,7 +44,7 @@ export function registerReflectionRoutes(app: FastifyInstance, db: AppDatabase, 
     }
 
     return {
-      answers: await db.reflectionAnswers.listReflectionAnswers(user.id),
+      answers: withContentTemplates(await db.reflectionAnswers.listReflectionAnswers(user.id), content),
     }
   })
 
@@ -76,7 +76,21 @@ export function registerReflectionRoutes(app: FastifyInstance, db: AppDatabase, 
     await db.reflectionAnswers.upsertReflectionAnswer(toReflectionAnswerUpsert(user.id, cardDetails, parsed.data))
 
     return {
-      answers: await db.reflectionAnswers.listReflectionAnswers(user.id),
+      answers: withContentTemplates(await db.reflectionAnswers.listReflectionAnswers(user.id), content),
+    }
+  })
+}
+
+function withContentTemplates(answers: ReflectionAnswerEntry[], content: ContentService): ReflectionAnswerEntry[] {
+  return answers.map((answer) => {
+    if (answer.cardType !== 'artifact') return answer
+
+    const cardDetails = content.getCardDetails(answer.cardId)
+    const template = cardDetails?.card.type === 'artifact' && cardDetails.card.template?.length ? cardDetails.card.template : null
+
+    return {
+      ...answer,
+      template,
     }
   })
 }

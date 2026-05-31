@@ -1,0 +1,618 @@
+{
+  "runTs": "20260601014200",
+  "emailA": "qa+prod-b-20260601014200@example.com",
+  "baseUrl": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net",
+  "browser": "Google Chrome headless via CDP",
+  "scenarios": [
+    {
+      "id": "E2E-P0-01 steps 1-3 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/program",
+        "h1": "Модули",
+        "horizontalOverflow": false
+      }
+    },
+    {
+      "id": "PROGRAM-01 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/program",
+        "textExcerpt": "Модули\n\nМодуль 1\n\nФинансовые цели\n\nМодуль 01 курса Финздоров: ценности, видение будущего, финансовые цели и мотивация движения к ним.\n\nВ процессе\n0/15\nДАЛЕЕ\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PROGRAM-06 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/modules/financial-goals"
+      }
+    },
+    {
+      "id": "PROGRAM-07 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/program"
+      }
+    },
+    {
+      "id": "PATH-01 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/modules/financial-goals",
+        "horizontalOverflow": false
+      }
+    },
+    {
+      "id": "PATH-14 M-390",
+      "status": "pass",
+      "evidence": {
+        "cleanTitles": true,
+        "textExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n2\n3\n4\nВидение будущего\n5\n6\n7\nФинансовые цели\n8\n9\n10\n11\nМотивация достижения целей\n12\n13\n14\n15\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PATH-05 M-390",
+      "status": "fail",
+      "evidence": {
+        "lockedClick": {
+          "ok": true,
+          "text": "2",
+          "aria": "Покупка, потребность и ценность. Недоступный урок. Показать описание урока",
+          "disabled": false,
+          "ariaDisabled": null
+        },
+        "path": "/modules/financial-goals",
+        "textExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n2\n3\n4\nВидение будущего\n5\n6\n7\nФинансовые цели\n8\n9\n10\n11\nМотивация достижения целей\n12\n13\n14\n15\nОБУЧЕНИЕ\nПРОФИЛЬ\nПокупка, потребность и ценность\n\nПройдите предыдущие уроки, чтобы открыть доступ.\n\nНЕДОСТУПНО\nЗакрыть"
+      }
+    },
+    {
+      "id": "PATH-07 M-390 close button",
+      "status": "pass",
+      "evidence": {
+        "dialogClose": {
+          "ok": true,
+          "count": 1,
+          "clicked": "Не сейчас"
+        },
+        "closedPath": "/modules/financial-goals"
+      }
+    },
+    {
+      "id": "PATH-04 M-390",
+      "status": "pass",
+      "evidence": {
+        "dialogClick": {
+          "ok": true,
+          "mode": "direct",
+          "text": "НАЧАТЬ",
+          "aria": "Зачем финансовым целям нужны ценности. Текущий урок. Показать описание урока"
+        },
+        "primaryAction": {
+          "ok": true,
+          "text": "Продолжить урок"
+        },
+        "dialogExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n2\n3\n4\nВидение будущего\n5\n6\n7\nФинансовые цели\n8\n9\n10\n11\nМотивация достижения целей\n12\n13\n14\n15\nОБУЧЕНИЕ\nПРОФИЛЬ\nПокупка, потребность и ценность\n\nПройдите предыдущие уроки, чтобы открыть доступ.\n\nНЕДОСТУПНО\nЗакрыть\nЗачем финансовым целям нужны ценности\n\nОткройте урок или вернитесь к карте модуля.\n\n4 мин\nПродолжить урок\nНе сейчас\nЗакрыть",
+        "path": "/lessons/why-values-matter"
+      }
+    },
+    {
+      "id": "ROUTE-05 M-390 forward leg",
+      "status": "pass",
+      "evidence": {
+        "path": "/lessons/why-values-matter"
+      }
+    },
+    {
+      "id": "E2E-P0-01 steps 4-7 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/lessons/why-values-matter",
+        "interactions": [
+          {
+            "kind": "verify",
+            "text": "Проверить",
+            "filled": [],
+            "checkboxes": 0
+          },
+          {
+            "kind": "next",
+            "text": "Далее",
+            "filled": [],
+            "checkboxes": 0
+          },
+          {
+            "kind": "next",
+            "text": "Далее",
+            "filled": [],
+            "checkboxes": 0
+          },
+          {
+            "kind": "next",
+            "text": "Далее",
+            "filled": [],
+            "checkboxes": 0
+          },
+          {
+            "kind": "verify",
+            "text": "Проверить",
+            "filled": [],
+            "checkboxes": 0
+          },
+          {
+            "kind": "next",
+            "text": "Далее",
+            "filled": [],
+            "checkboxes": 0
+          },
+          {
+            "kind": "next",
+            "text": "Далее",
+            "filled": [],
+            "checkboxes": 0
+          },
+          {
+            "kind": "next",
+            "text": "Завершить",
+            "filled": [],
+            "checkboxes": 0
+          }
+        ],
+        "textExcerpt": "Финансовые цели · 01.01 Ваши базовые ценности\n\nЗачем финансовым целям нужны ценности\n\nГотово\n\nУрок завершён\n\nПрогресс урока сохранён как завершённый.\n\nСледующий урок"
+      }
+    },
+    {
+      "id": "ROUTE-06 M-390",
+      "status": "pass",
+      "evidence": {
+        "pathAfterBack": "/lessons/why-values-matter",
+        "textExcerpt": "Финансовые цели · 01.01 Ваши базовые ценности\n\nЗачем финансовым целям нужны ценности\n\n1 из 6\n\nФинансовая цель — это жизненная цель, для которой нужны деньги.\n\nЦель: Понять, что причина цели влияет на мотивацию и выбор финансового инструмента.\n\nОдинаковая цель, разные причины\n\nДва человека хотят «накопить на квартиру». Для одного это безопасность. Для другого — статус. Цель звучит одинаково, но причины разные.\n\nПочему причина цели важна?\n\nПочему причина цели важна?\nПотому что от неё зависит мотив"
+      }
+    },
+    {
+      "id": "E2E-P0-01 steps 8-10 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/profile",
+        "h1": "Профиль",
+        "textExcerpt": "Q\n\nУЧЕБНЫЙ АККАУНТ\n\nПрофиль\nEmail\nqa+prod-b-20260601014200@example.com\nДата регистрации\n1 июня 2026\nID\n6998b3eb...69d59d\n\nМОИ ОТВЕТЫ\n\nМой финансовый ориентир\nЦенности\n\nВАШИ БАЗОВЫЕ ЦЕННОСТИ · ЗАЧЕМ ФИНАНСОВЫМ ЦЕЛЯМ НУЖНЫ ЦЕННОСТИ\n\nПервая финансовая мечта\n\nВыбери одну мечту, которая требует денег.\n\nжильё\nУчебный прогресс\n\n1/15\n\nПройдено уроков\n\n7%\n\nПрогресс маршрута\n\n2\n\nПросмотрено уроков\n\n6\n\nКарточек завершено\n\nВыйти\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "ENTRY-04 /profile M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/profile",
+        "textExcerpt": "Q\n\nУЧЕБНЫЙ АККАУНТ\n\nПрофиль\nEmail\nqa+prod-b-20260601014200@example.com\nДата регистрации\n1 июня 2026\nID\n6998b3eb...69d59d\n\nМОИ ОТВЕТЫ\n\nМой финансовый ориентир\nЦенности\n\nВАШИ БАЗОВЫЕ ЦЕННОСТИ · ЗАЧЕМ ФИНАНСОВЫМ ЦЕЛЯМ НУЖНЫ ЦЕННОСТИ\n\nПервая финансовая мечта\n\nВыбери одну мечту, которая требует денег.\n\nжильё\nУчебный прогресс\n\n1/15\n\nПройдено уроков\n\n7%\n\nПрогресс маршрута\n\n2\n\nПросмотрено уроков\n\n6\n\nКарточек завершено\n\nВыйти\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "ENTRY-04 /program M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/program",
+        "h1": "Модули",
+        "textExcerpt": "Модули\n\nМодуль 1\n\nФинансовые цели\n\nМодуль 01 курса Финздоров: ценности, видение будущего, финансовые цели и мотивация движения к ним.\n\nВ процессе\n1/15\nДАЛЕЕ\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "ENTRY-04 /modules/financial-goals M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/modules/financial-goals",
+        "h1": "Ваши базовые ценности",
+        "textExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n3\n4\nВидение будущего\n5\n6\n7\nФинансовые цели\n8\n9\n10\n11\nМотивация достижения целей\n12\n13\n14\n15\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "ENTRY-04 /lessons/why-values-matter M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/lessons/why-values-matter",
+        "h1": "Зачем финансовым целям нужны ценности",
+        "textExcerpt": "Финансовые цели · 01.01 Ваши базовые ценности\n\nЗачем финансовым целям нужны ценности\n\n1 из 6\n\nФинансовая цель — это жизненная цель, для которой нужны деньги.\n\nЦель: Понять, что причина цели влияет на мотивацию и выбор финансового инструмента.\n\nОдинаковая цель, разные причины\n\nДва человека хотят «накопить на квартиру». Для одного это безопасность. Для другого — статус. Цель звучит одинаково, но при"
+      }
+    },
+    {
+      "id": "PROGRAM-02 M-390",
+      "status": "pass",
+      "evidence": {
+        "textExcerpt": "Модули\n\nМодуль 1\n\nФинансовые цели\n\nМодуль 01 курса Финздоров: ценности, видение будущего, финансовые цели и мотивация движения к ним.\n\nВ процессе\n1/15\nДАЛЕЕ\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PATH-02 M-390",
+      "status": "fail",
+      "evidence": {
+        "textExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n3\n4\nВидение будущего\n5\n6\n7\nФинансовые цели\n8\n9\n10\n11\nМотивация достижения целей\n12\n13\n14\n15\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PATH-08 M-390",
+      "status": "pass",
+      "evidence": {
+        "topExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 3\nФинансовые цели\nВаши базовые ценности\nНАЧАТЬ\n3\n4\nВидение будущего\n5\n6\n7\nФинансовые цели\n8\n9\n10\n11\nМотивация достижения целей\n12\n13\n14\n15\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PATH-09 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/modules/financial-goals/units/values-and-goals",
+        "textExcerpt": "МОДУЛЬ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n3\n4\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PATH-10 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/modules/financial-goals/units/values-and-goals",
+        "textExcerpt": "МОДУЛЬ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n3\n4\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PATH-11 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/modules/no-such-module",
+        "textExcerpt": "Не удалось загрузить модуль\n\nModule not found\n\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PATH-12 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/modules/financial-goals/units/no-such-unit",
+        "textExcerpt": "Не удалось загрузить юнит\n\nUnit not found\n\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PROGRAM-04 M-390 blocked /api/program",
+      "status": "pass",
+      "evidence": {
+        "textExcerpt": "Не удалось загрузить программу\n\nFailed to fetch\n\nОБУЧЕНИЕ\nПРОФИЛЬ",
+        "newNetworkEvents": [
+          {
+            "type": "loadingFailed",
+            "requestId": "74439.345",
+            "errorText": "",
+            "canceled": false,
+            "blockedReason": "inspector"
+          }
+        ]
+      }
+    },
+    {
+      "id": "PATH-13 M-390 blocked transition program API",
+      "status": "pass",
+      "evidence": {
+        "textExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n3\n4\nВидение будущего\n5\n6\n7\nФинансовые цели\n8\n9\n10\n11\nМотивация достижения целей\n12\n13\n14\n15\nОБУЧЕНИЕ\nПРОФИЛЬ",
+        "newNetworkEvents": [
+          {
+            "type": "loadingFailed",
+            "requestId": "74439.364",
+            "errorText": "",
+            "canceled": false,
+            "blockedReason": "inspector"
+          }
+        ]
+      }
+    },
+    {
+      "id": "PROGRAM-05 controlled empty program",
+      "status": "blocked",
+      "evidence": {
+        "reason": "Production run did not modify/intercept content payloads to synthesize an empty modules fixture."
+      }
+    },
+    {
+      "id": "PROGRAM-03 M-390 seeded completed state",
+      "status": "pass",
+      "evidence": {
+        "seedFailures": [],
+        "textExcerpt": "Модули\n\nМодуль 1\n\nФинансовые цели\n\nМодуль 01 курса Финздоров: ценности, видение будущего, финансовые цели и мотивация движения к ним.\n\nПройдено\n15/15\nПОВТОРЕНИЕ\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PATH-03 M-390 seeded completed state",
+      "status": "pass",
+      "evidence": {
+        "textExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nВидение будущего\nФинансовые цели\nМотивация достижения целей\nМодуль завершён\n\nВернитесь к списку модулей и выберите следующий шаг.\n\nК модулям\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "ROUTE-02 /program M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/program",
+        "h1": "Модули",
+        "textExcerpt": "Модули\n\nМодуль 1\n\nФинансовые цели\n\nМодуль 01 курса Финздоров: ценности, видение будущего, финансовые цели и мотивация движения к ним.\n\nПройдено\n15/15\nПОВТОРЕНИЕ\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "ROUTE-02 /profile M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/profile",
+        "h1": "Профиль",
+        "textExcerpt": "Q\n\nУЧЕБНЫЙ АККАУНТ\n\nПрофиль\nEmail\nqa+prod-b-20260601014200@example.com\nДата регистрации\n1 июня 2026\nID\n6998b3eb...69d59d\n\nМОИ ОТВЕТЫ\n\nМой финансовый ориентир\nЦенности\n\nВАШИ БАЗОВЫЕ ЦЕННОСТИ · ЗАЧЕМ ФИНАНСОВЫМ ЦЕЛЯМ НУЖНЫ ЦЕННОСТИ\n\nПервая финансовая мечта\n\nВыбери одну мечту, которая требует денег.\n\nжильё\nУчебный прогресс\n\n15/15\n\nПройдено уроков\n\n100%\n\nПрогресс маршрута\n\n15\n\nПросмотрено уроков\n\n86\n\n"
+      }
+    },
+    {
+      "id": "ROUTE-02 /modules/financial-goals M-390",
+      "status": "fail",
+      "evidence": {
+        "path": "/modules/financial-goals",
+        "h1": "",
+        "textExcerpt": ""
+      }
+    },
+    {
+      "id": "ROUTE-02 /modules/financial-goals/units/values-and-goals M-390",
+      "status": "fail",
+      "evidence": {
+        "path": "/modules/financial-goals/units/values-and-goals",
+        "h1": "Ваши базовые ценности",
+        "textExcerpt": "МОДУЛЬ 1\nВаши базовые ценности\nВаши базовые ценности\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "ROUTE-02 /lessons/why-values-matter M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/lessons/why-values-matter",
+        "h1": "Зачем финансовым целям нужны ценности",
+        "textExcerpt": "Финансовые цели · 01.01 Ваши базовые ценности\n\nЗачем финансовым целям нужны ценности\n\n1 из 6\n\nФинансовая цель — это жизненная цель, для которой нужны деньги.\n\nЦель: Понять, что причина цели влияет на мотивацию и выбор финансового инструмента.\n\nОдинаковая цель, разные причины\n\nДва человека хотят «накопить на квартиру». Для одного это безопасность. Для другого — статус. Цель звучит одинаково, но при"
+      }
+    },
+    {
+      "id": "ROUTE-03 M-390",
+      "status": "pass",
+      "evidence": {
+        "path": "/program",
+        "textExcerpt": "Модули\n\nМодуль 1\n\nФинансовые цели\n\nМодуль 01 курса Финздоров: ценности, видение будущего, финансовые цели и мотивация движения к ним.\n\nПройдено\n15/15\nПОВТОРЕНИЕ\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "PROGRAM-01/02/03 D-1440 authenticated shell/completed state",
+      "status": "pass",
+      "evidence": {
+        "path": "/program",
+        "textExcerpt": "ОБУЧЕНИЕ\nПРОФИЛЬ\n\nqa+prod-b-20260601014200@example.com\n\nВыйти\nМодули\n\nМодуль 1\n\nФинансовые цели\n\nМодуль 01 курса Финздоров: ценности, видение будущего, финансовые цели и мотивация движения к ним.\n\nПройдено\n15/15\nПОВТОРЕНИЕ"
+      }
+    },
+    {
+      "id": "PATH-01/02/03 D-1440 module path",
+      "status": "pass",
+      "evidence": {
+        "path": "/modules/financial-goals",
+        "horizontalOverflow": false,
+        "textExcerpt": "ОБУЧЕНИЕ\nПРОФИЛЬ\n\nqa+prod-b-20260601014200@example.com\n\nВыйти\nМОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nВидение будущего\nФинансовые цели\nМотивация достижения целей\nМодуль завершён\n\nВернитесь к списку модулей и выберите следующий шаг.\n\nК модулям"
+      }
+    },
+    {
+      "id": "ROUTE-01 D-1440 back/forward before logout",
+      "status": "pass",
+      "evidence": {
+        "routeBackOk": true,
+        "routeForwardOk": true,
+        "finalPath": "/lessons/why-values-matter"
+      }
+    },
+    {
+      "id": "ENTRY-04 /program D-1440",
+      "status": "pass",
+      "evidence": {
+        "path": "/program",
+        "h1": "Модули",
+        "textExcerpt": "ОБУЧЕНИЕ\nПРОФИЛЬ\n\nqa+prod-b-20260601014200@example.com\n\nВыйти\nМодули\n\nМодуль 1\n\nФинансовые цели\n\nМодуль 01 курса Финздоров: ценности, видение будущего, финансовые цели и мотивация движения к ним.\n\nПройдено\n15/15\nПОВТОРЕНИЕ"
+      }
+    },
+    {
+      "id": "ENTRY-04 /modules/financial-goals D-1440",
+      "status": "pass",
+      "evidence": {
+        "path": "/modules/financial-goals",
+        "h1": "Ваши базовые ценности",
+        "textExcerpt": "ОБУЧЕНИЕ\nПРОФИЛЬ\n\nqa+prod-b-20260601014200@example.com\n\nВыйти\nМОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nВидение будущего\nФинансовые цели\nМотивация достижения целей\nМодуль завершён\n\nВернитесь к списку модулей и выберите следующий шаг.\n\nК модулям"
+      }
+    },
+    {
+      "id": "ENTRY-04 /lessons/why-values-matter D-1440",
+      "status": "pass",
+      "evidence": {
+        "path": "/lessons/why-values-matter",
+        "h1": "Зачем финансовым целям нужны ценности",
+        "textExcerpt": "ОБУЧЕНИЕ\nПРОФИЛЬ\n\nqa+prod-b-20260601014200@example.com\n\nВыйти\n\nФинансовые цели · 01.01 Ваши базовые ценности\n\nЗачем финансовым целям нужны ценности\n\n1 из 6\n\nФинансовая цель — это жизненная цель, для которой нужны деньги.\n\nЦель: Понять, что причина цели влияет на мотивацию и выбор финансового инструмента.\n\nОдинаковая цель, разные причины\n\nДва человека хотят «накопить на квартиру». Для одного это бе"
+      }
+    },
+    {
+      "id": "ENTRY-04 /profile D-1440",
+      "status": "pass",
+      "evidence": {
+        "path": "/profile",
+        "h1": "Профиль",
+        "textExcerpt": "ОБУЧЕНИЕ\nПРОФИЛЬ\n\nqa+prod-b-20260601014200@example.com\n\nВыйти\nQ\n\nУЧЕБНЫЙ АККАУНТ\n\nПрофиль\nEmail\nqa+prod-b-20260601014200@example.com\nДата регистрации\n1 июня 2026\nID\n6998b3eb...69d59d\n\nМОИ ОТВЕТЫ\n\nМой финансовый ориентир\nЦенности\n\nВАШИ БАЗОВЫЕ ЦЕННОСТИ · ЗАЧЕМ ФИНАНСОВЫМ ЦЕЛЯМ НУЖНЫ ЦЕННОСТИ\n\nПервая финансовая мечта\n\nВыбери одну мечту, которая требует денег.\n\nжильё\nУчебный прогресс\n\n15\n\nПройдено ур"
+      }
+    },
+    {
+      "id": "ROUTE-01 D-1440 after logout Back privacy guard",
+      "status": "fail",
+      "evidence": {
+        "path": "/profile",
+        "textExcerpt": "ОБУЧЕНИЕ\nПРОФИЛЬ\n\nqa+prod-b-20260601014200@example.com\n\nВыйти\nQ\n\nУЧЕБНЫЙ АККАУНТ\n\nПрофиль\nEmail\nqa+prod-b-20260601014200@example.com\nДата регистрации\n1 июня 2026\nID\n6998b3eb...69d59d\n\nМОИ ОТВЕТЫ\n\nМой финансовый ориентир\nЦенности\n\nВАШИ БАЗОВЫЕ ЦЕННОСТИ · ЗАЧЕМ ФИНАНСОВЫМ ЦЕЛЯМ НУЖНЫ ЦЕННОСТИ\n\nПервая финансовая мечта\n\nВыбери одну мечту, которая требует денег.\n\nжильё\nУчебный прогресс\n\n15/15\n\nПройдено уроков\n\n100%\n\nПрогресс маршрута\n\n15\n\nПросмотрено уроков\n\n86\n\nКарточек завершено"
+      }
+    },
+    {
+      "id": "ROUTE-04 anonymous",
+      "status": "pass",
+      "evidence": {
+        "path": "/unknown/anonymous-route",
+        "textExcerpt": "Войдите в FinPulse\nEmail или логин\nПароль\nВойти\nРегистрация"
+      }
+    }
+  ],
+  "bugs": [
+    {
+      "id": "PATH-05 M-390",
+      "severity": "Medium",
+      "title": "Scenario PATH-05 M-390 failed",
+      "steps": [
+        "See scenario evidence in JSON report."
+      ],
+      "evidence": {
+        "lockedClick": {
+          "ok": true,
+          "text": "2",
+          "aria": "Покупка, потребность и ценность. Недоступный урок. Показать описание урока",
+          "disabled": false,
+          "ariaDisabled": null
+        },
+        "path": "/modules/financial-goals",
+        "textExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n2\n3\n4\nВидение будущего\n5\n6\n7\nФинансовые цели\n8\n9\n10\n11\nМотивация достижения целей\n12\n13\n14\n15\nОБУЧЕНИЕ\nПРОФИЛЬ\nПокупка, потребность и ценность\n\nПройдите предыдущие уроки, чтобы открыть доступ.\n\nНЕДОСТУПНО\nЗакрыть"
+      }
+    },
+    {
+      "id": "PATH-02 M-390",
+      "severity": "Medium",
+      "title": "Scenario PATH-02 M-390 failed",
+      "steps": [
+        "See scenario evidence in JSON report."
+      ],
+      "evidence": {
+        "textExcerpt": "МОДУЛЬ 1 РАЗДЕЛ 1\nВаши базовые ценности\nВаши базовые ценности\nНАЧАТЬ\n3\n4\nВидение будущего\n5\n6\n7\nФинансовые цели\n8\n9\n10\n11\nМотивация достижения целей\n12\n13\n14\n15\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "ROUTE-02 /modules/financial-goals M-390",
+      "severity": "Medium",
+      "title": "Scenario ROUTE-02 /modules/financial-goals M-390 failed",
+      "steps": [
+        "See scenario evidence in JSON report."
+      ],
+      "evidence": {
+        "path": "/modules/financial-goals",
+        "h1": "",
+        "textExcerpt": ""
+      }
+    },
+    {
+      "id": "ROUTE-02 /modules/financial-goals/units/values-and-goals M-390",
+      "severity": "Medium",
+      "title": "Scenario ROUTE-02 /modules/financial-goals/units/values-and-goals M-390 failed",
+      "steps": [
+        "See scenario evidence in JSON report."
+      ],
+      "evidence": {
+        "path": "/modules/financial-goals/units/values-and-goals",
+        "h1": "Ваши базовые ценности",
+        "textExcerpt": "МОДУЛЬ 1\nВаши базовые ценности\nВаши базовые ценности\nОБУЧЕНИЕ\nПРОФИЛЬ"
+      }
+    },
+    {
+      "id": "ROUTE-01 D-1440 after logout Back privacy guard",
+      "severity": "High",
+      "title": "Scenario ROUTE-01 D-1440 after logout Back privacy guard failed",
+      "steps": [
+        "See scenario evidence in JSON report."
+      ],
+      "evidence": {
+        "path": "/profile",
+        "textExcerpt": "ОБУЧЕНИЕ\nПРОФИЛЬ\n\nqa+prod-b-20260601014200@example.com\n\nВыйти\nQ\n\nУЧЕБНЫЙ АККАУНТ\n\nПрофиль\nEmail\nqa+prod-b-20260601014200@example.com\nДата регистрации\n1 июня 2026\nID\n6998b3eb...69d59d\n\nМОИ ОТВЕТЫ\n\nМой финансовый ориентир\nЦенности\n\nВАШИ БАЗОВЫЕ ЦЕННОСТИ · ЗАЧЕМ ФИНАНСОВЫМ ЦЕЛЯМ НУЖНЫ ЦЕННОСТИ\n\nПервая финансовая мечта\n\nВыбери одну мечту, которая требует денег.\n\nжильё\nУчебный прогресс\n\n15/15\n\nПройдено уроков\n\n100%\n\nПрогресс маршрута\n\n15\n\nПросмотрено уроков\n\n86\n\nКарточек завершено"
+      }
+    }
+  ],
+  "screenshots": [
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/agent-b-m390-program-new-user.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/agent-b-m390-module-no-progress.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/agent-b-m390-first-lesson-complete.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/agent-b-m390-profile-after-first-lesson.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/agent-b-m390-module-completed.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/agent-b-d1440-program-completed.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/agent-b-d1440-module-path.png"
+  ],
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/auth/me"
+    },
+    {
+      "type": "warning",
+      "text": "Allow attribute will take precedence over 'allowfullscreen'.",
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/assets/index-Bpfy__C-.js"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/modules/no-such-module"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/units/no-such-unit"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/auth/me"
+    }
+  ],
+  "network": [
+    {
+      "type": "httpError",
+      "status": 401,
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/auth/me"
+    },
+    {
+      "type": "loadingFailed",
+      "requestId": "DD6226BA245E7BE033F8C86116FFE829",
+      "errorText": "net::ERR_ABORTED",
+      "canceled": true
+    },
+    {
+      "type": "httpError",
+      "status": 404,
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/modules/no-such-module"
+    },
+    {
+      "type": "httpError",
+      "status": 404,
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/units/no-such-unit"
+    },
+    {
+      "type": "loadingFailed",
+      "requestId": "74439.345",
+      "errorText": "",
+      "canceled": false,
+      "blockedReason": "inspector"
+    },
+    {
+      "type": "loadingFailed",
+      "requestId": "74439.364",
+      "errorText": "",
+      "canceled": false,
+      "blockedReason": "inspector"
+    },
+    {
+      "type": "loadingFailed",
+      "requestId": "74439.859",
+      "errorText": "net::ERR_ABORTED",
+      "canceled": true
+    },
+    {
+      "type": "httpError",
+      "status": 401,
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/api/auth/me"
+    }
+  ],
+  "risks": [],
+  "steps": [],
+  "summary": {
+    "passed": 38,
+    "failed": 5,
+    "blocked": 1,
+    "consoleWarningsOrErrors": 5,
+    "networkEvents": 8
+  }
+}

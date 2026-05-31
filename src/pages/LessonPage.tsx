@@ -21,6 +21,7 @@ export function LessonPage({
   const { lessonSlug } = useParams()
   const viewedLessonSlugsRef = useRef(new Set<string>())
   const lessonQuery = useApiQuery(() => api.getLesson(lessonSlug ?? ''), [lessonSlug])
+  const loadedLessonSlug = lessonQuery.status === 'success' ? lessonQuery.data.lesson.slug : null
   const handleCardCompleted = useCallback(
     (cardId: string) => markCardProgress(cardId, { completed: true }),
     [markCardProgress],
@@ -36,11 +37,11 @@ export function LessonPage({
   )
 
   useEffect(() => {
-    if (!user || !lessonSlug) return
-    if (viewedLessonSlugsRef.current.has(lessonSlug)) return
-    viewedLessonSlugsRef.current.add(lessonSlug)
-    void markLessonProgress(lessonSlug, { viewed: true })
-  }, [lessonSlug, markLessonProgress, user])
+    if (!user || !loadedLessonSlug) return
+    if (viewedLessonSlugsRef.current.has(loadedLessonSlug)) return
+    viewedLessonSlugsRef.current.add(loadedLessonSlug)
+    void markLessonProgress(loadedLessonSlug, { viewed: true })
+  }, [loadedLessonSlug, markLessonProgress, user])
 
   if (!lessonSlug) {
     return <Navigate to="/" replace />

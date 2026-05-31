@@ -38,7 +38,7 @@ export type ReflectionAnswerEntry = {
   cardType: ReflectionCardType
   cardTitle: string | null
   prompt: string
-  template: null
+  template: string[] | null
   contextTitle: string
   sourceSection: string | null
   moduleTitle: string

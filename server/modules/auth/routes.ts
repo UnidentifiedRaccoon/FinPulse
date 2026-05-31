@@ -16,7 +16,7 @@ import {
 
 const USERNAME_LOGIN_PATTERN = /^[a-zA-Z0-9._-]+$/
 const EMAIL_LOGIN_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const AUTH_PAYLOAD_MESSAGE = 'Введите email или логин и пароль'
+const AUTH_PAYLOAD_MESSAGE = 'Проверьте email или логин и пароль: логин от 3 символов, пароль от 8.'
 
 const authBodySchema = z.object({
   login: z

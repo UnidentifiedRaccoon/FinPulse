@@ -74,6 +74,13 @@ function apiResponse(url: string, options: ApiResponseOptions, init: RequestInit
     return jsonResponse({ user: options.currentUser ?? learnerUser })
   }
 
+  if (path === '/api/auth/logout' && method === 'POST') {
+    options.currentUser = null
+    options.progress = emptyProgress
+    options.reflectionAnswers = emptyReflectionAnswers
+    return Promise.resolve(new Response(null, { status: 204 }))
+  }
+
   if (path === '/api/progress') {
     if (options.currentUser) {
       return jsonResponse(options.progress ?? emptyProgress)
@@ -164,6 +171,7 @@ describe('App', () => {
 
   beforeEach(() => {
     apiOptions = {}
+    window.sessionStorage.clear()
     vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL, init?: RequestInit) => apiResponse(String(input), apiOptions, init)))
   })
 
@@ -304,6 +312,57 @@ describe('App', () => {
     expect(screen.queryByText('Ваш прогресс')).toBeNull()
     expect(screen.getByRole('progressbar', { name: /модуля завершено/ })).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/modules/financial-goals')
+  })
+
+  it('does not restore private profile state when navigating back after logout', async () => {
+    const user = userEvent.setup()
+    setAuthenticatedLearner(apiOptions)
+    apiOptions.reflectionAnswers = {
+      answers: [
+        {
+          cardId: 'card_02_05_reflection_values',
+          cardType: 'reflection',
+          saveKey: 'primary_values',
+          lessonSlug: 'what-are-values',
+          lessonTitle: 'Что такое ценности',
+          unitSlug: 'values-and-goals',
+          unitTitle: '01.01 Ваши базовые ценности',
+          moduleSlug: 'financial-goals',
+          moduleTitle: 'Финансовые цели',
+          cardTitle: 'Первичный список ценностей',
+          prompt: 'Какие ценности чаще всего стоят за твоими денежными решениями?',
+          template: null,
+          answer: {
+            multiValues: ['свобода'],
+          },
+          createdAt: '2026-05-30T08:45:00.000Z',
+          updatedAt: '2026-05-30T08:45:00.000Z',
+        },
+      ],
+    }
+    window.history.pushState({}, '', '/profile')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Профиль' })).toBeTruthy()
+    expect(screen.getByText('свобода')).toBeTruthy()
+
+    const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
+    await user.click(within(sidebar).getByRole('link', { name: 'Обучение' }))
+    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: 'Выйти' }))
+
+    expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
+    expect(screen.queryByText('свобода')).toBeNull()
+
+    window.history.pushState({}, '', '/profile')
+    fireEvent.popState(window)
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
+    })
+    expect(screen.queryByText('свобода')).toBeNull()
+    expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
   })
 
   it('shows a program empty state when no modules are available', async () => {
@@ -505,6 +564,18 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
     expect(screen.getByText(/Два человека хотят/i)).toBeTruthy()
+  })
+
+  it('does not write viewed progress for an invalid lesson slug', async () => {
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/lessons/not-a-real-lesson')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Не удалось загрузить урок' })).toBeTruthy()
+    await new Promise((resolve) => setTimeout(resolve, 25))
+
+    expect(getProgressWriteCount('/api/progress/lessons/not-a-real-lesson')).toBe(0)
   })
 
   it('renders newly converted future vision and motivation content routes', async () => {
