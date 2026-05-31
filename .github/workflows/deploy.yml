@@ -23,14 +23,14 @@ env:
   YC_RUNTIME_SA_ID: aje0lujm0q1obpn9fbu9
   YC_DEPLOY_SA_ID: ajeboe0h7j2k9vtfi06j
   YC_WIF_AUDIENCE: https://github.com/UnidentifiedRaccoon
-  YC_DB_SECRET_ID: e6qdr1f6uh0k9aj2v34c
   YC_NETWORK_ID: enpanp4tbmpj9gckolkg
-  YC_SUBNET_ID: e9bl6as7h109ghbo9c33
   FINPULSE_DATABASE_HOST: rc1a-ua11qmcqokpra171.mdb.yandexcloud.net
   FINPULSE_DATABASE_PORT: 6432
   FINPULSE_DATABASE_NAME: finpulse
   FINPULSE_DATABASE_USER: finpulse_app
   FINPULSE_DATABASE_SSLMODE: require
+  FINPULSE_DATABASE_PASSWORD_SECRET_ID: e6qdr1f6uh0k9aj2v34c
+  FINPULSE_DATABASE_PASSWORD_SECRET_KEY: postgresql_password
   FINPULSE_APP_URL: https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net
 
 jobs:
@@ -137,9 +137,7 @@ jobs:
             --execution-timeout 30s \
             --service-account-id "$YC_RUNTIME_SA_ID" \
             --network-id "$YC_NETWORK_ID" \
-            --subnets "$YC_SUBNET_ID" \
             --environment NODE_ENV=production \
-            --environment PORT=8080 \
             --environment FINPULSE_API_HOST=0.0.0.0 \
             --environment FINPULSE_STATIC_ROOT=/app/dist \
             --environment FINPULSE_COOKIE_SECURE=true \
@@ -148,7 +146,8 @@ jobs:
             --environment FINPULSE_DATABASE_NAME="$FINPULSE_DATABASE_NAME" \
             --environment FINPULSE_DATABASE_USER="$FINPULSE_DATABASE_USER" \
             --environment FINPULSE_DATABASE_SSLMODE="$FINPULSE_DATABASE_SSLMODE" \
-            --secret id="$YC_DB_SECRET_ID",key=postgresql_password,environment-variable=FINPULSE_DATABASE_PASSWORD
+            --environment FINPULSE_DATABASE_PASSWORD_SECRET_ID="$FINPULSE_DATABASE_PASSWORD_SECRET_ID" \
+            --environment FINPULSE_DATABASE_PASSWORD_SECRET_KEY="$FINPULSE_DATABASE_PASSWORD_SECRET_KEY"
 
       - name: Smoke test production
         run: |
