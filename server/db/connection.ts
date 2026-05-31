@@ -7,6 +7,10 @@ import { SessionsRepository } from './sessionsRepository'
 import { UsersRepository } from './usersRepository'
 
 const DEFAULT_LOCAL_DATABASE_URL = 'postgres://finpulse:finpulse@127.0.0.1:5432/finpulse'
+const DEFAULT_YC_METADATA_TOKEN_URL =
+  'http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token'
+const DEFAULT_YC_LOCKBOX_PAYLOAD_BASE_URL = 'https://payload.lockbox.api.cloud.yandex.net'
+const DEFAULT_DATABASE_PASSWORD_SECRET_KEY = 'postgresql_password'
 
 export type DatabaseConfig = {
   connectionString?: string
@@ -29,6 +33,11 @@ export type DatabaseEnvironment = {
   FINPULSE_DATABASE_NAME?: string
   FINPULSE_DATABASE_USER?: string
   FINPULSE_DATABASE_PASSWORD?: string
+  FINPULSE_DATABASE_PASSWORD_SECRET_ID?: string
+  FINPULSE_DATABASE_PASSWORD_SECRET_KEY?: string
+  FINPULSE_DATABASE_PASSWORD_SECRET_VERSION_ID?: string
+  FINPULSE_YC_METADATA_TOKEN_URL?: string
+  FINPULSE_YC_LOCKBOX_PAYLOAD_BASE_URL?: string
   FINPULSE_DATABASE_SSLMODE?: string
   NODE_ENV?: string
 }
@@ -48,7 +57,7 @@ export async function openDatabase(config: DatabaseConfig = {}): Promise<AppData
     assertSafeIdentifier(config.schema)
   }
 
-  const pool = new Pool(toPoolConfig(config))
+  const pool = new Pool(await toPoolConfig(config))
 
   try {
     if (config.schema) {
@@ -102,6 +111,24 @@ export function resolveDatabaseUrl(env: DatabaseEnvironment = process.env): stri
   return env.FINPULSE_DATABASE_URL ?? env.DATABASE_URL ?? resolveDatabaseUrlFromParts(env) ?? (env.NODE_ENV === 'production' ? undefined : DEFAULT_LOCAL_DATABASE_URL)
 }
 
+export async function resolveDatabaseUrlWithSecrets(env: DatabaseEnvironment = process.env): Promise<string | undefined> {
+  const configuredUrl = env.FINPULSE_DATABASE_URL ?? env.DATABASE_URL ?? resolveDatabaseUrlFromParts(env)
+
+  if (configuredUrl) {
+    return configuredUrl
+  }
+
+  if (canResolveDatabasePasswordFromLockbox(env)) {
+    const password = await fetchDatabasePasswordFromLockbox(env)
+    return resolveDatabaseUrlFromParts({
+      ...env,
+      FINPULSE_DATABASE_PASSWORD: password,
+    })
+  }
+
+  return env.NODE_ENV === 'production' ? undefined : DEFAULT_LOCAL_DATABASE_URL
+}
+
 function resolveDatabaseUrlFromParts(env: DatabaseEnvironment): string | undefined {
   if (!env.FINPULSE_DATABASE_HOST || !env.FINPULSE_DATABASE_NAME || !env.FINPULSE_DATABASE_USER || !env.FINPULSE_DATABASE_PASSWORD) {
     return undefined
@@ -124,8 +151,8 @@ function resolveDatabaseUrlFromParts(env: DatabaseEnvironment): string | undefin
   return url.toString()
 }
 
-function toPoolConfig(config: DatabaseConfig): PoolConfig {
-  const connectionString = config.connectionString ?? config.databaseUrl ?? resolveDatabaseUrl()
+async function toPoolConfig(config: DatabaseConfig): Promise<PoolConfig> {
+  const connectionString = config.connectionString ?? config.databaseUrl ?? (await resolveDatabaseUrlWithSecrets())
 
   if (!connectionString) {
     throw new Error('PostgreSQL connection string is required: set FINPULSE_DATABASE_URL or DATABASE_URL')
@@ -139,6 +166,88 @@ function toPoolConfig(config: DatabaseConfig): PoolConfig {
     connectionTimeoutMillis: config.connectionTimeoutMillis,
     options: config.schema ? `-c search_path=${config.schema},public` : undefined,
   }
+}
+
+function canResolveDatabasePasswordFromLockbox(env: DatabaseEnvironment) {
+  return Boolean(
+    env.FINPULSE_DATABASE_HOST &&
+      env.FINPULSE_DATABASE_NAME &&
+      env.FINPULSE_DATABASE_USER &&
+      env.FINPULSE_DATABASE_PASSWORD_SECRET_ID,
+  )
+}
+
+async function fetchDatabasePasswordFromLockbox(env: DatabaseEnvironment) {
+  const secretId = env.FINPULSE_DATABASE_PASSWORD_SECRET_ID
+
+  if (!secretId) {
+    throw new Error('FINPULSE_DATABASE_PASSWORD_SECRET_ID is required to fetch the database password')
+  }
+
+  const token = await fetchYandexIamToken(env)
+  const payloadUrl = new URL(`/lockbox/v1/secrets/${encodeURIComponent(secretId)}/payload`, env.FINPULSE_YC_LOCKBOX_PAYLOAD_BASE_URL ?? DEFAULT_YC_LOCKBOX_PAYLOAD_BASE_URL)
+
+  if (env.FINPULSE_DATABASE_PASSWORD_SECRET_VERSION_ID) {
+    payloadUrl.searchParams.set('versionId', env.FINPULSE_DATABASE_PASSWORD_SECRET_VERSION_ID)
+  }
+
+  const payload = await fetchJson(payloadUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  return readLockboxTextEntry(payload, env.FINPULSE_DATABASE_PASSWORD_SECRET_KEY ?? DEFAULT_DATABASE_PASSWORD_SECRET_KEY)
+}
+
+async function fetchYandexIamToken(env: DatabaseEnvironment) {
+  const tokenPayload = await fetchJson(env.FINPULSE_YC_METADATA_TOKEN_URL ?? DEFAULT_YC_METADATA_TOKEN_URL, {
+    headers: {
+      'Metadata-Flavor': 'Google',
+    },
+  })
+
+  if (isRecord(tokenPayload) && typeof tokenPayload.access_token === 'string' && tokenPayload.access_token) {
+    return tokenPayload.access_token
+  }
+
+  throw new Error('Yandex metadata service did not return an IAM access token')
+}
+
+async function fetchJson(url: string | URL, init: Parameters<typeof fetch>[1]) {
+  const response = await fetch(url, init)
+
+  if (!response.ok) {
+    throw new Error(`Yandex Cloud request failed with HTTP ${response.status}`)
+  }
+
+  return response.json() as Promise<unknown>
+}
+
+function readLockboxTextEntry(payload: unknown, key: string) {
+  if (!isRecord(payload) || !Array.isArray(payload.entries)) {
+    throw new Error('Yandex Lockbox payload response is malformed')
+  }
+
+  const entry = payload.entries.find((candidate) => isRecord(candidate) && candidate.key === key)
+
+  if (!isRecord(entry)) {
+    throw new Error(`Yandex Lockbox payload does not contain key "${key}"`)
+  }
+
+  if (typeof entry.textValue === 'string') {
+    return entry.textValue
+  }
+
+  if (typeof entry.binaryValue === 'string') {
+    return Buffer.from(entry.binaryValue, 'base64').toString('utf8')
+  }
+
+  throw new Error(`Yandex Lockbox payload key "${key}" has no text or binary value`)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
 }
 
 function assertSafeIdentifier(identifier: string) {

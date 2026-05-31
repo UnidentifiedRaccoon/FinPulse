@@ -68,7 +68,7 @@ npm run start
 
 `npm run build:container` builds the Vite client into `dist/` and the server bundle into `dist-server/`. `npm run start` expects PostgreSQL env vars and, when static serving is needed, `FINPULSE_STATIC_ROOT` pointing at the Vite `dist` directory.
 
-The Dockerfile mirrors this flow and sets `PORT=8080`, `FINPULSE_API_HOST=0.0.0.0`, and `FINPULSE_STATIC_ROOT=/app/dist` for Yandex Serverless Containers.
+The Dockerfile mirrors this flow and sets `FINPULSE_API_HOST=0.0.0.0` and `FINPULSE_STATIC_ROOT=/app/dist` for Yandex Serverless Containers. The platform supplies `PORT`.
 
 ## Local backend database
 

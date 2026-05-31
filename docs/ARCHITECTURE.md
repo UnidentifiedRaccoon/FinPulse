@@ -215,9 +215,9 @@ Production deployment uses one same-origin Yandex Serverless Container. The Fast
 
 Runtime expectations:
 - the backend must read `PORT` from the environment and bind to `0.0.0.0` so it can run in container platforms such as future Yandex Serverless Containers;
-- PostgreSQL connection settings and secrets come from environment variables, with the DB password injected from Yandex Lockbox into `FINPULSE_DATABASE_PASSWORD`;
+- PostgreSQL connection settings come from environment variables, with the DB password either supplied as `FINPULSE_DATABASE_PASSWORD` or read from Yandex Lockbox at startup through `FINPULSE_DATABASE_PASSWORD_SECRET_ID`;
 - no database password, session secret, or connection string should be committed;
-- Yandex Managed PostgreSQL is reachable through the deployed Serverless Container VPC/subnet configuration;
+- Yandex Managed PostgreSQL is reachable through the deployed Serverless Container VPC network configuration;
 - the backend applies the committed idempotent schema SQL on startup; introduce a versioned migration ledger before broad schema evolution.
 
 Deploy resources, IAM, required GitHub secrets, smoke checks, rollback, and DB start handling are documented in `docs/operations/yandex-cloud-finpulse-deploy.md`.
