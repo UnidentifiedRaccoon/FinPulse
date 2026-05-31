@@ -36,6 +36,7 @@ Use task files and PR/diff summaries.
 
 | ID | Status | Task | Intended write set | Notes |
 |---|---:|---|---|---|
+| T-060 | review | YC DB network and SSL deploy fix | `server/db/connection.ts`, `server/db/connection.test.ts`, `.github/workflows/deploy.yml`, deploy docs/state | Added GitHub secret password deployment, Serverless service subnet DB ingress, and libpq-compatible Managed PostgreSQL SSL. |
 | T-059 | review | Runtime Lockbox deploy fix | `server/db/connection.ts`, `server/db/connection.test.ts`, `.github/workflows/deploy.yml`, deploy docs/state | Replaced failing revision `PORT`/single-subnet/preview-secret path with runtime Lockbox password lookup and network-only deploy. |
 | T-058 | review | Deploy operations docs | `docs/operations/yandex-cloud-finpulse-deploy.md`, `README.md`, `docs/{ARCHITECTURE,DEVELOPMENT}.md`, `harness/**` | Documented single-container YC deploy, exact resource IDs, GitHub secret `YC_DB_START_URL`, manual deploy/rollback/smoke checks, and DB-stopped handling. |
 | T-057 | review | GitHub Actions deploy workflow | `.github/workflows/deploy.yml`, `harness/tasks/review/T-057-github-actions-deploy.md` | Added push-to-main deploy workflow: verify, OIDC/WIF YC auth, image build/push, DB start, Serverless Container revision deploy, and health/readyz/frontend smoke. |

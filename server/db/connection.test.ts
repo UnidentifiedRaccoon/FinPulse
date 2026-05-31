@@ -33,6 +33,18 @@ describe('database connection environment resolution', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('can opt into libpq-compatible sslmode=require handling', async () => {
+    const databaseUrl = await resolveDatabaseUrlWithSecrets({
+      ...BASE_DB_ENV,
+      FINPULSE_DATABASE_PASSWORD: 'plain-password',
+      FINPULSE_DATABASE_SSL_LIBPQ_COMPAT: 'true',
+    })
+
+    expect(databaseUrl).toBe(
+      'postgres://finpulse_app:plain-password@rc1a.example.mdb.yandexcloud.net:6432/finpulse?sslmode=require&uselibpqcompat=true',
+    )
+  })
+
   it('fetches the database password from Yandex Lockbox through the metadata IAM token', async () => {
     const fetchMock = vi.fn(async (input: string | URL) => {
       const url = String(input)
