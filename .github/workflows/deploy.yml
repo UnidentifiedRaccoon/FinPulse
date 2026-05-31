@@ -99,13 +99,13 @@ jobs:
             exit 1
           fi
           echo "::add-mask::$iam_token"
+          echo "YC_IAM_TOKEN=$iam_token" >> "$GITHUB_ENV"
           echo "token=$iam_token" >> "$GITHUB_OUTPUT"
 
       - name: Configure Yandex Cloud CLI
         run: |
           yc config profile create finpulse-ci
           yc config profile activate finpulse-ci
-          yc config set token "${{ steps.yc-token.outputs.token }}"
           yc config set cloud-id "$YC_CLOUD_ID"
           yc config set folder-id "$YC_FOLDER_ID"
 
