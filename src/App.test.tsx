@@ -30,6 +30,7 @@ type ApiResponseOptions = {
   loginNonJsonError?: boolean
   programHasNoModules?: boolean
   progressCompletedFailure?: { status: number; message: string }
+  progressCompletedTransientFailures?: { remaining: number; status: number; message: string }
 }
 
 function jsonResponse(data: unknown, status = 200) {
@@ -91,6 +92,18 @@ function apiResponse(url: string, options: ApiResponseOptions, init: RequestInit
 
   if (method === 'PUT' && (path.startsWith('/api/progress/lessons/') || path.startsWith('/api/progress/cards/'))) {
     if (options.currentUser) {
+      if (
+        options.progressCompletedTransientFailures &&
+        options.progressCompletedTransientFailures.remaining > 0 &&
+        parseRequestBody(init).completed === true
+      ) {
+        options.progressCompletedTransientFailures.remaining -= 1
+        return jsonResponse(
+          { error: { code: 'progress_save_failed', message: options.progressCompletedTransientFailures.message } },
+          options.progressCompletedTransientFailures.status,
+        )
+      }
+
       if (options.progressCompletedFailure && parseRequestBody(init).completed === true) {
         return jsonResponse(
           { error: { code: 'progress_save_failed', message: options.progressCompletedFailure.message } },
@@ -670,12 +683,37 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
-    await waitFor(() => {
-      expect(screen.getAllByText('Progress save failed').length).toBeGreaterThan(0)
-    })
+    await waitFor(
+      () => {
+        expect(screen.getAllByText('Progress save failed').length).toBeGreaterThan(0)
+      },
+      { timeout: 3_500 },
+    )
     expect(screen.getByRole('heading', { name: 'Одинаковая цель, разные причины' })).toBeTruthy()
     expect(screen.queryByRole('heading', { name: 'Видео: базовые ценности и финансовые цели' })).toBeNull()
-    expect(getProgressCompletedWriteCount('/api/progress/cards/card_01_01_scenario_apartment')).toBe(1)
+    expect(getProgressCompletedWriteCount('/api/progress/cards/card_01_01_scenario_apartment')).toBe(3)
+  })
+
+  it('retries a transient completed progress save and advances after success', async () => {
+    const user = userEvent.setup()
+    apiOptions.currentUser = learnerUser
+    apiOptions.progress = emptyProgress
+    apiOptions.reflectionAnswers = emptyReflectionAnswers
+    apiOptions.progressCompletedTransientFailures = { remaining: 1, status: 500, message: 'Internal server error' }
+    window.history.pushState({}, '', '/lessons/why-values-matter')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Одинаковая цель, разные причины' })).toBeTruthy()
+
+    await user.click(screen.getByRole('radio', { name: 'Потому что от неё зависит мотивация и выбор способа достижения' }))
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+
+    expect(await screen.findByRole('heading', { name: 'Видео: базовые ценности и финансовые цели' })).toBeTruthy()
+    expect(screen.queryByText('Internal server error')).toBeNull()
+    expect(getProgressCompletedWriteCount('/api/progress/cards/card_01_01_scenario_apartment')).toBe(2)
   })
 
   it('clears authenticated and private state when a required progress save returns 401', async () => {

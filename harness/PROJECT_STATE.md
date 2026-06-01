@@ -139,6 +139,8 @@ T-054 through T-060 add the production CI/CD deploy path. FinPulse now uses a sa
 
 T-061 runs full production scenario QA against the Yandex Serverless Container deployment. Production QA covered all P0 flows on M-390/D-1440, M-360 overflow, M-430/D-1024 responsive checks, keyboard/a11y smoke, API data boundaries, two-user privacy isolation, and full traversal of all 15 current runtime lessons. Confirmed fixes clear private UI after logout plus browser Back, preserve artifact template labels in profile answers from canonical content, make empty-JSON logout clear the session instead of returning 500, avoid viewed-progress writes for invalid lessons, improve key color-token contrast and compact touch targets, and make auth validation copy less misleading. `npm run verify` passed with a temporary local PostgreSQL database.
 
+T-062 fixes intermittent production save failures after on-demand PostgreSQL stop/start events. Production logs showed `ETIMEDOUT` while the DB was starting and an unhandled idle `pg` pool `ECONNRESET` that could crash a serverless container invocation. The backend now handles idle pool errors without crashing, and the frontend retries idempotent `GET`/`PUT` requests briefly on transient `500`/`502`/`503`/`504` or browser network errors. Production API and Browser replay passed after starting the DB. `npm run test:run -- server/db/connection.test.ts src/App.test.tsx`, `npm run typecheck`, `npm run lint`, and `npm run build` passed. Full `npm run verify` was attempted but backend suites require `FINPULSE_TEST_DATABASE_URL`, `FINPULSE_DATABASE_URL`, or `DATABASE_URL` in the local shell.
+
 ## State update rules
 
 Update this file when:

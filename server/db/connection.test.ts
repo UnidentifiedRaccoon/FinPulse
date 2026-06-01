@@ -1,7 +1,8 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { Pool } from 'pg'
 
-import { resolveDatabaseUrlWithSecrets, type DatabaseEnvironment } from './connection'
+import { createAppDatabase, resolveDatabaseUrlWithSecrets, type DatabaseEnvironment } from './connection'
 
 const BASE_DB_ENV = {
   NODE_ENV: 'production',
@@ -100,6 +101,22 @@ describe('database connection environment resolution', () => {
         },
       }),
     )
+  })
+
+  it('handles idle PostgreSQL client errors without crashing the process', async () => {
+    const pool = new Pool({
+      connectionString: 'postgres://finpulse:finpulse@127.0.0.1:1/finpulse',
+    })
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+    createAppDatabase(pool)
+
+    expect(pool.listenerCount('error')).toBeGreaterThan(0)
+    expect(() => pool.emit('error', new Error('read ECONNRESET'))).not.toThrow()
+    expect(warnSpy).toHaveBeenCalledWith('PostgreSQL idle client error', expect.any(Error))
+
+    await pool.end()
+    warnSpy.mockRestore()
   })
 })
 

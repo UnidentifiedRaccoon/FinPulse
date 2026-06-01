@@ -59,6 +59,7 @@ export async function openDatabase(config: DatabaseConfig = {}): Promise<AppData
   }
 
   const pool = new Pool(await toPoolConfig(config))
+  attachIdleClientErrorHandler(pool)
 
   try {
     if (config.schema) {
@@ -89,6 +90,8 @@ type AppDatabaseLifecycleOptions = {
 }
 
 export function createAppDatabase(pool: Pool, options: AppDatabaseLifecycleOptions = {}): AppDatabase {
+  attachIdleClientErrorHandler(pool)
+
   return {
     pool,
     users: new UsersRepository(pool),
@@ -106,6 +109,18 @@ export function createAppDatabase(pool: Pool, options: AppDatabaseLifecycleOptio
       await pool.end()
     },
   }
+}
+
+function attachIdleClientErrorHandler(pool: Pool) {
+  if (pool.listeners('error').includes(logIdleClientError)) {
+    return
+  }
+
+  pool.on('error', logIdleClientError)
+}
+
+function logIdleClientError(error: Error) {
+  console.warn('PostgreSQL idle client error', error)
 }
 
 export function resolveDatabaseUrl(env: DatabaseEnvironment = process.env): string | undefined {
