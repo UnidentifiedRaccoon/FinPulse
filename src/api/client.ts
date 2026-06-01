@@ -1,6 +1,9 @@
 import type { Lesson, Module, Program, Unit } from '@/content/program'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
+const RETRYABLE_METHODS = new Set(['GET', 'PUT'])
+const RETRYABLE_STATUS_CODES = new Set([500, 502, 503, 504])
+const RETRY_DELAYS_MS = [400, 1_200]
 
 export type ApiUser = {
   id: string
@@ -131,6 +134,27 @@ export const api = {
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const method = init.method?.toUpperCase() ?? 'GET'
+  const shouldRetry = RETRYABLE_METHODS.has(method)
+  const maxAttempts = shouldRetry ? RETRY_DELAYS_MS.length + 1 : 1
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      return await requestOnce<T>(path, init)
+    } catch (error) {
+      const isLastAttempt = attempt === maxAttempts - 1
+      if (isLastAttempt || !isTransientRequestError(error)) {
+        throw error
+      }
+
+      await delay(RETRY_DELAYS_MS[attempt] ?? 0)
+    }
+  }
+
+  throw new Error('Не удалось выполнить запрос.')
+}
+
+async function requestOnce<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     credentials: 'include',
@@ -152,6 +176,18 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   return data as T
+}
+
+function isTransientRequestError(error: unknown) {
+  if (error instanceof ApiError) {
+    return RETRYABLE_STATUS_CODES.has(error.status)
+  }
+
+  return error instanceof TypeError
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
 }
 
 async function parseResponseJson(response: Response) {
