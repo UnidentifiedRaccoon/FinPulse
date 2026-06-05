@@ -3,15 +3,15 @@
   "id": "finpulse-learning-mvp",
   "slug": "finpulse-learning-mvp",
   "title": "FinPulse",
-  "description": "Мобильный reader образовательной программы по финансовой грамотности.",
+  "description": "Мобильный тренажёр финансовой грамотности, культуры и привычек.",
   "modules": [
     {
-      "id": "module_1",
-      "slug": "financial-goals",
-      "title": "Финансовые цели",
-      "description": "Модуль 01: ценности, видение будущего, финансовые цели и мотивация достижения целей.",
+      "id": "module_t1_start",
+      "slug": "t1-start",
+      "title": "T1 Старт",
+      "description": "Первый тир помогает увидеть реальные денежные привычки, начать фиксировать траты и сделать первые безопасные шаги.",
       "order": 1,
-      "path": "modules/module_1/module.json"
+      "path": "modules/t1_start/module.json"
     }
   ]
 }

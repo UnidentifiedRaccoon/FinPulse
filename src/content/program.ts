@@ -9,6 +9,11 @@ const choiceOptionSchema = z.object({
   feedback: z.string().optional(),
 }).strict()
 
+const customOptionSchema = z.object({
+  label: z.string().min(1),
+  placeholder: z.string().min(1).optional(),
+}).strict()
+
 const cardBaseSchema = z.object({
   id: z.string().min(1),
   order: z.number().int().nonnegative(),
@@ -58,6 +63,7 @@ export const cardSchema = z.discriminatedUnion('type', [
     prompt: z.string().min(1),
     inputType: z.enum(['text', 'single_select', 'multi_select', 'table', 'freeform']).optional(),
     options: z.array(z.string().min(1)).optional(),
+    customOption: customOptionSchema.optional(),
     saveKey: z.string().optional(),
     guidance: z.string().optional(),
     readOnly: z.boolean().optional(),
@@ -76,6 +82,7 @@ export const cardSchema = z.discriminatedUnion('type', [
     body: z.string().min(1),
     template: z.array(z.string().min(1)).optional(),
     variants: z.array(z.string().min(1)).optional(),
+    customOption: customOptionSchema.optional(),
     readOnly: z.boolean().optional(),
   }).strict(),
   cardBaseSchema.extend({
@@ -90,6 +97,22 @@ export const cardSchema = z.discriminatedUnion('type', [
     nextStep: z.string().optional(),
   }).strict(),
 ]).superRefine((card, ctx) => {
+  if (card.type === 'reflection' && card.customOption && card.inputType !== 'single_select') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'customOption is only supported for inputType single_select',
+      path: ['customOption'],
+    })
+  }
+
+  if (card.type === 'artifact' && card.customOption && !card.variants?.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'customOption requires variants',
+      path: ['customOption'],
+    })
+  }
+
   if ('correctOptionId' in card && card.correctOptionId) {
     if (!('options' in card) || !card.options) {
       ctx.addIssue({

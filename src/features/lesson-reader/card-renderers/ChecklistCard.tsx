@@ -1,6 +1,8 @@
 import type { ChecklistCard as ChecklistCardType, ChecklistState } from '@/features/lesson-reader/lessonInteraction'
 import { cn } from '@/lib/utils'
 
+import { SelectableOption } from './shared'
+
 export function ChecklistCard({
   card,
   state,
@@ -14,7 +16,7 @@ export function ChecklistCard({
 
   return (
     <div className="flex flex-col gap-4">
-      {card.body ? <p className="text-base leading-7 text-[var(--fr-text-secondary)]">{card.body}</p> : null}
+      {card.body ? <p className="text-base leading-6 text-pretty text-[var(--fr-text-secondary)]">{card.body}</p> : null}
       <fieldset className="flex flex-col gap-3">
         <legend className="sr-only">{card.title ?? 'Чеклист'}</legend>
         <ul className="flex flex-col gap-3">
@@ -24,22 +26,19 @@ export function ChecklistCard({
 
             return (
               <li key={`${item}-${index}`}>
-                <label
-                  className={cn(
-                    'flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] px-4 py-3 text-sm leading-6 text-[var(--fr-text-secondary)] shadow-[var(--fr-shadow-sm)] transition-colors [overflow-wrap:anywhere] hover:bg-[var(--fr-surface-soft)] focus-within:ring-4 focus-within:ring-[var(--fr-color-brand-500)]/15',
-                    isChecked &&
-                      'border-[var(--fr-color-brand-500)] bg-[var(--fr-color-brand-50)] text-[var(--fr-text-primary)]',
-                  )}
+                <SelectableOption
+                  inputProps={{
+                    'aria-describedby': statusId,
+                    checked: isChecked,
+                    name: `${card.id}-checklist`,
+                    onChange: () => onToggle(itemKey),
+                    type: 'checkbox',
+                    value: itemKey,
+                  }}
+                  state={isChecked ? 'selected' : 'default'}
                 >
-                  <input
-                    aria-describedby={statusId}
-                    checked={isChecked}
-                    className="mt-1 size-4 shrink-0 accent-[var(--fr-color-brand-500)]"
-                    onChange={() => onToggle(itemKey)}
-                    type="checkbox"
-                  />
-                  <span>{item}</span>
-                </label>
+                  {item}
+                </SelectableOption>
               </li>
             )
           })}

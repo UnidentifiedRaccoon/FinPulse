@@ -210,24 +210,13 @@ function ProfileStatCard({ stat }: { stat: ProfileStat }) {
   )
 }
 
-type AnswerGroupId = 'values' | 'goals' | 'motivation' | 'other'
-
-const answerGroupLabels: Record<AnswerGroupId, string> = {
-  values: 'Ценности',
-  goals: 'Цели и образ будущего',
-  motivation: 'Мотивация',
-  other: 'Другое',
-}
-
 function PersonalAnswersSection({ answers }: { answers: ReflectionAnswer[] }) {
-  const groupedAnswers = groupAnswers(answers)
-
   return (
     <section aria-labelledby="personal-answers-heading" className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <p className="text-xs font-black uppercase leading-4 tracking-normal text-[var(--fr-color-sky-600)]">Мои ответы</p>
+        <p className="text-xs font-black uppercase leading-4 tracking-normal text-[var(--fr-color-sky-600)]">Навигатор</p>
         <h2 id="personal-answers-heading" className="text-2xl font-black leading-8 tracking-normal text-[var(--fr-text-primary)]">
-          Мой финансовый ориентир
+          Персональный финансовый навигатор
         </h2>
       </div>
 
@@ -236,21 +225,9 @@ function PersonalAnswersSection({ answers }: { answers: ReflectionAnswer[] }) {
           Здесь появятся ответы после заданий с рефлексией и рабочими блоками.
         </p>
       ) : (
-        <div className="flex flex-col gap-5">
-          {groupedAnswers.map((group) => (
-            <section className="flex flex-col gap-3" key={group.id} aria-labelledby={`profile-answer-group-${group.id}`}>
-              <h3
-                className="text-base font-black leading-6 tracking-normal text-[var(--fr-text-primary)]"
-                id={`profile-answer-group-${group.id}`}
-              >
-                {answerGroupLabels[group.id]}
-              </h3>
-              <div className="flex flex-col gap-3">
-                {group.answers.map((answer) => (
-                  <PersonalAnswerItem answer={answer} key={answer.cardId} />
-                ))}
-              </div>
-            </section>
+        <div className="flex flex-col gap-3">
+          {answers.map((answer) => (
+            <PersonalAnswerItem answer={answer} key={answer.cardId} />
           ))}
         </div>
       )}
@@ -288,29 +265,6 @@ function PersonalAnswerItem({ answer }: { answer: ReflectionAnswer }) {
       </div>
     </article>
   )
-}
-
-function groupAnswers(answers: ReflectionAnswer[]) {
-  const groups: Array<{ id: AnswerGroupId; answers: ReflectionAnswer[] }> = [
-    { id: 'values', answers: [] },
-    { id: 'goals', answers: [] },
-    { id: 'motivation', answers: [] },
-    { id: 'other', answers: [] },
-  ]
-  const groupById = new Map(groups.map((group) => [group.id, group]))
-
-  for (const answer of answers) {
-    groupById.get(getAnswerGroup(answer))?.answers.push(answer)
-  }
-
-  return groups.filter((group) => group.answers.length > 0)
-}
-
-function getAnswerGroup(answer: ReflectionAnswer): AnswerGroupId {
-  if (answer.unitSlug === 'goal-motivation') return 'motivation'
-  if (answer.unitSlug === 'values-and-goals') return 'values'
-  if (answer.unitSlug === 'future-vision' || answer.unitSlug === 'financial-goals-map') return 'goals'
-  return 'other'
 }
 
 function getAnswerEntries(answer: ReflectionAnswer) {

@@ -24,7 +24,7 @@ const preview: Preview = {
   },
   decorators: [
     (Story) => (
-      <div className="min-h-screen w-full bg-[var(--fr-surface-canvas)] p-4 font-sans text-[var(--fr-text-primary)]">
+      <div className="box-border flex min-h-screen w-full justify-center bg-[var(--fr-surface-canvas)] p-4 font-sans text-[var(--fr-text-primary)]">
         <Story />
       </div>
     ),

@@ -11,6 +11,15 @@
     "checkability": {
       "enum": ["objective", "subjective", "mixed"]
     },
+    "customOption": {
+      "type": "object",
+      "required": ["label"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "placeholder": { "type": "string", "minLength": 1 }
+      }
+    },
     "programManifest": {
       "type": "object",
       "required": ["schemaVersion", "id", "slug", "title", "modules"],
@@ -433,9 +442,19 @@
                   "type": "array",
                   "items": { "type": "string", "minLength": 1 }
                 },
+                "customOption": { "$ref": "#/$defs/customOption" },
                 "saveKey": { "type": "string" },
                 "guidance": { "type": "string" },
                 "readOnly": { "type": "boolean" }
+              },
+              "if": {
+                "required": ["customOption"]
+              },
+              "then": {
+                "required": ["inputType"],
+                "properties": {
+                  "inputType": { "const": "single_select" }
+                }
               }
             }
           ]
@@ -497,7 +516,20 @@
                   "type": "array",
                   "items": { "type": "string", "minLength": 1 }
                 },
+                "customOption": { "$ref": "#/$defs/customOption" },
                 "readOnly": { "type": "boolean" }
+              },
+              "if": {
+                "required": ["customOption"]
+              },
+              "then": {
+                "required": ["variants"],
+                "properties": {
+                  "variants": {
+                    "type": "array",
+                    "minItems": 1
+                  }
+                }
               }
             }
           ]

@@ -13,7 +13,7 @@ const stateCopy = {
 
 export function ModulePathNode({ item, index }: { item: ModulePathItem; index: number }) {
   const percent = getProgressPercent(item.completedLessons, item.totalLessons)
-  const actionLabel = item.state === 'completed' ? 'Повторение' : item.state === 'current' ? 'Далее' : 'К модулю'
+  const actionLabel = item.state === 'completed' ? 'Повторение' : item.state === 'current' ? 'Далее' : 'К тиру'
 
   return (
     <article
@@ -27,7 +27,7 @@ export function ModulePathNode({ item, index }: { item: ModulePathItem; index: n
     >
       <div className="relative flex min-h-[132px] flex-col justify-between gap-5">
         <div className="min-w-0">
-          <p className="text-sm font-bold leading-5 tracking-normal text-[var(--fr-text-tertiary)]">Модуль {index}</p>
+          <p className="text-sm font-bold leading-5 tracking-normal text-[var(--fr-text-tertiary)]">Тир {index}</p>
           <h2 className="mt-1 text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">
             {item.module.title}
           </h2>
@@ -53,7 +53,7 @@ export function ModulePathNode({ item, index }: { item: ModulePathItem; index: n
             </span>
           </div>
           <div
-            aria-label={`${percent}% модуля завершено`}
+            aria-label={`${percent}% тира завершено`}
             aria-valuemax={100}
             aria-valuemin={0}
             aria-valuenow={percent}

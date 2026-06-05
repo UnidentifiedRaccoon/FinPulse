@@ -1,0 +1,371 @@
+{
+  "schemaVersion": 1,
+  "id": "unit_t1_u2_planning_management",
+  "slug": "planning-and-management",
+  "title": "Юнит 2. Планирование и управление",
+  "description": "Юнит помогает понять роль финансовой подушки и посчитать первый ориентир резерва.",
+  "order": 2,
+  "source": "docs/modules/t1-start/unit_02_planning_management/",
+  "lessons": [
+    {
+      "id": "lesson_t1_u2_l1_why_emergency_fund",
+      "slug": "why-emergency-fund",
+      "title": "Зачем нужна подушка",
+      "subtitle": "У2.1",
+      "description": "Понять, зачем нужна финансовая подушка, и сформулировать личный ответ «зачем она мне».",
+      "order": 1,
+      "estimatedMinutes": 5,
+      "learningGoal": "Понять роль финансовой подушки как резерва для непредвиденных ситуаций.",
+      "mainSkill": "Психология безопасности и личный смысл резерва",
+      "tags": [
+        "T1",
+        "planning",
+        "emergency-fund"
+      ],
+      "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_01_why-emergency-fund.md / У2.1 / Паспорт урока",
+      "cards": [
+        {
+          "id": "card_t1u2l1_01_hook",
+          "type": "single_choice",
+          "order": 1,
+          "title": "А если завтра...?",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_01_why-emergency-fund.md / Экран 1",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "question": "Сломалась техника, задержали зарплату или появилась срочная поездка. Бывало, что неожиданная трата выбивала из колеи?",
+          "options": [
+            {
+              "id": "many-times",
+              "label": "Да, и не раз",
+              "feedback": "Значит, тема резерва может сразу снизить напряжение: запас превращает стресс в решаемую ситуацию."
+            },
+            {
+              "id": "sometimes",
+              "label": "Иногда",
+              "feedback": "Даже редкие неожиданности легче переживать, когда есть заранее выделенный запас."
+            },
+            {
+              "id": "has-reserve",
+              "label": "У меня есть запас на такое",
+              "feedback": "Отлично. Урок поможет уточнить личный смысл подушки и не смешивать её с деньгами на желания."
+            }
+          ]
+        },
+        {
+          "id": "card_t1u2l1_02_theory_calm",
+          "type": "theory",
+          "order": 2,
+          "title": "Подушка = спокойствие",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_01_why-emergency-fund.md / Экран 2",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Финансовая подушка — это деньги, отложенные на непредвиденные ситуации: поломка, болезнь, потеря дохода.\n\nЕё задача — не «заморозить» деньги, а дать опору: чтобы внезапная трата не превращалась в долг или панику.\n\nПодушка — это не про богатство. Это про устойчивость и спокойный сон.\n\nПодушка отвечает на вопрос: «А если завтра что-то случится — на что я живу?» Без неё любая мелочь бьёт по бюджету.",
+          "examples": [
+            "Поломка техники",
+            "Болезнь",
+            "Потеря дохода",
+            "Срочная поездка"
+          ]
+        },
+        {
+          "id": "card_t1u2l1_03_where_fund_helps",
+          "type": "single_choice",
+          "order": 3,
+          "title": "Где подушка реально выручает?",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_01_why-emergency-fund.md / Экран 3",
+          "thinkingType": "understanding",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Какая группа ситуаций лучше всего описывает, для чего нужна финансовая подушка?",
+          "options": [
+            {
+              "id": "emergency-group",
+              "label": "Внезапная поломка техники, задержка или потеря дохода, срочное лечение.",
+              "isCorrect": true,
+              "feedback": "Точно. Подушка — для непредвиденного и важного, а не для импульсивных покупок."
+            },
+            {
+              "id": "desire-group",
+              "label": "Новый телефон для статуса, распродажа, спонтанный шопинг.",
+              "feedback": "Это желаемые траты. Для них лучше отдельные накопления, а подушка защищает от непредвиденного."
+            },
+            {
+              "id": "mixed-group",
+              "label": "Срочное лечение, новый телефон для статуса, спонтанный шопинг.",
+              "feedback": "Здесь смешались непредвиденное и желания. Подушка нужна для первой категории."
+            }
+          ],
+          "correctOptionId": "emergency-group",
+          "feedback": "Подушка — страховка на «беду», не кошелёк для желаний."
+        },
+        {
+          "id": "card_t1u2l1_04_story_marina_oleg",
+          "type": "scenario",
+          "order": 4,
+          "title": "Чужая история",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_01_why-emergency-fund.md / Экран 4",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "У Марины не было подушки. Когда сломался холодильник на 20 000 ₽, пришлось брать в долг под проценты — и потом полгода отдавать.\n\nУ Олега был запас на месяц. Тот же холодильник он оплатил сразу, без долгов и стресса.",
+          "question": "В чём была главная разница между ними?",
+          "options": [
+            {
+              "id": "higher-salary",
+              "label": "У Олега больше зарплата.",
+              "feedback": "Доход может помогать, но в истории ключевым был именно заранее выделенный запас."
+            },
+            {
+              "id": "had-fund",
+              "label": "У Олега была подушка, и трата не стала проблемой.",
+              "isCorrect": true,
+              "feedback": "Именно. Дело не в размере дохода, а в наличии запаса на непредвиденное."
+            },
+            {
+              "id": "bad-luck",
+              "label": "Марине просто не повезло.",
+              "feedback": "Непредвиденное случается у всех. Подушка нужна, чтобы случайность не становилась долгом."
+            }
+          ],
+          "correctOptionId": "had-fund",
+          "feedback": "Запас делает внезапную трату решаемой ситуацией."
+        },
+        {
+          "id": "card_t1u2l1_05_personal_reason",
+          "type": "reflection",
+          "order": 5,
+          "title": "Зачем подушка именно тебе?",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_01_why-emergency-fund.md / Экран 5",
+          "thinkingType": "personal world",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "prompt": "Подумай о себе. От какой ситуации подушка защитила бы лично тебя — что не давало бы спать спокойно?",
+          "inputType": "single_select",
+          "options": [
+            "Чтобы не залезать в долги при поломках",
+            "Чтобы пережить задержку или потерю дохода",
+            "Чтобы спокойнее себя чувствовать"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          },
+          "saveKey": "emergency_fund_personal_reason",
+          "guidance": "Подойдет любой вариант. Важно зафиксировать, от чего подушка защищает именно тебя: с понятным «зачем» копить легче."
+        },
+        {
+          "id": "card_t1u2l1_06_reason_phrase",
+          "type": "artifact",
+          "order": 6,
+          "title": "Твоя формулировка",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_01_why-emergency-fund.md / Экран 6",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "mixed",
+          "body": "Сформулируй своими словами — закрепим смысл. Даже черновая формулировка важнее точной: её всегда можно уточнить.",
+          "template": [
+            "Моя подушка нужна, чтобы ..."
+          ]
+        },
+        {
+          "id": "card_t1u2l1_07_navigator_summary",
+          "type": "summary",
+          "order": 7,
+          "title": "Сохранили в Навигатор",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_01_why-emergency-fund.md / Экран 7",
+          "thinkingType": "artifact",
+          "develops": "habits",
+          "checkability": "subjective",
+          "body": "Готово. Теперь у тебя есть личный ответ, зачем нужна подушка — это твоя мотивация копить.",
+          "points": [
+            "Подушка отделена от денег на желания.",
+            "Выбрана ситуация, от которой подушка защищает лично тебя.",
+            "Сохранена личная формулировка смысла подушки."
+          ],
+          "nextStep": "В следующем уроке посчитаем, сколько именно держать в резерве — определим твою целевую сумму подушки."
+        }
+      ]
+    },
+    {
+      "id": "lesson_t1_u2_l2_reserve_amount",
+      "slug": "reserve-amount",
+      "title": "Сколько держать в резерве",
+      "subtitle": "У2.2",
+      "description": "Научиться считать целевую сумму подушки исходя из своих месячных расходов.",
+      "order": 2,
+      "estimatedMinutes": 5,
+      "learningGoal": "Посчитать ориентир финансовой подушки по формуле обязательные расходы × число месяцев.",
+      "mainSkill": "Расчёт целевой суммы резерва",
+      "tags": [
+        "T1",
+        "planning",
+        "emergency-fund",
+        "calculation"
+      ],
+      "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_02_reserve-amount.md / У2.2 / Паспорт урока",
+      "cards": [
+        {
+          "id": "card_t1u2l2_01_hook",
+          "type": "single_choice",
+          "order": 1,
+          "title": "А сколько вообще надо?",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_02_reserve-amount.md / Экран 1",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "question": "В прошлом уроке мы поняли, зачем нужна подушка. Как думаешь, сколько нужно держать в резерве?",
+          "options": [
+            {
+              "id": "no-idea",
+              "label": "Понятия не имею",
+              "feedback": "Нормально. У подушки есть простой ориентир, и он считается от твоих расходов."
+            },
+            {
+              "id": "heard-rule",
+              "label": "Знаю про 3–6 месяцев расходов",
+              "feedback": "Да, это базовый ориентир. Сейчас уточним, от каких именно расходов считать."
+            },
+            {
+              "id": "has-number",
+              "label": "У меня есть своя цифра",
+              "feedback": "Отлично. Проверь её через формулу — возможно, ориентир станет точнее и спокойнее."
+            }
+          ]
+        },
+        {
+          "id": "card_t1u2l2_02_theory_months_rule",
+          "type": "theory",
+          "order": 2,
+          "title": "Правило 3–6 месяцев",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_02_reserve-amount.md / Экран 2",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Базовый ориентир подушки — 3–6 месяцев твоих обязательных расходов. Не доходов, а именно расходов, без которых не прожить.\n\nСчитают обязательное: жильё, еда, проезд, связь, обязательные платежи. Желаемое в подушку не закладывают.\n\nФормула простая: подушка = месячные обязательные расходы × 3–6.\n\nПример из сценария: если обязательные расходы — 40 000 ₽ в месяц, то подушка на 3 месяца — 120 000 ₽, а на 6 месяцев — 240 000 ₽.",
+          "examples": [
+            "Жильё",
+            "Еда",
+            "Проезд",
+            "Связь",
+            "Обязательные платежи"
+          ]
+        },
+        {
+          "id": "card_t1u2l2_03_example_calculation",
+          "type": "single_choice",
+          "order": 3,
+          "title": "Посчитай на примере",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_02_reserve-amount.md / Экран 3",
+          "thinkingType": "application",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "У человека обязательные расходы — 30 000 ₽ в месяц. Какой будет подушка на 3 месяца?",
+          "options": [
+            {
+              "id": "thirty",
+              "label": "30 000 ₽",
+              "feedback": "Это сумма за один месяц. Для подушки на 3 месяца её нужно умножить на 3."
+            },
+            {
+              "id": "ninety",
+              "label": "90 000 ₽",
+              "isCorrect": true,
+              "feedback": "Верно: 30 000 × 3 = 90 000 ₽. Это запас на 3 месяца обязательных трат."
+            },
+            {
+              "id": "three-hundred",
+              "label": "300 000 ₽",
+              "feedback": "Здесь лишний ноль. Формула проще: 30 000 × 3."
+            },
+            {
+              "id": "ten",
+              "label": "10 000 ₽",
+              "feedback": "Это меньше месячных обязательных расходов, поэтому не покроет даже один месяц."
+            }
+          ],
+          "correctOptionId": "ninety",
+          "feedback": "Подушка считается так: месячные обязательные расходы × число месяцев."
+        },
+        {
+          "id": "card_t1u2l2_04_months_choice",
+          "type": "single_choice",
+          "order": 4,
+          "title": "Сколько месяцев выбрать?",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_02_reserve-amount.md / Экран 4",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Фрилансеру с непостоянным доходом ближе к какому ориентиру?",
+          "options": [
+            {
+              "id": "three-months",
+              "label": "3 месяца",
+              "feedback": "Три месяца чаще подходят при стабильной работе и запасе вариантов. Непостоянный доход требует большего резерва."
+            },
+            {
+              "id": "six-plus",
+              "label": "6 месяцев и больше",
+              "isCorrect": true,
+              "feedback": "Верно. Чем менее предсказуем доход, тем больше запас нужен."
+            }
+          ],
+          "correctOptionId": "six-plus",
+          "feedback": "Если доход нестабилен, запас лучше считать ближе к 6 месяцам: так у тебя больше времени спокойно закрыть обязательные расходы."
+        },
+        {
+          "id": "card_t1u2l2_05_target_amount",
+          "type": "artifact",
+          "order": 5,
+          "title": "Твоя целевая сумма",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_02_reserve-amount.md / Экран 5",
+          "thinkingType": "personal world",
+          "develops": "hard skills",
+          "checkability": "mixed",
+          "body": "Посчитай свою подушку. Возьми примерные обязательные расходы за месяц и умножь на выбранное число месяцев.\n\nСумма кажется большой? Это нормально. Цель — ориентир, а копить можно постепенно, по чуть-чуть.",
+          "template": [
+            "Мои обязательные расходы в месяц: ___ ₽",
+            "Сколько месяцев беру: 3 / 4 / 6 / свой вариант",
+            "Целевая сумма подушки = расходы × месяцы = ___ ₽"
+          ]
+        },
+        {
+          "id": "card_t1u2l2_06_first_step_rule",
+          "type": "artifact",
+          "order": 6,
+          "title": "Цель и первый шаг",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_02_reserve-amount.md / Экран 6",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "mixed",
+          "body": "Большая цель не пугает, если разбить её на шаги. Зафиксируй ориентир и маленький старт.",
+          "template": [
+            "Моя цель — подушка ___ ₽. Начинаю откладывать с маленькой посильной суммы."
+          ],
+          "variants": [
+            "Беру цель и начинаю с посильной суммы",
+            "Начну с любой суммы без жёсткой цели"
+          ]
+        },
+        {
+          "id": "card_t1u2l2_07_navigator_summary",
+          "type": "summary",
+          "order": 7,
+          "title": "Сохранили в Навигатор",
+          "sourceSection": "docs/modules/t1-start/unit_02_planning_management/lesson_02_reserve-amount.md / Экран 7",
+          "thinkingType": "artifact",
+          "develops": "habits",
+          "checkability": "subjective",
+          "body": "Готово. У тебя есть конкретная целевая сумма подушки — теперь копить понятнее и измеримо.",
+          "points": [
+            "Ориентир подушки посчитан от обязательных расходов.",
+            "Горизонт резерва выбран с учётом стабильности дохода.",
+            "Маленький первый шаг зафиксирован."
+          ],
+          "nextStep": "Дальше разберём правило «сначала себе»: как откладывать часть поступлений на подушку сразу после дохода."
+        }
+      ]
+    }
+  ]
+}

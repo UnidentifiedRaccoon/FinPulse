@@ -30,7 +30,7 @@ function BottomActionCanvas({
   const [count, setCount] = useState(0)
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-[520px] flex-col justify-end bg-[var(--fr-surface-canvas)] px-4">
+    <main className="mx-auto flex min-h-svh w-full max-w-[480px] flex-col justify-end bg-[var(--fr-surface-canvas)] px-5">
       <div className="pb-36 text-sm leading-6 text-[var(--fr-text-secondary)]">
         <p className="rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 shadow-[var(--fr-shadow-sm)]">
           Sticky action area keeps the primary step reachable on mobile. Click count: {count}

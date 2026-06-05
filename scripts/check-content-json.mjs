@@ -99,6 +99,16 @@ function requireStringArray(obj, key, ctx, min = 0) {
   }
 }
 
+function requireCustomOption(obj, key, ctx) {
+  if (obj[key] === undefined) return;
+  const customOption = obj[key];
+  const optionCtx = `${ctx}.${key}`;
+  if (!requireObject(customOption, optionCtx)) return;
+  requireOnlyKeys(customOption, ['label', 'placeholder'], optionCtx);
+  requireString(customOption, 'label', optionCtx);
+  requireOptionalString(customOption, 'placeholder', optionCtx);
+}
+
 function requireArray(obj, key, ctx, min = 0) {
   if (!Array.isArray(obj[key]) || obj[key].length < min) {
     fail(`${ctx}.${key} must be an array with at least ${min} item(s)`);
@@ -235,9 +245,9 @@ function validateCard(card, ctx, seen) {
     video: [...baseCardKeys, 'src', 'provider', 'transcript', 'timecodes'],
     callout: [...baseCardKeys, 'tone', 'body'],
     single_choice: [...baseCardKeys, 'question', 'options', 'correctOptionId', 'feedback', 'readOnly'],
-    reflection: [...baseCardKeys, 'prompt', 'inputType', 'options', 'saveKey', 'guidance', 'readOnly'],
+    reflection: [...baseCardKeys, 'prompt', 'inputType', 'options', 'customOption', 'saveKey', 'guidance', 'readOnly'],
     scenario: [...baseCardKeys, 'body', 'question', 'options', 'correctOptionId', 'feedback', 'readOnly'],
-    artifact: [...baseCardKeys, 'body', 'template', 'variants', 'readOnly'],
+    artifact: [...baseCardKeys, 'body', 'template', 'variants', 'customOption', 'readOnly'],
     checklist: [...baseCardKeys, 'body', 'items'],
     summary: [...baseCardKeys, 'body', 'points', 'nextStep'],
   };
@@ -284,6 +294,10 @@ function validateCard(card, ctx, seen) {
     requireString(card, 'prompt', ctx);
     if (card.inputType !== undefined && !allowedInputTypes.has(card.inputType)) fail(`${ctx}.inputType has unsupported value: ${card.inputType}`);
     requireStringArray(card, 'options', ctx);
+    requireCustomOption(card, 'customOption', ctx);
+    if (card.customOption !== undefined && card.inputType !== 'single_select') {
+      fail(`${ctx}.customOption is only supported for inputType single_select`);
+    }
     requireOptionalString(card, 'saveKey', ctx);
     requireOptionalString(card, 'guidance', ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
@@ -303,6 +317,10 @@ function validateCard(card, ctx, seen) {
     requireString(card, 'body', ctx);
     requireStringArray(card, 'template', ctx);
     requireStringArray(card, 'variants', ctx);
+    requireCustomOption(card, 'customOption', ctx);
+    if (card.customOption !== undefined && (!Array.isArray(card.variants) || card.variants.length === 0)) {
+      fail(`${ctx}.customOption requires variants`);
+    }
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'checklist') {

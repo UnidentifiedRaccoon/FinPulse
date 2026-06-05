@@ -14,7 +14,7 @@ const meta = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <main className="mx-auto min-h-svh w-full max-w-[520px] bg-[var(--fr-surface-canvas)] px-4">
+        <main className="mx-auto min-h-svh w-full max-w-[480px] bg-[var(--fr-surface-canvas)] px-5">
           <Story />
         </main>
       </MemoryRouter>
@@ -29,7 +29,7 @@ type Story = StoryObj<typeof meta>
 export const Current: Story = {
   args: {
     backTo: `/modules/${moduleFixture.slug}`,
-    backLabel: `Вернуться к модулю ${moduleFixture.title}`,
+    backLabel: `Вернуться к тиру ${moduleFixture.title}`,
     context: `${moduleFixture.title} · ${unitFixture.title}`,
     title: lessonFixture.title,
     current: 2,
@@ -42,7 +42,7 @@ export const Current: Story = {
 export const SavedComplete: Story = {
   args: {
     backTo: `/modules/${moduleFixture.slug}`,
-    backLabel: `Вернуться к модулю ${moduleFixture.title}`,
+    backLabel: `Вернуться к тиру ${moduleFixture.title}`,
     context: `${moduleFixture.title} · ${unitFixture.title}`,
     title: lessonFixture.title,
     current: 9,
@@ -55,12 +55,25 @@ export const SavedComplete: Story = {
 export const Complete: Story = {
   args: {
     backTo: `/modules/${moduleFixture.slug}`,
-    backLabel: `Вернуться к модулю ${moduleFixture.title}`,
+    backLabel: `Вернуться к тиру ${moduleFixture.title}`,
     context: `${moduleFixture.title} · ${unitFixture.title}`,
     title: lessonFixture.title,
     current: 9,
     total: 9,
     isComplete: true,
     isSavedComplete: true,
+  },
+}
+
+export const LongRussianTitle: Story = {
+  args: {
+    backTo: `/modules/${moduleFixture.slug}`,
+    backLabel: `Вернуться к тиру ${moduleFixture.title}`,
+    context: 'T1 Старт · Юнит 1. Деньги и операции',
+    title: 'Куда уходят деньги: первые денежные утечки без осуждения',
+    current: 1,
+    total: 7,
+    isComplete: false,
+    isSavedComplete: false,
   },
 }

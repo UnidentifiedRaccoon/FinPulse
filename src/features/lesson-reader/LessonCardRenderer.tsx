@@ -6,7 +6,6 @@ import { ChoiceCard } from './card-renderers/ChoiceCard'
 import { ReflectionCard } from './card-renderers/ReflectionCard'
 import { TheoryCard } from './card-renderers/TheoryCard'
 import { VideoCard } from './card-renderers/VideoCard'
-import { StaticChoiceList } from './card-renderers/shared'
 import type { ArtifactState, ChecklistState, ChoiceState, ReflectionState } from './lessonInteraction'
 import { createArtifactState, emptyChecklistState, emptyChoiceState, emptyReflectionState } from './lessonInteraction'
 
@@ -46,13 +45,7 @@ export function LessonCardRenderer({
       )
     }
 
-    return (
-      <div className="flex flex-col gap-4">
-        <p className="text-base font-medium leading-7 text-[var(--fr-text-primary)]">{card.question}</p>
-        <StaticChoiceList options={card.options} />
-        {card.feedback ? <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">{card.feedback}</p> : null}
-      </div>
-    )
+    return <TheoryCard card={card} />
   }
 
   if (card.type === 'scenario') {

@@ -34,7 +34,7 @@ export function UnitPage({ progress }: { progress: ProgressResponse | null }) {
   const unitPath = path.modules[0]?.units[0]
   const sections = buildLessonPathSections(unitPath ? [unitPath] : [])
   const activeSection = sections.find((section) => section.state === 'current') ?? sections.find((section) => section.state === 'locked') ?? sections[0]
-  const moduleContext = `Модуль ${module.order}`
+  const moduleContext = `Тир ${module.order}`
 
   return (
     <div className="flex flex-col gap-8 pb-10" id="unit-top">

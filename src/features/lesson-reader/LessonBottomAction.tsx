@@ -25,10 +25,10 @@ export function LessonBottomAction({
 }) {
   return (
     <div
-      className="sticky bottom-0 z-20 -mx-4 border-t border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)]/95 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(18,52,89,0.06)] backdrop-blur sm:mx-0 sm:rounded-t-2xl sm:border-x"
+      className="sticky bottom-0 z-20 -mx-5 border-t border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)]/95 px-5 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(18,52,89,0.06)] backdrop-blur sm:rounded-t-2xl sm:border-x"
       data-lesson-bottom-action
     >
-      <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3">
+      <div className="mx-auto flex w-full max-w-[480px] flex-col gap-3">
         {feedback}
         <div className="flex items-center gap-3">
           {secondaryLabel && onSecondary ? (

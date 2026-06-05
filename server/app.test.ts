@@ -143,7 +143,7 @@ describe('backend API', () => {
 
       const progressWriteResponse = await app.inject({
         method: 'OPTIONS',
-        url: '/api/progress/lessons/why-values-matter',
+        url: '/api/progress/lessons/where-money-goes',
         headers: {
           origin: 'http://127.0.0.1:5174',
           'access-control-request-method': 'PUT',
@@ -407,14 +407,14 @@ describe('backend API', () => {
 
       const lessonProgress = await app.inject({
         method: 'PUT',
-        url: '/api/progress/lessons/why-values-matter',
+        url: '/api/progress/lessons/where-money-goes',
         headers: { cookie: firstCookie },
         payload: { completed: true },
       })
       expect(lessonProgress.statusCode).toBe(200)
       expect(lessonProgress.json().lessons).toEqual([
         expect.objectContaining({
-          lessonSlug: 'why-values-matter',
+          lessonSlug: 'where-money-goes',
           viewed: true,
           completed: true,
         }),
@@ -422,14 +422,14 @@ describe('backend API', () => {
 
       const cardProgress = await app.inject({
         method: 'PUT',
-        url: '/api/progress/cards/card_01_04_goal_choice',
+        url: '/api/progress/cards/card_t1u1l1_03_sorting_choice',
         headers: { cookie: firstCookie },
         payload: { viewed: true },
       })
       expect(cardProgress.statusCode).toBe(200)
       expect(cardProgress.json().cards).toEqual([
         expect.objectContaining({
-          cardId: 'card_01_04_goal_choice',
+          cardId: 'card_t1u1l1_03_sorting_choice',
           viewed: true,
           completed: false,
         }),
@@ -470,7 +470,7 @@ describe('backend API', () => {
 
       const blockedPutResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_01_05_reflection_dream',
+        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
         payload: { singleValue: 'Свобода выбора' },
       })
       expect(blockedPutResponse.statusCode).toBe(401)
@@ -487,7 +487,7 @@ describe('backend API', () => {
 
       const rejectedUserIdPayload = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_01_05_reflection_dream',
+        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
         headers: { cookie: firstCookie },
         payload: {
           singleValue: 'Свобода выбора',
@@ -503,7 +503,7 @@ describe('backend API', () => {
 
       const rejectedEmptyPayload = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_01_05_reflection_dream',
+        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
         headers: { cookie: firstCookie },
         payload: {
           singleValue: '   ',
@@ -518,7 +518,7 @@ describe('backend API', () => {
 
       const createReflectionResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_01_05_reflection_dream',
+        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
         headers: { cookie: firstCookie },
         payload: {
           singleValue: 'Свобода выбора',
@@ -529,11 +529,11 @@ describe('backend API', () => {
       expect(createReflectionResponse.json()).toMatchObject({
         answers: [
           expect.objectContaining({
-            cardId: 'card_01_05_reflection_dream',
-            saveKey: 'first_financial_dream',
-            lessonSlug: 'why-values-matter',
-            moduleSlug: 'financial-goals',
-            unitSlug: 'values-and-goals',
+            cardId: 'card_t1u1l1_05_surprise_reflection',
+            saveKey: 'unexpected_expense',
+            lessonSlug: 'where-money-goes',
+            moduleSlug: 't1-start',
+            unitSlug: 'money-and-operations',
             cardType: 'reflection',
             prompt: expect.any(String),
             answer: {
@@ -555,14 +555,14 @@ describe('backend API', () => {
       }
       const storedResult = await db.query<StoredReflectionRow>(
         'SELECT user_id, card_id, save_key, lesson_slug, answer_json FROM reflection_answers WHERE card_id = $1',
-        ['card_01_05_reflection_dream'],
+        ['card_t1u1l1_05_surprise_reflection'],
       )
       const storedRow = storedResult.rows[0]
       expect(storedRow).toMatchObject({
         user_id: firstRegister.json().user.id,
-        card_id: 'card_01_05_reflection_dream',
-        save_key: 'first_financial_dream',
-        lesson_slug: 'why-values-matter',
+        card_id: 'card_t1u1l1_05_surprise_reflection',
+        save_key: 'unexpected_expense',
+        lesson_slug: 'where-money-goes',
       })
       expect(storedRow?.answer_json).toEqual({
         singleValue: 'Свобода выбора',
@@ -571,7 +571,7 @@ describe('backend API', () => {
 
       const updateReflectionResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_01_05_reflection_dream',
+        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
         headers: { cookie: firstCookie },
         payload: {
           singleValue: 'здоровье',
@@ -581,7 +581,7 @@ describe('backend API', () => {
       expect(updateReflectionResponse.json()).toMatchObject({
         answers: [
           expect.objectContaining({
-            cardId: 'card_01_05_reflection_dream',
+            cardId: 'card_t1u1l1_05_surprise_reflection',
             answer: {
               singleValue: 'здоровье',
             },
@@ -591,29 +591,27 @@ describe('backend API', () => {
 
       const createArtifactResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_02_03_matching_examples',
+        url: '/api/reflections/card_t1u1l1_04_expense_diary',
         headers: { cookie: firstCookie },
         payload: {
           multiValues: ['Обучение', 'Рост'],
-          selectedVariant: 'Сравнить покупку с ценностью',
-          checkedRows: ['need', 'value'],
-          templateValues: ['Покупка курса', 'Развитие'],
+          checkedRows: ['0'],
+          templateValues: ['Кофе 250', 'Обед 650', 'Такси 420'],
         },
       })
       expect(createArtifactResponse.statusCode).toBe(200)
       expect(createArtifactResponse.json()).toMatchObject({
         answers: expect.arrayContaining([
           expect.objectContaining({
-            cardId: 'card_02_03_matching_examples',
+            cardId: 'card_t1u1l1_04_expense_diary',
             saveKey: null,
-            lessonSlug: 'what-are-values',
+            lessonSlug: 'where-money-goes',
             cardType: 'artifact',
-            template: ['Желание', 'Возможная ценность'],
+            template: ['Трата 1: сумма и категория', 'Трата 2: сумма и категория', 'Трата 3: сумма и категория'],
             answer: {
               multiValues: ['Обучение', 'Рост'],
-              selectedVariant: 'Сравнить покупку с ценностью',
-              checkedRows: ['need', 'value'],
-              templateValues: ['Покупка курса', 'Развитие'],
+              checkedRows: ['0'],
+              templateValues: ['Кофе 250', 'Обед 650', 'Такси 420'],
             },
           }),
         ]),
@@ -629,13 +627,13 @@ describe('backend API', () => {
       expect(firstAnswersResponse.json().answers).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            cardId: 'card_01_05_reflection_dream',
+            cardId: 'card_t1u1l1_05_surprise_reflection',
             answer: {
               singleValue: 'здоровье',
             },
           }),
           expect.objectContaining({
-            cardId: 'card_02_03_matching_examples',
+            cardId: 'card_t1u1l1_04_expense_diary',
             cardType: 'artifact',
           }),
         ]),
@@ -663,7 +661,7 @@ describe('backend API', () => {
 
       const secondReflectionResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_01_05_reflection_dream',
+        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
         headers: { cookie: secondCookie },
         payload: {
           singleValue: 'Свой отдельный ориентир',
@@ -679,7 +677,7 @@ describe('backend API', () => {
       expect(firstAnswersAfterSecondWrite.json().answers).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            cardId: 'card_01_05_reflection_dream',
+            cardId: 'card_t1u1l1_05_surprise_reflection',
             answer: {
               singleValue: 'здоровье',
             },
@@ -695,7 +693,7 @@ describe('backend API', () => {
       expect(secondAnswersResponse.json()).toMatchObject({
         answers: [
           {
-            cardId: 'card_01_05_reflection_dream',
+            cardId: 'card_t1u1l1_05_surprise_reflection',
             answer: {
               singleValue: 'Свой отдельный ориентир',
             },
@@ -722,7 +720,7 @@ describe('backend API', () => {
 
       const response = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_01_04_goal_choice',
+        url: '/api/reflections/card_t1u1l1_03_sorting_choice',
         headers: { cookie: sessionCookie(registerResponse) },
         payload: { singleValue: 'any answer' },
       })
@@ -748,82 +746,121 @@ describe('backend API', () => {
         slug: 'finpulse-learning-mvp',
         modules: [
           expect.objectContaining({
-            slug: 'financial-goals',
+            slug: 't1-start',
+            title: 'T1 Старт',
             units: [
               expect.objectContaining({
-                slug: 'values-and-goals',
-                title: '01.01 Ваши базовые ценности',
+                slug: 'money-and-operations',
+                title: 'Юнит 1. Деньги и операции',
               }),
               expect.objectContaining({
-                slug: 'future-vision',
-                title: '01.02 Видение будущего',
-              }),
-              expect.objectContaining({
-                slug: 'financial-goals-map',
-                title: '01.03 Финансовые цели',
-              }),
-              expect.objectContaining({
-                slug: 'goal-motivation',
-                title: '01.04 Мотивация достижения целей',
+                slug: 'planning-and-management',
+                title: 'Юнит 2. Планирование и управление',
               }),
             ],
           }),
         ],
       })
 
-      const valuesUnitResponse = await app.inject('/api/units/values-and-goals')
-      const lessonResponse = await app.inject('/api/lessons/why-values-matter')
-      const compactValuesLessons = valuesUnitResponse.json().unit.lessons.map((lesson: { slug: string }) => lesson.slug)
+      const targetModuleResponse = await app.inject('/api/modules/t1-start')
+      const targetUnitResponse = await app.inject('/api/units/money-and-operations')
+      const planningUnitResponse = await app.inject('/api/units/planning-and-management')
+      const lessonResponse = await app.inject('/api/lessons/where-money-goes')
+      const mandatoryLessonResponse = await app.inject('/api/lessons/mandatory-and-desired')
+      const emergencyFundLessonResponse = await app.inject('/api/lessons/why-emergency-fund')
+      const reserveLessonResponse = await app.inject('/api/lessons/reserve-amount')
+      const targetUnitLessons = targetUnitResponse.json().unit.lessons.map((lesson: { slug: string }) => lesson.slug)
+      const planningUnitLessons = planningUnitResponse.json().unit.lessons.map((lesson: { slug: string }) => lesson.slug)
 
-      expect(valuesUnitResponse.statusCode).toBe(200)
-      expect(compactValuesLessons).toEqual(['why-values-matter', 'what-are-values', 'values-conflict', 'practice-1m'])
+      expect(targetModuleResponse.statusCode).toBe(200)
+      expect(targetModuleResponse.json()).toMatchObject({
+        slug: 't1-start',
+        units: [
+          expect.objectContaining({
+            slug: 'money-and-operations',
+          }),
+          expect.objectContaining({
+            slug: 'planning-and-management',
+          }),
+        ],
+      })
+      expect(targetUnitResponse.statusCode).toBe(200)
+      expect(targetUnitLessons).toEqual(['where-money-goes', 'mandatory-and-desired'])
+      expect(planningUnitResponse.statusCode).toBe(200)
+      expect(planningUnitLessons).toEqual(['why-emergency-fund', 'reserve-amount'])
       expect(lessonResponse.statusCode).toBe(200)
       expect(lessonResponse.json()).toMatchObject({
-        module: expect.objectContaining({ slug: 'financial-goals' }),
-        unit: expect.objectContaining({ slug: 'values-and-goals' }),
+        module: expect.objectContaining({ slug: 't1-start' }),
+        unit: expect.objectContaining({ slug: 'money-and-operations' }),
         lesson: expect.objectContaining({
-          slug: 'why-values-matter',
-          cards: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'card_01_04_goal_choice',
-            }),
-          ]),
+          slug: 'where-money-goes',
+          title: 'Куда уходят деньги',
+          cards: [
+            expect.objectContaining({ id: 'card_t1u1l1_01_hook', type: 'single_choice' }),
+            expect.objectContaining({ id: 'card_t1u1l1_02_theory_leaks', type: 'theory' }),
+            expect.objectContaining({ id: 'card_t1u1l1_03_sorting_choice', type: 'single_choice' }),
+            expect.objectContaining({ id: 'card_t1u1l1_04_expense_diary', type: 'artifact' }),
+            expect.objectContaining({ id: 'card_t1u1l1_05_surprise_reflection', type: 'reflection' }),
+            expect.objectContaining({ id: 'card_t1u1l1_06_micro_rule', type: 'artifact' }),
+            expect.objectContaining({ id: 'card_t1u1l1_07_navigator_summary', type: 'summary' }),
+          ],
         }),
       })
-
-      const newUnitResponse = await app.inject('/api/units/future-vision')
-      expect(newUnitResponse.statusCode).toBe(200)
-      expect(newUnitResponse.json()).toMatchObject({
-        module: expect.objectContaining({ slug: 'financial-goals' }),
+      expect(mandatoryLessonResponse.statusCode).toBe(200)
+      expect(mandatoryLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'where-money-goes' }),
+        }),
+        lesson: expect.objectContaining({
+          slug: 'mandatory-and-desired',
+          title: 'Обязательное и желаемое',
+        }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'why-emergency-fund' }),
+        }),
+      })
+      expect(emergencyFundLessonResponse.statusCode).toBe(200)
+      expect(emergencyFundLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'mandatory-and-desired' }),
+        }),
         unit: expect.objectContaining({
-          slug: 'future-vision',
-          lessons: expect.arrayContaining([
-            expect.objectContaining({ slug: 'day-in-future' }),
-          ]),
+          slug: 'planning-and-management',
         }),
-      })
-
-      const newLessonResponse = await app.inject('/api/lessons/goal-levels')
-      expect(newLessonResponse.statusCode).toBe(200)
-      expect(newLessonResponse.json()).toMatchObject({
-        module: expect.objectContaining({ slug: 'financial-goals' }),
-        unit: expect.objectContaining({ slug: 'goal-motivation' }),
         lesson: expect.objectContaining({
-          slug: 'goal-levels',
-          cards: expect.arrayContaining([
-            expect.objectContaining({ id: 'card_0104_18_artifact_local_goal' }),
-            expect.objectContaining({ id: 'card_0104_21_summary_goal_levels' }),
-          ]),
+          slug: 'why-emergency-fund',
+          title: 'Зачем нужна подушка',
+        }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'reserve-amount' }),
         }),
       })
+      expect(reserveLessonResponse.statusCode).toBe(200)
+      expect(reserveLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'why-emergency-fund' }),
+        }),
+        unit: expect.objectContaining({
+          slug: 'planning-and-management',
+        }),
+        lesson: expect.objectContaining({
+          slug: 'reserve-amount',
+          title: 'Сколько держать в резерве',
+        }),
+        next: null,
+      })
 
-      const removedUnitResponse = await app.inject('/api/units/impulsive-purchases')
-      const removedLessonResponse = await app.inject('/api/lessons/pause-before-purchase')
-      const removedModuleResponse = await app.inject('/api/modules/budget-without-shame')
+      const removedModuleResponse = await app.inject('/api/modules/financial-goals')
+      const removedUnitResponse = await app.inject('/api/units/values-and-goals')
+      const removedFutureUnitResponse = await app.inject('/api/units/future-vision')
+      const removedLessonResponse = await app.inject('/api/lessons/why-values-matter')
+      const removedFinalLessonResponse = await app.inject('/api/lessons/goal-levels')
 
-      expect(removedUnitResponse.statusCode).toBe(404)
-      expect(removedLessonResponse.statusCode).toBe(404)
       expect(removedModuleResponse.statusCode).toBe(404)
+      expect(removedUnitResponse.statusCode).toBe(404)
+      expect(removedFutureUnitResponse.statusCode).toBe(404)
+      expect(removedLessonResponse.statusCode).toBe(404)
+      expect(removedFinalLessonResponse.statusCode).toBe(404)
     } finally {
       await app.close()
     }

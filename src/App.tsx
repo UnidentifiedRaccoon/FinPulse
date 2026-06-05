@@ -5,6 +5,7 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate 
 import { api, ApiError, type ApiUser, type ProgressResponse, type ReflectionAnswerPayload, type ReflectionAnswersResponse } from '@/api/client'
 import { LessonPage } from '@/pages/LessonPage'
 import { EntryPage } from '@/pages/EntryPage'
+import { LessonBlockVariantsPage } from '@/pages/LessonBlockVariantsPage'
 import { ModulePage } from '@/pages/ModulePage'
 import { ProgramOverviewPage } from '@/pages/ProgramOverviewPage'
 import { UnitPage } from '@/pages/UnitPage'
@@ -268,7 +269,8 @@ function AppShell({
   const location = useLocation()
   const navigate = useNavigate()
   const isLessonRoute = location.pathname.startsWith('/lessons/')
-  const showAuthenticatedShell = Boolean(user)
+  const isDesignPreviewRoute = location.pathname === '/design/lesson-block-variants'
+  const showAuthenticatedShell = Boolean(user) && !isDesignPreviewRoute
   const showMobileNavigation = showAuthenticatedShell && !isLessonRoute
   const handleLogoutAndRedirect = useCallback(async () => {
     const didLogout = await onLogout()
@@ -297,9 +299,11 @@ function AppShell({
       <main
         className={cn(
           'mx-auto w-full px-4',
-          showAuthenticatedShell && isLessonRoute
-            ? 'max-w-none py-6 lg:px-8'
-            : 'max-w-[560px] py-5 sm:py-6 lg:max-w-[720px]',
+          isDesignPreviewRoute
+            ? 'max-w-[1180px] py-5 sm:py-8'
+            : showAuthenticatedShell && isLessonRoute
+              ? 'max-w-none py-6 lg:px-8'
+              : 'max-w-[560px] py-5 sm:py-6 lg:max-w-[720px]',
           showMobileNavigation ? 'pb-[calc(6.75rem+env(safe-area-inset-bottom))] lg:pb-8' : null,
         )}
       >
@@ -313,7 +317,12 @@ function AppShell({
               </p>
             ))
           : null}
-        {showAuthenticatedShell ? (
+        {isDesignPreviewRoute ? (
+          <Routes>
+            <Route path="/design/lesson-block-variants" element={<LessonBlockVariantsPage />} />
+            <Route path="*" element={<Navigate to="/design/lesson-block-variants" replace />} />
+          </Routes>
+        ) : showAuthenticatedShell ? (
           <Routes>
             <Route path="/" element={<Navigate to="/program" replace />} />
             <Route

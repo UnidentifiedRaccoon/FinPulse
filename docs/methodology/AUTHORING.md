@@ -1,458 +1,131 @@
-# Фреймворк подготовки методических материалов FinPulse
+# Authoring Framework — FinPulse Target Methodology
 
-Этот документ - единая рабочая инструкция для методолога, редактора или агента,
-который получает образовательный контент и должен подготовить из него пакет
-материалов, легко встраиваемый в текущую архитектуру FinPulse.
+This is the working instruction for agents and editors turning methodologist
+source material into current FinPulse MVP runtime JSON.
 
-Использовать вместе с:
+Use together with:
 
-- `docs/CONTENT_MODEL.md` - источник истины по runtime JSON-схеме;
-- `docs/PRODUCT.md` - границы MVP;
-- `docs/ARCHITECTURE.md` - поток данных и роль JSON;
-- `docs/methodology/finpulse_methodology/` - исходная методическая система;
-- `docs/methodology/CONTENT_BACKLOG.md` - текущие runtime-ограничения и gaps.
+- `docs/methodology/METHODOLOGY.md` — central target methodology;
+- `docs/CONTENT_MODEL.md` — runtime JSON schema authority;
+- `docs/PRODUCT.md` and `docs/ARCHITECTURE.md` — MVP boundaries and data flow;
+- `docs/methodology/CONTENT_BACKLOG.md` — current runtime coverage and gaps.
 
-## Цель
+## Source Of Truth
 
-По предоставленному контенту нужно получить пакет, который можно проверить,
-отревьюить и встроить в приложение без новой схемы, нового UI и расширения
-продуктового scope.
+`docs/methodology/METHODOLOGY.md` is the active methodology source. Previous
+Finzdorov, AI-assisted, and personal-experience lesson sources are no longer
+active authoring sources for runtime content.
 
-Типовой пакет включает:
+When a methodologist provides a scripted lesson, preserve it as local Markdown
+under `docs/modules/<tier>/<unit>/` before adapting it to JSON. Runtime JSON
+must reference the local source path.
 
-- сохранённый исходник или фокусный срез в Markdown;
-- методический план модуля, юнита, уроков и карточек;
-- runtime JSON под `src/content/**`, если материал подходит для текущего MVP;
-- supplemental-материалы для полезного контента, который пока не должен идти в
-  основной learner path;
-- результат проверок, подтверждающий, что JSON валиден.
+## Current MVP Filter
 
-## Границы MVP
+The target methodology is wider than the MVP. Current runtime may include:
 
-FinPulse MVP - мобильный образовательный reader/training app. Он поддерживает
-статический учебный контент, простое сохранение прогресса и карточные уроки.
+- static educational content;
+- short 3-5 minute lessons;
+- simple learner auth for progress;
+- viewed/completed lesson and card progress;
+- private persisted `reflection` and `artifact` answers for authenticated
+  learners only;
+- current supported card types from `docs/CONTENT_MODEL.md`.
 
-Можно:
+Do not add without a separate decision:
 
-- давать общий образовательный материал;
-- собирать короткие уроки на 3-5 минут;
-- использовать статические сценарии и примеры;
-- задавать личные рефлексии, которые остаются локальным состоянием lesson UI;
-- сохранять только viewed/completed progress markers;
-- считать JSON-файлы источником истины для runtime-контента.
+- diagnostics, scores, levels, inferred traits, or labels;
+- personalized recommendations or individual financial advice;
+- rewards, streaks, coins, shops, or gamification loops;
+- reminders, adaptive spaced repetition, psychotype-based UI adaptation, or B2B
+  analytics;
+- new runtime interactions such as `sorting`, `matching`, calculators, hotspots,
+  branching dialogues, scored multi-select, or expense-diary schemas.
 
-Нельзя без отдельного решения:
+## Runtime Hierarchy
 
-- добавлять диагностику, оценки, шкалы, баллы, аналитику;
-- добавлять награды, streaks, монеты, магазины или gamification loops;
-- давать персональные рекомендации или индивидуальный финансовый совет;
-- добавлять backend/admin/CMS scope;
-- сохранять freeform-ответы, профили или личные артефакты;
-- вводить production financial operations;
-- добавлять runtime-интеракции, которых нет в текущей схеме: `matching`,
-  `sorting`, calculators, hotspots, branching dialogues, scored multi-select.
-
-## Входной разбор контента
-
-Перед написанием карточек нужно превратить исходный материал в понятный source
-packet.
-
-Зафиксировать:
-
-- название и происхождение источника;
-- модуль, блок или тему;
-- ожидаемый образовательный результат;
-- ключевые термины и идеи;
-- стабильные факты, которые можно учить напрямую;
-- изменяющиеся факты, которые надо учить как навык проверки;
-- примеры, кейсы, упражнения, шаблоны, предупреждения;
-- чувствительные места, где особенно важен мягкий тон;
-- разделы, которые нужно сохранить, но пока не показывать пользователю.
-
-Если материал содержит законы, ставки, лимиты, рыночные значения, условия банков
-или продуктовые тарифы, не фиксировать число как вечный факт. Урок должен учить,
-где и как проверить актуальное значение.
-
-## Классификация фрагментов
-
-Каждый фрагмент источника классифицируется до переноса в runtime JSON.
-
-| Класс | Что означает | Что делать |
-|---|---|---|
-| Runtime-ready seed | Подходит под текущие card types и MVP scope. | Адаптировать в карточки урока. |
-| Supplemental source | Полезно для редактора или будущих уроков, но сейчас слишком широко/вторично. | Сохранить в Markdown или `supplemental`. |
-| Future schema candidate | Нужна интеракция, которой нет в схеме/UI. | Оставить в source, не имитировать в JSON. |
-| Future product scope | Нужны persistence, personalization, reminders, analytics, diagnostics или recommendations. | Не переносить в runtime до отдельного решения. |
-
-## Методическая модель
-
-FinPulse-урок - это короткая финансовая тренировка, а не статья и не тест.
-
-Базовая лестница урока:
+The target methodology uses tiers. The current MVP content model still has:
 
 ```text
-вспомнил -> понял -> применил к реальному миру -> применил к себе -> закрепил маленьким правилом поведения
+Program -> Module -> Unit -> Lesson -> Card
 ```
 
-Практическая структура урока на 3-5 минут:
-
-1. Крючок, 20-30 секунд: одна конкретная жизненная ситуация.
-2. Мини-теория, 40-60 секунд: одна мысль, не больше.
-3. Тренировка понимания, около 60 секунд: выбрать, объяснить,
-   классифицировать или найти ошибку.
-4. Реальный мир, 60-90 секунд: проверить источник, цену, комиссию, срок,
-   условие или риск.
-5. Личный мир, около 60 секунд: безопасная рефлексия про контекст пользователя.
-6. Микро-правило, 20-30 секунд: одно маленькое правило поведения или следующий
-   шаг.
-
-Расширенная формула FinPulse:
+Until the schema changes, map the target hierarchy this way:
 
 ```text
-Короткая ситуация
--> одна мысль
--> действие
--> обратная связь
--> жизненный или внешний контекст
--> личное применение
--> маленькое правило
--> артефакт как результат урока
--> мостик к будущему использованию
+Target tier -> runtime module
+Target unit / subject block -> runtime unit
+Target lesson -> runtime lesson
+Target screen -> runtime card
 ```
 
-В текущем MVP артефакт может быть только частью урока или локальным состоянием
-UI. Не обещать пользователю серверное сохранение артефакта.
-
-## Типы мышления и развития
-
-Урок или карточка могут иметь две методические метки:
-
-- `thinkingType`: memory, understanding, real world A, real world B, personal
-  world, habit, artifact;
-- `develops`: psychology, hard skills, soft skills, habits.
-
-Эти метки нужны, чтобы урок не превращался только в теорию или только в
-рефлексию.
-
-`real world A` - внешняя финансовая среда: официальные источники, ставки,
-комиссии, договоры, реестры, условия продуктов, возвраты.
-
-`real world B` - жизненные финансовые ситуации: ценности, эмоции, семейные
-деньги, выбор, tradeoffs, давление, мотивация.
-
-## Проверяемость
-
-Поле `checkability` описывает, как можно оценивать карточку.
-
-| Режим | Для чего | Обратная связь |
-|---|---|---|
-| `objective` | Термины, определения, формулы, red flags, факты источника. | Верно, ошибка, подсказка. |
-| `subjective` | Ценности, цели, чувства, привычки, личные правила. | Сделано, уточнить, предложить пример. |
-| `mixed` | Сценарии, диалоги, чеклисты с более и менее безопасными решениями. | Лучший, допустимый, рискованный вариант. |
-
-Нельзя маркировать ценность, желание или личный приоритет как неправильные. В
-субъективных заданиях оценивается не "правильность ценности", а качество связи:
+Example:
 
 ```text
-желание / покупка -> потребность -> ценность -> возможная финансовая цель
+T1 Старт -> module `t1-start`
+Юнит 1. Деньги и операции -> unit `money-and-operations`
+У1.1 Куда уходят деньги -> lesson `where-money-goes`
 ```
 
-## Методическая карточка урока
+## Card Adaptation Rules
 
-Перед JSON нужно заполнить компактную карточку урока.
+Use only these runtime card types:
 
-```md
-## Методическая карточка урока
+- `theory`
+- `callout`
+- `single_choice`
+- `reflection`
+- `scenario`
+- `artifact`
+- `checklist`
+- `summary`
+- `video` only when a real playable `src` is available
 
-- Название:
-- Место в программе: модуль, юнит, порядок урока
-- Результат для пользователя:
-- Главный навык:
-- Тип мышления:
-- Что развивает:
-- Проверяемость:
-- Исходные разделы:
-- Последовательность карточек:
-- Feedback для объективно верного ответа:
-- Feedback для типичной ошибки:
-- Feedback для субъективного ответа:
-- Артефакт пользователя:
-- Микро-правило или следующий шаг:
-- Мостик к следующему уроку/модулю:
-- Runtime fit: runtime-ready / supplemental / schema gap / product gap
-```
+Adapt target-only screens safely:
 
-Если эта карточка расплывчатая, runtime-урок почти наверняка тоже получится
-расплывчатым.
-
-## Runtime-иерархия
-
-Runtime-контент устроен так:
-
-```text
-Program
-└─ Module
-   └─ Unit
-      └─ Lesson
-         └─ Card
-```
-
-Файлы лежат здесь:
-
-```text
-src/content/
-  program.json
-  modules/
-    module_1/
-      module.json
-      units/
-        unit_01_values_and_goals.json
-```
-
-Правила:
-
-- `program.json` ссылается на module files.
-- `module.json` ссылается на unit files.
-- unit-файл содержит уроки и карточки.
-- JSON - runtime source of truth.
-- Markdown-источник должен позволять восстановить происхождение адаптации.
-- Массивы должны быть отсортированы по `order`.
-- `id` должны быть стабильными.
-- `slug` должен быть URL-safe: lowercase latin letters, digits, hyphens.
-- card ids должны быть уникальны во всей программе.
-
-## Поддерживаемые card types
-
-В runtime JSON можно использовать только эти типы:
-
-| Type | Для чего | Основные обязательные поля |
-|---|---|---|
-| `theory` | Одна идея, объяснение, термин, принцип. | `body` |
-| `video` | Дополнительное видео. | `title`, `src` |
-| `callout` | Короткое замечание, предупреждение, рефлексия, напоминание. | `body` |
-| `single_choice` | Выбор одного ответа или решения. | `question`, `options` |
-| `reflection` | Личный или субъективный ответ. | `prompt` |
-| `scenario` | Жизненный кейс или финансовая ситуация. | `body` |
-| `artifact` | Локальный результат урока или шаблон. | `body` |
-| `checklist` | Практические шаги или проверочный список. | `items` |
-| `summary` | Итог урока и следующий шаг. | `points` |
-
-Полезные optional metadata на карточках:
-
-- `sourceSection`;
-- `thinkingType`;
-- `develops`;
-- `checkability`.
-
-Interactive state является локальным, пока отдельное продуктовое решение не
-расширит persistence. Использовать `readOnly: true`, если интерактивный по
-природе тип должен отрендериться как статический материал.
-
-## Матрица адаптации упражнений
-
-| Намерение источника | Как безопасно адаптировать в MVP |
+| Target pattern | MVP adaptation |
 |---|---|
-| Крючок или жизненная ситуация | `scenario` с коротким setup и опциональным вопросом. |
-| Мини-теория | `theory`; `callout` только для короткого акцента или предупреждения. |
-| Проверка определения | `single_choice` с объективным feedback. |
-| Различение категорий | `single_choice`, `scenario` или `checklist`; не добавлять `sorting`. |
-| Проверка внешнего источника | `checklist` плюс `reflection` или `summary`; не хардкодить изменяющиеся значения. |
-| Личная рефлексия | `reflection` с безопасными options или guidance. |
-| Правило поведения | `artifact`, `checklist` или `summary.nextStep`. |
-| Распознавание риска/мошенничества | `scenario` или `checklist`; не добавлять hotspot/tap interactions. |
-| Репетиция разговора | `scenario`, `single_choice` или `reflection`; без branching dialogue. |
-| Идея result screen | Финальная `summary` card. |
-| Идея сохранённого артефакта | `artifact` card как локальный результат урока. |
+| Sorting | `single_choice`, `scenario`, or `artifact` with explicit explanation |
+| Expense diary | `artifact.template` or `reflection.inputType: "table"` |
+| Reminder setup | `artifact.variants` or `summary.nextStep`; do not schedule reminders |
+| Psychotype-specific feedback | Preserve in source or neutral guidance; do not infer psychotype |
+| Navigator save | Persist only neutral `reflection`/`artifact` answers allowed by ADR-0007 |
+| Video placeholder | Keep as text in `theory`; add `video` only after a real URL exists |
 
-## Правила написания карточек
+## Lesson Quality Checklist
 
-- Один экран - одна мысль.
-- Писать короткими фразами.
-- Давать действие в первые 30-60 секунд, когда это возможно.
-- Избегать длинных лекционных блоков.
-- Ошибка - тренировка, а не провал.
-- Не стыдить за покупки, долги, незнание, сомнение или избегание темы.
-- Для чувствительных чисел лучше использовать диапазоны или варианты, а не
-  точный freeform-ввод.
-- В субъективных заданиях писать "лучший ответ", "возможная ценность",
-  "один полезный вариант", а не "единственно правильный ответ".
-- Разделять эмоцию, ценность, цель, инструмент и действие.
-- Завершать урок микро-правилом, следующим шагом или видимым результатом.
+A runtime lesson is ready when:
 
-## Правила обратной связи
+- it follows the ladder from situation/action to rule or artifact;
+- it has one main idea and fits 3-5 minutes;
+- it has at least one interaction in the first 30-60 seconds when practical;
+- objective answers have feedback;
+- subjective answers are never marked as wrong;
+- volatile financial values are framed as source examples or lookup skills, not
+  timeless facts;
+- it does not require schema, UI, persistence, or product scope that the MVP does
+  not have.
 
-Объективно верный ответ:
+## Runtime JSON Checklist
 
-```text
-Верно. Ты отличил ценность от покупки.
-```
+Before calling a content task done:
 
-Типичная ошибка:
+- module/unit/lesson/card IDs and slugs are stable and unique;
+- paths are normalized relative JSON paths;
+- arrays are sorted by `order`;
+- `correctOptionId` values match option IDs;
+- `reflection` and `artifact` cards that should save user work have meaningful
+  titles/prompts/templates;
+- content validates with `npm run check:content`;
+- app/backend tests are updated for new slugs and titles.
 
-```text
-Почти. Многие путают покупку и ценность. Покупка - это "что", ценность - это "зачем".
-```
+## Result Packet
 
-Субъективный ответ:
+For every methodology/runtime content task, record:
 
-```text
-Это нормальный выбор. В этом задании важна честная связь с твоей ситуацией.
-```
-
-Пользователь не знает:
-
-```text
-Можно выбрать "пока не знаю". Здесь важнее начать наблюдать, чем сразу дать идеальный ответ.
-```
-
-## Workflow подготовки пакета
-
-1. Прочитать обязательный проектный контекст: `AGENTS.md`, harness state,
-   `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/CONTENT_MODEL.md`.
-2. Сохранить предоставленный источник в Markdown, если он ещё не сохранён.
-3. Разделить большой источник на устойчивые части: original source, module
-   notes, lesson candidates, supplemental material, editorial rules, glossary,
-   outcome.
-4. Классифицировать каждый фрагмент: runtime-ready, supplemental, schema gap,
-   product gap.
-5. Заполнить методическую карточку для каждого урока.
-6. Свести каждый урок к одной главной мысли и 3-5 минутам.
-7. Сопоставить упражнения источника с поддерживаемыми runtime card types.
-8. Писать или менять JSON только после ясного методического плана.
-9. Зарегистрировать новые modules/units через существующие manifest files.
-10. Запустить content validation и full verification, если менялся runtime JSON.
-11. Обновить task file и harness state: files changed, checks run, risks,
-    follow-up decisions.
-
-## Рекомендуемый состав файлов
-
-Для конкретного модуля или блока программы:
-
-```text
-docs/modules/<module>/<block>/
-  00_original_content.md
-  README.md
-  lesson_<nn>_<topic>.md
-  supplemental.md
-  editorial_rules.md
-  outcome.md
-```
-
-Для обще-методических кандидатов:
-
-```text
-docs/methodology/finpulse_methodology/
-  00_original_content.md
-  methodical_framework.md
-  exercise_library.md
-  module_candidates.md
-  lesson_candidates/<topic>.md
-```
-
-Для runtime-контента:
-
-```text
-src/content/program.json
-src/content/modules/<module>/module.json
-src/content/modules/<module>/units/<unit>.json
-```
-
-Не превращать весь methodology source catalog в runtime JSON. В runtime должен
-попадать только материал, готовый для learner app.
-
-## Runtime JSON checklist
-
-Перед тем как считать материал готовым к встраиванию:
-
-- Module referenced from `src/content/program.json`.
-- Unit referenced from its module `module.json`.
-- Unit file has `schemaVersion: 1`, stable `id`, URL-safe `slug`, `title`,
-  `order`, `source`, and at least one lesson.
-- Each lesson has stable `id`, URL-safe `slug`, `title`, `order`, and cards.
-- Each card has stable unique `id`, supported `type`, and `order`.
-- `order` values are sorted and not duplicated.
-- `single_choice` and `scenario` `correctOptionId` values match real option ids.
-- Video cards have `title` and `src`; RUTUBE videos should use embed URLs.
-- No arbitrary HTML is stored in JSON.
-- No unsupported card type is hidden in freeform fields.
-- Quickly changing financial values are lookup tasks, not eternal facts.
-- Subjective prompts are non-judgmental.
-
-## Методический QA checklist
-
-Урок готов, если:
-
-- он занимает 3-5 минут;
-- у него одна главная идея;
-- он начинается с конкретной ситуации или действия;
-- есть feedback для ошибки или рискованного выбора;
-- есть хотя бы один шаг real world или personal world;
-- есть микро-правило, следующий шаг или локальный артефакт;
-- урок не требует account data, analytics, recommendations или persistence;
-- кредитные, инвестиционные и security-темы остаются общими и образовательными.
-
-Урок про ценности/цели дополнительно требует:
-
-- ясного различия между покупкой, желанием, потребностью, ценностью и финансовой
-  целью;
-- отсутствия оценки личных ценностей как "правильных" или "неправильных";
-- мягкой рефлексии;
-- жизненного сценария, а не только абстрактной теории;
-- мостика к будущим финансовым целям или планированию.
-
-Урок с внешними данными дополнительно требует:
-
-- lookup актуального значения вместо хардкода volatile values;
-- указания типа надёжного источника;
-- предупреждения, если тема связана с кредитом, инвестициями, мошенничеством или
-  продуктовым риском;
-- отсутствия персональной рекомендации там, где нужна индивидуальная оценка.
-
-## Проверка
-
-Для изменений runtime-контента запускать:
-
-```bash
-npm run check:content
-npm run verify
-```
-
-`npm run check:content` проверяет split JSON graph. `npm run verify` запускает
-базовую проверку проекта: content validation, runtime import guard, typecheck,
-lint, tests и production build.
-
-Для docs-only методических изменений тоже лучше запускать `npm run verify`, если
-это практично, потому что harness state ожидает проверяемых результатов.
-
-## Шаблон результата authoring-задачи
-
-```md
-## Methodology Package Result
-
-- Source preserved:
-- Runtime files changed:
-- Lessons added:
-- Card types used:
-- Supplemental material kept:
-- Schema/UI gaps found:
-- Product-scope gaps found:
-- Checks run:
-- Risks:
-- Follow-up decisions:
-```
-
-## Частые ошибки
-
-- Длинная статья разбита на карточки, но не сведена к одной мысли урока.
-- Название упражнения из источника использовано как JSON card type, хотя runtime
-  его не поддерживает.
-- Личный артефакт описан как сохранённый, хотя MVP хранит только local
-  interaction state.
-- Изменяющееся финансовое значение захардкожено как вечный факт.
-- Субъективная ценность или денежный выбор отмечены как неправильные.
-- Новый module добавлен в JSON, но не зарегистрирован в manifest.
-- Unit полезен как источник, но слишком широк для main reader path.
-
-Если есть сомнение, сначала сохранить материал как source Markdown или
-supplemental content. Переносить в runtime JSON только тогда, когда он чисто
-попадает в текущую card model и продуктовые границы.
+- source documents preserved;
+- runtime files changed;
+- card types used;
+- target-methodology features deferred because of MVP scope;
+- checks run;
+- risks and follow-up decisions.

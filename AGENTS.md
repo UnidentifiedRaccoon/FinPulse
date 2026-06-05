@@ -47,8 +47,9 @@ Before changing files, every agent must read:
 4. `docs/PRODUCT.md`
 5. `docs/ARCHITECTURE.md`
 6. `docs/CONTENT_MODEL.md` when touching JSON/content
-7. `harness/PARALLEL_AGENT_PROTOCOL.md` when working in parallel
-8. `docs/engineering/contributing.md` before creating branches, commits, pushes, or PRs
+7. `docs/methodology/METHODOLOGY.md` and `docs/methodology/AUTHORING.md` when touching methodology or educational content
+8. `harness/PARALLEL_AGENT_PROTOCOL.md` when working in parallel
+9. `docs/engineering/contributing.md` before creating branches, commits, pushes, or PRs
 
 ## Work loop
 

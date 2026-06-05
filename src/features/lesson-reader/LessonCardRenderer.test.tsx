@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
@@ -31,6 +31,88 @@ describe('LessonSession', () => {
     expect(screen.getByRole('heading', { name: 'Первый шаг' })).toBeInTheDocument()
     expect(screen.getByText('1 из 2')).toBeInTheDocument()
     expect(screen.getByRole('progressbar', { name: 'Прогресс урока' })).toHaveAttribute('aria-valuenow', '50')
+  })
+
+  it('renders the lesson intro as an explicit focus and goal block', () => {
+    renderSession([
+      {
+        id: 'card-theory',
+        type: 'theory',
+        order: 1,
+        title: 'Первый шаг',
+        body: 'Короткое объяснение.',
+      },
+    ])
+
+    const brief = screen.getByRole('region', { name: 'Кратко об уроке' })
+
+    expect(within(brief).getByText('В этом уроке')).toBeInTheDocument()
+    expect(within(brief).getByText('Описание урока.')).toBeInTheDocument()
+    expect(within(brief).getByText('Цель урока')).toBeInTheDocument()
+    expect(within(brief).getByText('Сделать один маленький шаг.')).toBeInTheDocument()
+  })
+
+  it('renders theory explanation with the selected calculation pattern and no decorative icon', () => {
+    renderSession([
+      {
+        id: 'card-theory-calc',
+        type: 'theory',
+        order: 1,
+        title: 'Деньги утекают по капле',
+        body: 'Большие траты мы помним. А маленькие — кофе, такси, подписка, доставка — проходят мимо внимания.\n\nГлавное правило: чтобы управлять деньгами, их сначала нужно увидеть.\n\nФакт из сценария урока: 5 трат по 200 ₽ в день — это 30 000 ₽ в месяц. По отдельности незаметно, в сумме ощутимо.',
+        examples: ['Кофе навынос', 'Такси или доставка'],
+      },
+    ])
+
+    const card = screen.getByRole('heading', { name: 'Деньги утекают по капле' }).closest('section')
+    expect(card).not.toBeNull()
+
+    const lessonCard = within(card as HTMLElement)
+    expect(lessonCard.getByText('Расчёт')).toBeInTheDocument()
+    expect(lessonCard.getByText('5 трат')).toBeInTheDocument()
+    expect(lessonCard.getByText('200 ₽')).toBeInTheDocument()
+    expect(lessonCard.getByText('30 дней')).toBeInTheDocument()
+    expect(lessonCard.getByText('30 000 ₽')).toBeInTheDocument()
+    expect(lessonCard.getByText('По отдельности незаметно, в сумме ощутимо.')).toBeInTheDocument()
+    expect(lessonCard.getByText('Кофе навынос')).toBeInTheDocument()
+    expect(card?.querySelector('.fr-calculation-container')).toHaveAttribute('data-step-count', '4')
+    expect(card?.querySelector('[class*="sm:grid"]')).toBeNull()
+    expect(card).toHaveTextContent('5 трат×200 ₽×30 дней=30 000 ₽')
+    expect(card?.textContent).not.toContain('××')
+    expect(card?.textContent).not.toContain('==')
+    expect(card?.querySelector('svg')).toBeNull()
+  })
+
+  it('formats every fact-like paragraph in passive theory cards', () => {
+    renderSession([
+      {
+        id: 'card-theory-formula-example',
+        type: 'theory',
+        order: 1,
+        title: 'Правило 3–6 месяцев',
+        body: 'Базовый ориентир подушки — 3–6 месяцев твоих обязательных расходов.\n\nФормула простая: подушка = месячные обязательные расходы × 3–6.\n\nПример из сценария: если обязательные расходы — 40 000 ₽ в месяц, то подушка на 3 месяца — 120 000 ₽, а на 6 месяцев — 240 000 ₽.',
+      },
+    ])
+
+    const card = screen.getByRole('heading', { name: 'Правило 3–6 месяцев' }).closest('section')
+    expect(card).not.toBeNull()
+
+    const lessonCard = within(card as HTMLElement)
+    expect(lessonCard.getByText('Формула')).toBeInTheDocument()
+    expect(lessonCard.getByText('обязательные расходы')).toBeInTheDocument()
+    expect(lessonCard.getByText('3-6 месяцев')).toBeInTheDocument()
+    expect(lessonCard.getByText('подушка')).toBeInTheDocument()
+    expect(card?.querySelector('.fr-calculation-container')).toHaveAttribute('data-step-count', '3')
+    expect(card?.querySelector('[class*="sm:grid"]')).toBeNull()
+    expect(card).toHaveTextContent('обязательные расходы×3-6 месяцев=подушка')
+    expect(card?.textContent).not.toContain('××')
+    expect(card?.textContent).not.toContain('==')
+    expect(lessonCard.getByText('Пример')).toBeInTheDocument()
+    expect(
+      lessonCard.getByText(
+        'если обязательные расходы — 40 000 ₽ в месяц, то подушка на 3 месяца — 120 000 ₽, а на 6 месяцев — 240 000 ₽.',
+      ),
+    ).toBeInTheDocument()
   })
 
   it('continues through cards with the sticky CTA', async () => {
@@ -155,6 +237,7 @@ describe('LessonSession', () => {
 
     expect(textarea).toHaveValue('Мой черновик')
     expect(screen.getByRole('status')).toHaveTextContent('Черновик заполнен.')
+    expect(screen.getByRole('status')).toHaveClass('sr-only')
     expect(onCardCompleted).not.toHaveBeenCalled()
 
     expect(finishButton).toBeEnabled()
@@ -168,6 +251,90 @@ describe('LessonSession', () => {
     await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-reflection'))
     expect(onReflectionAnswerSave.mock.invocationCallOrder[0]).toBeLessThan(onCardCompleted.mock.invocationCallOrder[0])
     expect(onCardCompleted).toHaveBeenCalledTimes(1)
+  })
+
+  it('saves a normal single-select reflection option before completing the card', async () => {
+    const user = userEvent.setup()
+    const onReflectionAnswerSave = vi.fn()
+    const onCardCompleted = vi.fn()
+
+    renderSession(
+      [
+        {
+          id: 'card-reflection-select',
+          type: 'reflection',
+          order: 1,
+          title: 'Выбор фокуса',
+          prompt: 'Что сейчас важнее?',
+          inputType: 'single_select',
+          options: ['Резерв', 'Планирование трат', 'Спокойное закрытие долга'],
+        },
+      ],
+      { canSaveProgress: true, onCardCompleted, onReflectionAnswerSave },
+    )
+
+    const finishButton = screen.getByRole('button', { name: 'Завершить' })
+    expect(finishButton).toBeDisabled()
+
+    await user.click(screen.getByRole('radio', { name: 'Планирование трат' }))
+
+    expect(finishButton).toBeEnabled()
+    await user.click(finishButton)
+
+    await waitFor(() =>
+      expect(onReflectionAnswerSave).toHaveBeenCalledWith('card-reflection-select', {
+        singleValue: 'Планирование трат',
+      }),
+    )
+    await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-reflection-select'))
+  })
+
+  it('requires and saves typed text for a custom single-select reflection option', async () => {
+    const user = userEvent.setup()
+    const onReflectionAnswerSave = vi.fn()
+    const onCardCompleted = vi.fn()
+
+    renderSession(
+      [
+        {
+          id: 'card-reflection-custom',
+          type: 'reflection',
+          order: 1,
+          title: 'Что удивило?',
+          prompt: 'Какая трата удивила?',
+          inputType: 'single_select',
+          options: ['Кофе или перекусы', 'Такси или доставка', 'Подписки'],
+          customOption: {
+            label: 'Свой вариант',
+            placeholder: 'Напиши свой вариант',
+          },
+        },
+      ],
+      { canSaveProgress: true, onCardCompleted, onReflectionAnswerSave },
+    )
+
+    const finishButton = screen.getByRole('button', { name: 'Завершить' })
+    expect(finishButton).toBeDisabled()
+    expect(screen.queryByRole('textbox', { name: 'Введите свой вариант' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: 'Свой вариант' }))
+
+    const customInput = screen.getByRole('textbox', { name: 'Введите свой вариант' })
+    expect(customInput).toHaveAttribute('placeholder', 'Напиши свой вариант')
+    expect(finishButton).toBeDisabled()
+
+    await user.type(customInput, 'Подарок другу')
+
+    expect(customInput).toHaveValue('Подарок другу')
+    expect(finishButton).toBeEnabled()
+    await user.click(finishButton)
+
+    await waitFor(() =>
+      expect(onReflectionAnswerSave).toHaveBeenCalledWith('card-reflection-custom', {
+        singleValue: 'Подарок другу',
+      }),
+    )
+    await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-reflection-custom'))
   })
 
   it('does not complete a reflection card when answer persistence fails', async () => {
@@ -195,6 +362,141 @@ describe('LessonSession', () => {
     expect(await screen.findByText('Не удалось сохранить ответ.')).toBeInTheDocument()
     expect(onCardCompleted).not.toHaveBeenCalled()
     expect(screen.queryByRole('heading', { name: 'Урок завершён' })).not.toBeInTheDocument()
+  })
+
+  it('renders artifact template rows as text fields without checklist checkboxes', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-artifact',
+        type: 'artifact',
+        order: 1,
+        title: 'Твои 3 траты за сегодня',
+        body: 'Вспомни и запиши 3 траты за сегодня.',
+        template: ['Трата 1: сумма и категория', 'Трата 2: сумма и категория', 'Трата 3: сумма и категория'],
+      },
+    ])
+
+    expect(screen.queryByRole('checkbox', { name: 'Трата 1: сумма и категория' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('checkbox', { name: 'Трата 2: сумма и категория' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('checkbox', { name: 'Трата 3: сумма и категория' })).not.toBeInTheDocument()
+
+    const firstExpense = screen.getByRole('textbox', { name: 'Трата 1: сумма и категория' })
+    expect(screen.getByRole('textbox', { name: 'Трата 2: сумма и категория' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Трата 3: сумма и категория' })).toBeInTheDocument()
+
+    const finishButton = screen.getByRole('button', { name: 'Завершить' })
+    expect(finishButton).toBeDisabled()
+
+    await user.type(firstExpense, '350 ₽, продукты')
+
+    expect(firstExpense).toHaveValue('350 ₽, продукты')
+    expect(screen.getByRole('status')).toHaveTextContent('Рабочий блок заполнен.')
+    expect(screen.getByRole('status')).toHaveClass('sr-only')
+    expect(finishButton).toBeEnabled()
+  })
+
+  it('saves a normal artifact custom-option radio variant before completing the card', async () => {
+    const user = userEvent.setup()
+    const onReflectionAnswerSave = vi.fn()
+    const onCardCompleted = vi.fn()
+
+    renderSession(
+      [
+        {
+          id: 'card-artifact-radio',
+          type: 'artifact',
+          order: 1,
+          title: 'Твоё правило на 3 дня',
+          body: 'Выбери правило на ближайшие 3 дня.',
+          variants: [
+            '3 дня записываю каждую трату — без оценок, просто вижу',
+            'Замечаю хотя бы 1 трату в день',
+          ],
+          customOption: {
+            label: 'Свой вариант',
+            placeholder: 'Напиши свой вариант',
+          },
+        },
+      ],
+      { canSaveProgress: true, onCardCompleted, onReflectionAnswerSave },
+    )
+
+    const finishButton = screen.getByRole('button', { name: 'Завершить' })
+    expect(finishButton).toBeDisabled()
+    expect(screen.queryByRole('textbox', { name: 'Введите свой вариант' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('textbox', { name: 'Рабочий ответ' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: 'Замечаю хотя бы 1 трату в день' }))
+
+    expect(screen.queryByRole('textbox', { name: 'Рабочий ответ' })).not.toBeInTheDocument()
+    expect(finishButton).toBeEnabled()
+    await user.click(finishButton)
+
+    await waitFor(() =>
+      expect(onReflectionAnswerSave).toHaveBeenCalledWith('card-artifact-radio', {
+        selectedVariant: 'Замечаю хотя бы 1 трату в день',
+        checkedRows: [],
+        templateValues: [''],
+        fallbackValue: '',
+      }),
+    )
+    await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-artifact-radio'))
+  })
+
+  it('requires and saves typed text for a custom artifact radio variant', async () => {
+    const user = userEvent.setup()
+    const onReflectionAnswerSave = vi.fn()
+    const onCardCompleted = vi.fn()
+
+    renderSession(
+      [
+        {
+          id: 'card-artifact-custom-radio',
+          type: 'artifact',
+          order: 1,
+          title: 'Твоё правило выбора',
+          body: 'Выбери правило или напиши своё.',
+          variants: [
+            'Беру правило: перед желаемой покупкой задаю вопрос',
+            'Делаю паузу 1 день перед крупной желаемой покупкой',
+          ],
+          customOption: {
+            label: 'Свой вариант',
+            placeholder: 'Напиши свой вариант',
+          },
+        },
+      ],
+      { canSaveProgress: true, onCardCompleted, onReflectionAnswerSave },
+    )
+
+    const finishButton = screen.getByRole('button', { name: 'Завершить' })
+    expect(finishButton).toBeDisabled()
+    expect(screen.queryByRole('textbox', { name: 'Рабочий ответ' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: 'Свой вариант' }))
+
+    const customInput = screen.getByRole('textbox', { name: 'Введите свой вариант' })
+    expect(customInput).toHaveAttribute('placeholder', 'Напиши свой вариант')
+    expect(screen.queryByRole('textbox', { name: 'Рабочий ответ' })).not.toBeInTheDocument()
+    expect(finishButton).toBeDisabled()
+
+    await user.type(customInput, 'Проверяю корзину перед оплатой')
+
+    expect(customInput).toHaveValue('Проверяю корзину перед оплатой')
+    expect(finishButton).toBeEnabled()
+    await user.click(finishButton)
+
+    await waitFor(() =>
+      expect(onReflectionAnswerSave).toHaveBeenCalledWith('card-artifact-custom-radio', {
+        selectedVariant: 'Проверяю корзину перед оплатой',
+        checkedRows: [],
+        templateValues: [''],
+        fallbackValue: '',
+      }),
+    )
+    await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-artifact-custom-radio'))
   })
 
   it('toggles checklist items locally', async () => {
