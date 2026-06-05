@@ -366,6 +366,7 @@ body {
     min-height: 3rem;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--fr-border-default);
     border-radius: var(--fr-radius-md);
     background: var(--fr-surface-card);
     padding: var(--fr-space-2) var(--fr-space-3);
@@ -379,8 +380,9 @@ body {
   }
 
   .fr-calculation-step--result {
-    background: var(--fr-color-learn-correct-50);
-    color: var(--fr-color-learn-correct-500);
+    border-color: var(--fr-color-brand-300);
+    background: var(--fr-color-brand-100);
+    color: var(--fr-color-brand-600);
   }
 
   .fr-calculation-operator {
