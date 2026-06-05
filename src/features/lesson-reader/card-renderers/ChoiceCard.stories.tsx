@@ -3,14 +3,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { ChoiceCard } from '@/features/lesson-reader/card-renderers/ChoiceCard'
 import { emptyChoiceState, type ChoiceCard as ChoiceCardData, type ChoiceState } from '@/features/lesson-reader/lessonInteraction'
-import { choiceCard, scenarioCard } from '@/features/storybook/fixtures'
+import { choiceCard, longChoiceCard, scenarioCard } from '@/features/storybook/fixtures'
 import { LessonStoryFrame } from '@/features/storybook/LessonStoryFrame'
 
 const meta = {
   title: 'Lesson/ChoiceCard',
   component: ChoiceCard,
   parameters: {
-    layout: 'centered',
+    layout: 'fullscreen',
   },
   tags: ['autodocs'],
 } satisfies Meta<typeof ChoiceCard>
@@ -57,6 +57,18 @@ export const Correct: Story = {
 
 export const Retry: Story = {
   render: () => <ChoiceExample initialState={{ selectedOptionId: 'abstract', isChecked: true }} />,
+}
+
+export const LongRussianText: Story = {
+  render: () => <ChoiceExample card={longChoiceCard} initialState={{ selectedOptionId: 'often', isChecked: false }} />,
+}
+
+export const LongRussianCorrect: Story = {
+  render: () => <ChoiceExample card={longChoiceCard} initialState={{ selectedOptionId: 'middle', isChecked: true }} />,
+}
+
+export const LongRussianRetry: Story = {
+  render: () => <ChoiceExample card={longChoiceCard} initialState={{ selectedOptionId: 'often', isChecked: true }} />,
 }
 
 export const Scenario: Story = {

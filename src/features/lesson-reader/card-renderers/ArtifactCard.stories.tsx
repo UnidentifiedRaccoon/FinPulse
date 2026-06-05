@@ -41,6 +41,8 @@ export const FilledTemplate: Story = {
     <ArtifactExample
       initialState={{
         selectedVariant: 'Резерв',
+        isCustomVariantSelected: false,
+        customVariantValue: '',
         checkedRows: ['0', '1'],
         templateValues: ['2 000 ₽', 'В день зарплаты', 'Забыть перевести вручную'],
         fallbackValue: '',

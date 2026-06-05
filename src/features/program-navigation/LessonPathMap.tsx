@@ -91,7 +91,7 @@ export function LessonPathMap({
   }
 
   return (
-    <section id="module-sections" className="flex flex-col gap-9" aria-label="Разделы модуля">
+    <section id="module-sections" className="flex flex-col gap-9" aria-label="Разделы тира">
       {sections.map((section, sectionIndex) => (
         <PathSection
           accent={accents[sectionIndex % accents.length]}
@@ -110,8 +110,8 @@ export function ModuleTransitionCard({ isComplete, nextModule }: { isComplete: b
   }
 
   const target = nextModule ? `/modules/${nextModule.slug}` : '/program'
-  const title = nextModule ? `Модуль ${nextModule.order}` : 'Модуль завершён'
-  const description = nextModule?.title ?? 'Вернитесь к списку модулей и выберите следующий шаг.'
+  const title = nextModule ? `Тир ${nextModule.order}` : 'Тир завершён'
+  const description = nextModule?.title ?? 'Вернитесь к списку тиров и выберите следующий шаг.'
 
   return (
     <section className="rounded-[28px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 text-center shadow-[var(--fr-shadow-sm)]">
@@ -129,7 +129,7 @@ export function ModuleTransitionCard({ isComplete, nextModule }: { isComplete: b
           asChild
           className="min-h-12 w-full rounded-2xl bg-[var(--fr-color-sky-500)] text-[15px] font-bold text-white shadow-[0_5px_0_var(--fr-color-sky-600)] hover:bg-[var(--fr-color-sky-600)]"
         >
-          <Link to={target}>{nextModule ? 'Перейти к модулю' : 'К модулям'}</Link>
+          <Link to={target}>{nextModule ? 'Перейти к тиру' : 'К тирам'}</Link>
         </Button>
       </div>
     </section>
@@ -281,7 +281,7 @@ function LessonNode({
               <DialogHeader className="gap-3 pr-10">
                 <DialogTitle className="text-2xl font-bold leading-8 tracking-normal text-white">{lesson.title}</DialogTitle>
                 <DialogDescription className="sr-only">
-                  Откройте урок или вернитесь к карте модуля.
+                  Откройте урок или вернитесь к карте тира.
                 </DialogDescription>
               </DialogHeader>
 
@@ -319,7 +319,7 @@ function EmptyPathState() {
   return (
     <section className="rounded-[24px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 text-center">
       <h2 className="text-xl font-bold leading-7 tracking-normal text-[var(--fr-text-primary)]">
-        В модуле пока нет уроков
+        В тире пока нет уроков
       </h2>
       <p className="mt-2 text-sm leading-6 text-[var(--fr-text-secondary)]">Разделы появятся после обновления программы.</p>
     </section>

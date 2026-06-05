@@ -20,10 +20,10 @@ Program
 src/content/
   program.json
   modules/
-    module_1/
+    t1_start/
       module.json
       units/
-        unit_01_values_and_goals.json
+        unit_01_money_and_operations.json
 ```
 
 `program.json` is the program manifest. It stores program metadata and references module JSON files.
@@ -158,9 +158,9 @@ Minimal type-specific fields:
   For RUTUBE, use the platform embed URL (`https://rutube.ru/play/embed/...`); the reader renders it inline and keeps a source link as fallback.
 - `callout`: `body`, optional `tone`.
 - `single_choice`: `question`, `options`, optional `correctOptionId`, `feedback`, `readOnly`.
-- `reflection`: `prompt`, optional `options`, `inputType`, `saveKey`, `guidance`, `readOnly`.
+- `reflection`: `prompt`, optional `options`, `customOption`, `inputType`, `saveKey`, `guidance`, `readOnly`.
 - `scenario`: `body`, optional `question`, `options`, `correctOptionId`, `feedback`, `readOnly`.
-- `artifact`: `body`, optional `template`, `variants`, `readOnly`.
+- `artifact`: `body`, optional `template`, `variants`, `customOption`, `readOnly`.
 - `checklist`: `items`, optional `body`.
 - `summary`: `points`, optional `body`, `nextStep`.
 
@@ -168,6 +168,28 @@ Minimal type-specific fields:
 If `readOnly` is omitted or `false`, the card is eligible for the reader's interactive behavior.
 
 Authenticated `reflection` and `artifact` answers may be persisted as the learner's private personal artifact. This persistence uses `card.id`, optional `reflection.saveKey`, and lesson/module/unit context. It must not add answer scoring, diagnostics, labels, inferred traits, analytics, or recommendations.
+
+For `reflection.inputType: "single_select"`, use `customOption` when the learner may enter their own option:
+
+```json
+"customOption": {
+  "label": "Свой вариант",
+  "placeholder": "Напиши свой вариант"
+}
+```
+
+The reader renders `customOption` as a selectable row with a text field. When selected, the saved answer uses the learner's typed text as `singleValue`.
+
+For `artifact` cards with `variants`, use `customOption` when the learner may write a custom artifact variant:
+
+```json
+"customOption": {
+  "label": "Свой вариант",
+  "placeholder": "Напиши свой вариант"
+}
+```
+
+The reader renders artifact `variants` plus `customOption` as a selectable group when `customOption` is present. When the custom row is selected, the saved answer stores the learner's typed text in the existing `selectedVariant` field.
 
 ## Supplemental content
 

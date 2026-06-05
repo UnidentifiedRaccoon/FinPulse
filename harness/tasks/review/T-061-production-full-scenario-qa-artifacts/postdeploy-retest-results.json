@@ -1,0 +1,28 @@
+{
+  "passed": [
+    {
+      "id": "PROFILE-03",
+      "note": "artifact template labels visible in production profile"
+    },
+    {
+      "id": "ROUTE-01",
+      "note": "back after logout shows anonymous state without private data"
+    },
+    {
+      "id": "LESSON-07",
+      "note": "invalid lesson does not write viewed progress"
+    }
+  ],
+  "failed": [],
+  "network": [
+    {
+      "status": 502,
+      "url": "https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/"
+    }
+  ],
+  "screenshots": [
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/postdeploy-profile-artifact-labels.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/postdeploy-after-logout-back.png",
+    "/Users/elena/cursor/FinPulse/harness/tasks/review/T-061-production-full-scenario-qa-artifacts/postdeploy-invalid-lesson-no-progress-write.png"
+  ]
+}

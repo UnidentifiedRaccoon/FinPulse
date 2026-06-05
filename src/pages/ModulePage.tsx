@@ -38,11 +38,11 @@ export function ModulePage({ progress }: { progress: ProgressResponse | null }) 
   }
 
   if (moduleQuery.status === 'loading') {
-    return <PageState title="Загружаем модуль" />
+    return <PageState title="Загружаем тир" />
   }
 
   if (moduleQuery.status === 'error') {
-    return <PageState title="Не удалось загрузить модуль" description={moduleQuery.error.message} />
+    return <PageState title="Не удалось загрузить тир" description={moduleQuery.error.message} />
   }
 
   const module = moduleQuery.data
@@ -50,7 +50,7 @@ export function ModulePage({ progress }: { progress: ProgressResponse | null }) 
   const progressActiveSection =
     sections.find((section) => section.state === 'current') ?? sections.find((section) => section.state === 'locked') ?? sections[0]
   const activeSection = sections.find((section) => section.id === scrollActiveSectionId) ?? progressActiveSection
-  const moduleContext = activeSection ? `Модуль ${module.order} раздел ${activeSection.number}` : `Модуль ${module.order}`
+  const moduleContext = activeSection ? `Тир ${module.order} раздел ${activeSection.number}` : `Тир ${module.order}`
   const nextModule =
     programQuery.status === 'success'
       ? (getOrderedModules(programQuery.data).find((candidate) => candidate.order > module.order) ?? null)

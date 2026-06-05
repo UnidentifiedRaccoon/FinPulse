@@ -25,23 +25,23 @@ export function LessonProgressHeader({
   const progressValue = isComplete ? 100 : Math.round((current / total) * 100)
 
   return (
-    <header className="sticky top-0 z-10 -mx-4 border-b border-[var(--fr-border-subtle)] bg-[var(--fr-surface-canvas)]/95 px-4 pb-3 pt-2 backdrop-blur sm:mx-0 sm:rounded-b-2xl sm:border-x">
-      <div className="mx-auto flex w-full max-w-[520px] flex-col gap-3">
-        <div className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-2">
+    <header className="sticky top-0 z-10 -mx-5 border-b border-[var(--fr-border-subtle)] bg-[var(--fr-surface-canvas)]/95 px-5 pb-3 pt-3 backdrop-blur sm:rounded-b-2xl sm:border-x">
+      <div className="mx-auto flex w-full max-w-[480px] flex-col gap-3">
+        <div className="grid grid-cols-[44px_minmax(0,1fr)_minmax(4.75rem,auto)] items-center gap-3">
           <Link
             aria-label={backLabel}
-            className="flex size-11 items-center justify-center rounded-xl text-[var(--fr-text-secondary)] transition-colors hover:bg-[var(--fr-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
+            className="flex size-11 items-center justify-center rounded-xl text-[var(--fr-text-secondary)] transition-[background-color,color,box-shadow] hover:bg-[var(--fr-surface-soft)] hover:text-[var(--fr-text-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
             to={backTo}
           >
             <ChevronLeft aria-hidden="true" />
           </Link>
-          <div className="min-w-0">
+          <div className="min-w-0 self-center">
             <p className="truncate text-xs font-semibold leading-5 text-[var(--fr-text-tertiary)]">{context}</p>
             <h1 className="truncate text-base font-bold leading-6 tracking-normal text-[var(--fr-text-primary)]">
               {title}
             </h1>
           </div>
-          <p className="rounded-full bg-[var(--fr-surface-card)] px-3 py-1 text-xs font-semibold tabular-nums text-[var(--fr-color-brand-700)] shadow-[var(--fr-shadow-sm)]">
+          <p className="min-w-[4.75rem] rounded-full bg-[var(--fr-surface-card)] px-3 py-1 text-center text-xs font-semibold tabular-nums text-[var(--fr-color-brand-700)] shadow-[var(--fr-shadow-sm)]">
             {isComplete ? 'Готово' : `${current} из ${total}`}
           </p>
         </div>
@@ -50,7 +50,7 @@ export function LessonProgressHeader({
           aria-valuemax={100}
           aria-valuemin={0}
           aria-valuenow={progressValue}
-          className="h-2 overflow-hidden rounded-full bg-[var(--fr-color-brand-100)]"
+          className="h-2.5 overflow-hidden rounded-full bg-[var(--fr-color-brand-100)] p-[2px]"
           role="progressbar"
         >
           <div

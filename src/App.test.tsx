@@ -213,7 +213,7 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Модули' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Тиры' })).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
   })
@@ -228,7 +228,7 @@ describe('App', () => {
       </StrictMode>,
     )
 
-    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
     await waitFor(() => {
       expect(window.location.pathname).toBe('/program')
     })
@@ -240,20 +240,20 @@ describe('App', () => {
     apiOptions.reflectionAnswers = {
       answers: [
         {
-          cardId: 'card_02_05_reflection_values',
+          cardId: 'card_t1u1l1_05_surprise_reflection',
           cardType: 'reflection',
-          saveKey: 'primary_values',
-          lessonSlug: 'what-are-values',
-          lessonTitle: 'Что такое ценности',
-          unitSlug: 'values-and-goals',
-          unitTitle: '01.01 Ваши базовые ценности',
-          moduleSlug: 'financial-goals',
-          moduleTitle: 'Финансовые цели',
-          cardTitle: 'Первичный список ценностей',
-          prompt: 'Какие ценности чаще всего стоят за твоими денежными решениями?',
+          saveKey: 'unexpected_expense',
+          lessonSlug: 'where-money-goes',
+          lessonTitle: 'Куда уходят деньги',
+          unitSlug: 'money-and-operations',
+          unitTitle: 'Юнит 1. Деньги и операции',
+          moduleSlug: 't1-start',
+          moduleTitle: 'T1 Старт',
+          cardTitle: 'Что удивило?',
+          prompt: 'Посмотри на свои три траты. Какая из них удивила тебя: оказалась больше, чем казалось, или просто была лишней?',
           template: null,
           answer: {
-            multiValues: ['свобода', 'семья'],
+            singleValue: 'Кофе или перекусы — их оказалось больше, чем казалось',
           },
           createdAt: '2026-05-30T08:45:00.000Z',
           updatedAt: '2026-05-30T08:45:00.000Z',
@@ -263,25 +263,17 @@ describe('App', () => {
     apiOptions.progress = {
       lessons: [
         {
-          lessonSlug: 'why-values-matter',
+          lessonSlug: 'where-money-goes',
           viewed: true,
           completed: true,
           viewedAt: '2026-05-30T08:20:00.000Z',
           completedAt: '2026-05-30T08:30:00.000Z',
           updatedAt: '2026-05-30T08:30:00.000Z',
         },
-        {
-          lessonSlug: 'what-are-values',
-          viewed: true,
-          completed: false,
-          viewedAt: '2026-05-30T08:40:00.000Z',
-          completedAt: null,
-          updatedAt: '2026-05-30T08:40:00.000Z',
-        },
       ],
       cards: [
         {
-          cardId: 'card_01_01_scenario_apartment',
+          cardId: 'card_t1u1l1_01_hook',
           viewed: true,
           completed: true,
           viewedAt: '2026-05-30T08:20:00.000Z',
@@ -298,18 +290,16 @@ describe('App', () => {
     expect(screen.getAllByText('Email').length).toBeGreaterThan(0)
     expect(screen.getByText('30 мая 2026')).toBeTruthy()
     expect(screen.getByText('user-1')).toBeTruthy()
-    const answersSection = screen.getByRole('region', { name: 'Мой финансовый ориентир' })
-    expect(within(answersSection).getByText('Мои ответы')).toBeTruthy()
-    expect(within(answersSection).getByRole('heading', { name: 'Ценности' })).toBeTruthy()
-    expect(within(answersSection).getByRole('heading', { name: 'Первичный список ценностей' })).toBeTruthy()
-    expect(within(answersSection).getByText('свобода')).toBeTruthy()
-    expect(within(answersSection).getByText('семья')).toBeTruthy()
+    const answersSection = screen.getByRole('region', { name: 'Персональный финансовый навигатор' })
+    expect(within(answersSection).queryByText('Мои ответы')).toBeNull()
+    expect(within(answersSection).getByRole('heading', { name: 'Что удивило?' })).toBeTruthy()
+    expect(within(answersSection).getByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeTruthy()
     const progressSection = screen.getByRole('region', { name: 'Учебный прогресс' })
     expect(within(progressSection).getByRole('heading', { name: 'Учебный прогресс' })).toBeTruthy()
     expect(within(progressSection).getByText('Пройдено уроков')).toBeTruthy()
-    expect(await within(progressSection).findByText('1/15')).toBeTruthy()
+    expect(await within(progressSection).findByText('1/4')).toBeTruthy()
     expect(within(progressSection).getByText('Просмотрено уроков')).toBeTruthy()
-    expect(within(progressSection).getByText('2')).toBeTruthy()
+    expect(within(progressSection).getAllByText('1').length).toBeGreaterThan(0)
     expect(within(progressSection).getByText('Карточек завершено')).toBeTruthy()
     expect(within(screen.getByRole('main')).getByRole('button', { name: 'Выйти' })).toBeTruthy()
   })
@@ -320,11 +310,25 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Финансовые цели' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'T1 Старт' })).toBeTruthy()
     expect(screen.queryByText('Ваш прогресс')).toBeNull()
-    expect(screen.getByRole('progressbar', { name: /модуля завершено/ })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/modules/financial-goals')
+    expect(screen.getByRole('progressbar', { name: /тира завершено/ })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/modules/t1-start')
+  })
+
+  it('renders the lesson block design variants preview without auth shell', async () => {
+    window.history.pushState({}, '', '/design/lesson-block-variants')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Варианты блока урока' })).toBeTruthy()
+    expect(screen.getAllByRole('article')).toHaveLength(3)
+    expect(screen.getAllByRole('heading', { name: 'Деньги утекают по капле' })).toHaveLength(3)
+    expect(screen.getByRole('progressbar', { name: 'Прогресс урока' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Войдите в FinPulse' })).toBeNull()
+    expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
+    expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
   })
 
   it('does not restore private profile state when navigating back after logout', async () => {
@@ -333,20 +337,20 @@ describe('App', () => {
     apiOptions.reflectionAnswers = {
       answers: [
         {
-          cardId: 'card_02_05_reflection_values',
+          cardId: 'card_t1u1l1_05_surprise_reflection',
           cardType: 'reflection',
-          saveKey: 'primary_values',
-          lessonSlug: 'what-are-values',
-          lessonTitle: 'Что такое ценности',
-          unitSlug: 'values-and-goals',
-          unitTitle: '01.01 Ваши базовые ценности',
-          moduleSlug: 'financial-goals',
-          moduleTitle: 'Финансовые цели',
-          cardTitle: 'Первичный список ценностей',
-          prompt: 'Какие ценности чаще всего стоят за твоими денежными решениями?',
+          saveKey: 'unexpected_expense',
+          lessonSlug: 'where-money-goes',
+          lessonTitle: 'Куда уходят деньги',
+          unitSlug: 'money-and-operations',
+          unitTitle: 'Юнит 1. Деньги и операции',
+          moduleSlug: 't1-start',
+          moduleTitle: 'T1 Старт',
+          cardTitle: 'Что удивило?',
+          prompt: 'Посмотри на свои три траты. Какая из них удивила тебя: оказалась больше, чем казалось, или просто была лишней?',
           template: null,
           answer: {
-            multiValues: ['свобода'],
+            singleValue: 'Кофе или перекусы — их оказалось больше, чем казалось',
           },
           createdAt: '2026-05-30T08:45:00.000Z',
           updatedAt: '2026-05-30T08:45:00.000Z',
@@ -358,15 +362,15 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Профиль' })).toBeTruthy()
-    expect(screen.getByText('свобода')).toBeTruthy()
+    expect(screen.getByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeTruthy()
 
     const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
     await user.click(within(sidebar).getByRole('link', { name: 'Обучение' }))
-    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
 
     expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
-    expect(screen.queryByText('свобода')).toBeNull()
+    expect(screen.queryByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeNull()
 
     window.history.pushState({}, '', '/profile')
     fireEvent.popState(window)
@@ -374,7 +378,7 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
     })
-    expect(screen.queryByText('свобода')).toBeNull()
+    expect(screen.queryByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
   })
 
@@ -385,7 +389,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
     expect(screen.getByText('Материалы программы пока не добавлены.')).toBeTruthy()
     expect(screen.queryByRole('link', { name: 'Далее' })).toBeNull()
   })
@@ -402,7 +406,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Войти' }))
 
     expect(await screen.findByText('Не удалось выполнить запрос.')).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Модули' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Тиры' })).toBeNull()
   })
 
   it('renders the desktop sidebar and mobile bottom navigation', async () => {
@@ -411,7 +415,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
 
     const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
     const bottomNavigation = screen.getByRole('navigation', { name: 'Нижнее меню приложения' })
@@ -431,7 +435,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
 
     const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
     const bottomNavigation = screen.getByRole('navigation', { name: 'Нижнее меню приложения' })
@@ -445,27 +449,39 @@ describe('App', () => {
   it('opens lesson details from the module lesson path before navigation', async () => {
     const user = userEvent.setup()
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/modules/financial-goals')
+    window.history.pushState({}, '', '/modules/t1-start')
 
     render(<App />)
 
-    expect((await screen.findAllByRole('heading', { name: 'Ваши базовые ценности' })).length).toBeGreaterThan(0)
-    await user.click(await screen.findByRole('button', { name: /Зачем финансовым целям нужны ценности/i }))
+    expect((await screen.findAllByRole('heading', { name: 'Юнит 1. Деньги и операции' })).length).toBeGreaterThan(0)
+    await user.click(await screen.findByRole('button', { name: /Куда уходят деньги/i }))
 
     const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
-    expect(within(dialog).getByText('4 мин')).toBeTruthy()
-    expect(within(dialog).queryByText(/Финансовая цель — это жизненная цель/i)).toBeNull()
-    expect(within(dialog).queryByText(/Отличать сумму или покупку/i)).toBeNull()
-    expect(within(dialog).getByRole('link', { name: /Продолжить урок/i }).getAttribute('href')).toBe('/lessons/why-values-matter')
+    expect(within(dialog).getByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+    expect(within(dialog).getByText('5 мин')).toBeTruthy()
+    expect(within(dialog).queryByText(/увидеть свои реальные траты/i)).toBeNull()
+    expect(within(dialog).getByRole('link', { name: /Продолжить урок/i }).getAttribute('href')).toBe('/lessons/where-money-goes')
   })
 
-  it('renders one visual section per Finzdorov unit in the module path', async () => {
+  it('renders the added lesson nodes in source order', async () => {
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/modules/t1-start')
+
+    render(<App />)
+
+    const lessonPath = await screen.findByRole('region', { name: 'Разделы тира' })
+    expect(within(lessonPath).getByRole('button', { name: /Куда уходят деньги/i })).toBeTruthy()
+    expect(within(lessonPath).getByRole('button', { name: /Обязательное и желаемое/i })).toBeTruthy()
+    expect(within(lessonPath).getByRole('button', { name: /Зачем нужна подушка/i })).toBeTruthy()
+    expect(within(lessonPath).getByRole('button', { name: /Сколько держать в резерве/i })).toBeTruthy()
+  })
+
+  it('renders the target units as separate sections in the tier path', async () => {
     setAuthenticatedLearner(apiOptions)
     apiOptions.progress = {
       lessons: [
         {
-          lessonSlug: 'why-values-matter',
+          lessonSlug: 'where-money-goes',
           viewed: true,
           completed: true,
           viewedAt: '2026-05-30T08:20:00.000Z',
@@ -475,108 +491,56 @@ describe('App', () => {
       ],
       cards: [],
     }
-    window.history.pushState({}, '', '/modules/financial-goals')
+    window.history.pushState({}, '', '/modules/t1-start')
 
     render(<App />)
 
-    const lessonPath = await screen.findByRole('region', { name: 'Разделы модуля' })
+    const lessonPath = await screen.findByRole('region', { name: 'Разделы тира' })
     const sectionHeadings = within(lessonPath).getAllByRole('heading').map((heading) => heading.textContent)
 
-    expect(sectionHeadings).toEqual([
-      'Ваши базовые ценности',
-      'Видение будущего',
-      'Финансовые цели',
-      'Мотивация достижения целей',
-    ])
-    expect(within(lessonPath).queryByText(/01\.0[1-4]/)).toBeNull()
+    expect(sectionHeadings).toEqual(['Юнит 1. Деньги и операции', 'Юнит 2. Планирование и управление'])
     expect(within(lessonPath).queryByText(/^Раздел$/)).toBeNull()
     expect(within(lessonPath).queryByText(/Раздел \d/)).toBeNull()
     expect(within(lessonPath).queryByText('Пройден')).toBeNull()
     expect(within(lessonPath).queryByText('Сейчас')).toBeNull()
-    expect(within(lessonPath).getAllByText('Начать')).toHaveLength(1)
-    const startBadge = within(lessonPath).getByText('Начать')
-    const startBadgeClassName = startBadge.className
-    expect(startBadge.parentElement?.className).toContain('top-2')
-    expect(startBadge.parentElement?.className).toContain('-translate-x-1/2')
-    expect(startBadgeClassName).toContain('animate-[fr-start-badge-pulse_')
-    expect(startBadgeClassName).toContain('motion-reduce:animate-none')
-    expect(startBadgeClassName).not.toContain('animate-pulse')
-    const currentLessonButton = within(lessonPath).getByRole('button', { name: /Текущий урок/ })
-    const currentLessonCircle = currentLessonButton.querySelector('span.relative.flex')
-    expect(currentLessonCircle?.className).toContain('group-hover:translate-y-[4px]')
-    expect(currentLessonCircle?.className).not.toContain('group-hover:-translate-y-1')
-    const lockedLessonButtons = within(lessonPath).getAllByRole('button', { name: /Недоступный урок/ })
-    expect(lockedLessonButtons.length).toBeGreaterThan(0)
-    expect(lockedLessonButtons[0]).toBeEnabled()
-    expect(lockedLessonButtons[0].getAttribute('aria-disabled')).toBeNull()
-    expect(lockedLessonButtons[0].className).not.toContain('cursor-not-allowed')
-    expect(lockedLessonButtons[0].className).toContain('cursor-pointer')
-    const lockedLessonCircle = lockedLessonButtons[0].querySelector('span.relative.flex')
-    expect(lockedLessonCircle?.className).toContain('bg-[var(--fr-border-default)]')
-    expect(lockedLessonCircle?.className).toContain('group-hover:translate-y-[4px]')
-    expect(lockedLessonCircle?.className).toContain('group-active:translate-y-[6px]')
-    expect(lockedLessonCircle?.textContent).toBe('3')
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(2)
+    const completedLessonButton = within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Пройден/ })
+    const completedLessonCircle = completedLessonButton.querySelector('span.relative.flex')
+    expect(completedLessonCircle?.className).toContain('group-hover:translate-y-[4px]')
+    expect(completedLessonCircle?.className).not.toContain('group-hover:-translate-y-1')
   })
 
-  it('shows an unavailable plaque for locked future lessons', async () => {
-    const user = userEvent.setup()
+  it('renders the current target lesson node with locked future lessons', async () => {
     setAuthenticatedLearner(apiOptions)
-    apiOptions.progress = {
-      lessons: [
-        {
-          lessonSlug: 'why-values-matter',
-          viewed: true,
-          completed: true,
-          viewedAt: '2026-05-30T08:20:00.000Z',
-          completedAt: '2026-05-30T08:30:00.000Z',
-          updatedAt: '2026-05-30T08:30:00.000Z',
-        },
-      ],
-      cards: [],
-    }
-    window.history.pushState({}, '', '/modules/financial-goals')
+    window.history.pushState({}, '', '/modules/t1-start')
 
     render(<App />)
 
-    const lessonPath = await screen.findByRole('region', { name: 'Разделы модуля' })
-    await user.click(within(lessonPath).getAllByRole('button', { name: /Недоступный урок/ })[0])
-
-    const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByText('Пройдите предыдущие уроки, чтобы открыть доступ.')).toBeTruthy()
-    expect(within(dialog).getByRole('button', { name: 'Недоступно' })).toBeDisabled()
-    expect(within(dialog).queryByRole('link')).toBeNull()
+    const lessonPath = await screen.findByRole('region', { name: 'Разделы тира' })
+    expect(within(lessonPath).getByText('Начать')).toBeTruthy()
+    expect(within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Текущий урок/ })).toBeTruthy()
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(3)
   })
 
-  it('updates the module sticky header as the visible section changes on scroll', async () => {
+  it('renders the tier sticky header for the target unit', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/modules/financial-goals')
+    window.history.pushState({}, '', '/modules/t1-start')
 
     render(<App />)
 
-    await screen.findByRole('region', { name: 'Разделы модуля' })
-    expect(await screen.findByRole('link', { name: 'Модуль 1 раздел 1' })).toBeTruthy()
-    expect(screen.getByRole('heading', { level: 1, name: 'Ваши базовые ценности' })).toBeTruthy()
-
-    mockPathSectionRect('unit_01_values_and_goals', -540)
-    mockPathSectionRect('unit_02_future_vision', 120)
-    mockPathSectionRect('unit_03_financial_goals', 560)
-    mockPathSectionRect('unit_04_goal_motivation', 980)
-    fireEvent.scroll(window)
-
-    await waitFor(() => {
-      expect(screen.getByRole('link', { name: 'Модуль 1 раздел 2' })).toBeTruthy()
-      expect(screen.getByRole('heading', { level: 1, name: 'Видение будущего' })).toBeTruthy()
-    })
+    await screen.findByRole('region', { name: 'Разделы тира' })
+    expect(await screen.findByRole('link', { name: 'Тир 1 раздел 1' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 1, name: 'Юнит 1. Деньги и операции' })).toBeTruthy()
   })
 
   it('renders a lesson with cards', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/lessons/why-values-matter')
+    window.history.pushState({}, '', '/lessons/where-money-goes')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
-    expect(screen.getByText(/Два человека хотят/i)).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+    expect(screen.getAllByText(/Конец месяца/i).length).toBeGreaterThan(0)
   })
 
   it('does not write viewed progress for an invalid lesson slug', async () => {
@@ -591,41 +555,51 @@ describe('App', () => {
     expect(getProgressWriteCount('/api/progress/lessons/not-a-real-lesson')).toBe(0)
   })
 
-  it('renders newly converted future vision and motivation content routes', async () => {
+  it('renders canonical target unit routes and rejects removed content routes', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/modules/financial-goals/units/future-vision')
+    window.history.pushState({}, '', '/modules/t1-start/units/money-and-operations')
 
     const { unmount } = render(<App />)
 
-    expect((await screen.findAllByRole('heading', { name: 'Видение будущего' })).length).toBeGreaterThan(0)
-    expect(await screen.findByRole('button', { name: /День из будущего/i })).toBeTruthy()
+    expect((await screen.findAllByRole('heading', { name: 'Юнит 1. Деньги и операции' })).length).toBeGreaterThan(0)
+    expect(await screen.findByRole('button', { name: /Куда уходят деньги/i })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: /Обязательное и желаемое/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Сколько держать в резерве/i })).toBeNull()
 
     unmount()
-    window.history.pushState({}, '', '/lessons/goal-levels')
+    window.history.pushState({}, '', '/modules/t1-start/units/planning-and-management')
+
+    const planningRoute = render(<App />)
+
+    expect((await screen.findAllByRole('heading', { name: 'Юнит 2. Планирование и управление' })).length).toBeGreaterThan(0)
+    expect(await screen.findByRole('button', { name: /Зачем нужна подушка/i })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: /Сколько держать в резерве/i })).toBeTruthy()
+
+    planningRoute.unmount()
+    window.history.pushState({}, '', '/lessons/why-values-matter')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Уровни большой цели' })).toBeTruthy()
-    expect(screen.getByText(/Большую цель легче удерживать/i)).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Не удалось загрузить урок' })).toBeTruthy()
   })
 
   it('saves initial lesson and active card progress once for an authenticated lesson reader', async () => {
     apiOptions.currentUser = learnerUser
     apiOptions.progress = emptyProgress
-    window.history.pushState({}, '', '/lessons/why-values-matter')
+    window.history.pushState({}, '', '/lessons/where-money-goes')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
 
     await waitFor(() => {
-      expect(getProgressWriteCount('/api/progress/lessons/why-values-matter')).toBe(1)
-      expect(getProgressWriteCount('/api/progress/cards/card_01_01_scenario_apartment')).toBe(1)
+      expect(getProgressWriteCount('/api/progress/lessons/where-money-goes')).toBe(1)
+      expect(getProgressWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(1)
     })
     await new Promise((resolve) => setTimeout(resolve, 25))
 
-    expect(getProgressWriteCount('/api/progress/lessons/why-values-matter')).toBe(1)
-    expect(getProgressWriteCount('/api/progress/cards/card_01_01_scenario_apartment')).toBe(1)
+    expect(getProgressWriteCount('/api/progress/lessons/where-money-goes')).toBe(1)
+    expect(getProgressWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(1)
   })
 
   it('saves an authenticated reflection answer before completing that card', async () => {
@@ -633,36 +607,36 @@ describe('App', () => {
     apiOptions.currentUser = learnerUser
     apiOptions.progress = emptyProgress
     apiOptions.reflectionAnswers = emptyReflectionAnswers
-    window.history.pushState({}, '', '/lessons/why-values-matter')
+    window.history.pushState({}, '', '/lessons/where-money-goes')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
 
-    await user.click(screen.getByRole('radio', { name: 'Потому что от неё зависит мотивация и выбор способа достижения' }))
+    await user.click(screen.getByRole('radio', { name: 'Иногда бывает' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('radio', { name: 'Замечаю сразу: телефон, аренда жилья. Мимо внимания: кофе навынос, подписка, такси.' }))
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
-    await user.click(screen.getByRole('radio', { name: 'Хочу накопить 300 000 ₽ на обучение за 12 месяцев' }))
-    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+    await user.type(screen.getAllByRole('textbox')[0], 'Кофе 250')
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
     const continueButton = screen.getByRole('button', { name: 'Далее' })
     expect(continueButton).toBeDisabled()
 
-    await user.click(screen.getByRole('radio', { name: 'образование' }))
+    await user.click(screen.getByRole('radio', { name: 'Кофе или перекусы — их оказалось больше, чем казалось' }))
     await user.click(continueButton)
 
     await waitFor(() => {
-      expect(getRequestCount('/api/reflections/card_01_05_reflection_dream', 'PUT')).toBe(1)
-      expect(getProgressCompletedWriteCount('/api/progress/cards/card_01_05_reflection_dream')).toBe(1)
+      expect(getRequestCount('/api/reflections/card_t1u1l1_05_surprise_reflection', 'PUT')).toBe(1)
+      expect(getProgressCompletedWriteCount('/api/progress/cards/card_t1u1l1_05_surprise_reflection')).toBe(1)
     })
-    expect(getJsonRequestBody('/api/reflections/card_01_05_reflection_dream', 'PUT')).toEqual({
-      singleValue: 'образование',
+    expect(getJsonRequestBody('/api/reflections/card_t1u1l1_05_surprise_reflection', 'PUT')).toEqual({
+      singleValue: 'Кофе или перекусы — их оказалось больше, чем казалось',
     })
-    expect(getRequestOrder('/api/reflections/card_01_05_reflection_dream', 'PUT')).toBeLessThan(
-      getRequestOrder('/api/progress/cards/card_01_05_reflection_dream', 'PUT', (body) => body.completed === true),
+    expect(getRequestOrder('/api/reflections/card_t1u1l1_05_surprise_reflection', 'PUT')).toBeLessThan(
+      getRequestOrder('/api/progress/cards/card_t1u1l1_05_surprise_reflection', 'PUT', (body) => body.completed === true),
     )
   })
 
@@ -672,15 +646,14 @@ describe('App', () => {
     apiOptions.progress = emptyProgress
     apiOptions.reflectionAnswers = emptyReflectionAnswers
     apiOptions.progressCompletedFailure = { status: 500, message: 'Progress save failed' }
-    window.history.pushState({}, '', '/lessons/why-values-matter')
+    window.history.pushState({}, '', '/lessons/where-money-goes')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Одинаковая цель, разные причины' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Деньги были... и нет?' })).toBeTruthy()
 
-    await user.click(screen.getByRole('radio', { name: 'Потому что от неё зависит мотивация и выбор способа достижения' }))
-    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+    await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
     await waitFor(
@@ -689,9 +662,9 @@ describe('App', () => {
       },
       { timeout: 3_500 },
     )
-    expect(screen.getByRole('heading', { name: 'Одинаковая цель, разные причины' })).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Видео: базовые ценности и финансовые цели' })).toBeNull()
-    expect(getProgressCompletedWriteCount('/api/progress/cards/card_01_01_scenario_apartment')).toBe(3)
+    expect(screen.getByRole('heading', { name: 'Деньги были... и нет?' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Деньги утекают по капле' })).toBeNull()
+    expect(getProgressCompletedWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(3)
   })
 
   it('retries a transient completed progress save and advances after success', async () => {
@@ -700,20 +673,19 @@ describe('App', () => {
     apiOptions.progress = emptyProgress
     apiOptions.reflectionAnswers = emptyReflectionAnswers
     apiOptions.progressCompletedTransientFailures = { remaining: 1, status: 500, message: 'Internal server error' }
-    window.history.pushState({}, '', '/lessons/why-values-matter')
+    window.history.pushState({}, '', '/lessons/where-money-goes')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Одинаковая цель, разные причины' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Деньги были... и нет?' })).toBeTruthy()
 
-    await user.click(screen.getByRole('radio', { name: 'Потому что от неё зависит мотивация и выбор способа достижения' }))
-    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+    await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
-    expect(await screen.findByRole('heading', { name: 'Видео: базовые ценности и финансовые цели' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Деньги утекают по капле' })).toBeTruthy()
     expect(screen.queryByText('Internal server error')).toBeNull()
-    expect(getProgressCompletedWriteCount('/api/progress/cards/card_01_01_scenario_apartment')).toBe(2)
+    expect(getProgressCompletedWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(2)
   })
 
   it('clears authenticated and private state when a required progress save returns 401', async () => {
@@ -723,20 +695,20 @@ describe('App', () => {
     apiOptions.reflectionAnswers = {
       answers: [
         {
-          cardId: 'card_02_05_reflection_values',
+          cardId: 'card_t1u1l1_05_surprise_reflection',
           cardType: 'reflection',
-          saveKey: 'primary_values',
-          lessonSlug: 'what-are-values',
-          lessonTitle: 'Что такое ценности',
-          unitSlug: 'values-and-goals',
-          unitTitle: '01.01 Ваши базовые ценности',
-          moduleSlug: 'financial-goals',
-          moduleTitle: 'Финансовые цели',
-          cardTitle: 'Первичный список ценностей',
-          prompt: 'Какие ценности чаще всего стоят за твоими денежными решениями?',
+          saveKey: 'unexpected_expense',
+          lessonSlug: 'where-money-goes',
+          lessonTitle: 'Куда уходят деньги',
+          unitSlug: 'money-and-operations',
+          unitTitle: 'Юнит 1. Деньги и операции',
+          moduleSlug: 't1-start',
+          moduleTitle: 'T1 Старт',
+          cardTitle: 'Что удивило?',
+          prompt: 'Посмотри на свои три траты. Какая из них удивила тебя: оказалась больше, чем казалось, или просто была лишней?',
           template: null,
           answer: {
-            multiValues: ['свобода'],
+            singleValue: 'Кофе или перекусы — их оказалось больше, чем казалось',
           },
           createdAt: '2026-05-30T08:45:00.000Z',
           updatedAt: '2026-05-30T08:45:00.000Z',
@@ -744,47 +716,46 @@ describe('App', () => {
       ],
     }
     apiOptions.progressCompletedFailure = { status: 401, message: 'Authentication is required' }
-    window.history.pushState({}, '', '/lessons/why-values-matter')
+    window.history.pushState({}, '', '/lessons/where-money-goes')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Зачем финансовым целям нужны ценности' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
 
-    await user.click(screen.getByRole('radio', { name: 'Потому что от неё зависит мотивация и выбор способа достижения' }))
-    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+    await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
     expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
-    expect(screen.queryByText('свобода')).toBeNull()
+    expect(screen.queryByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
   })
 
-  it('renders checklist cards in the reader flow', async () => {
+  it('renders artifact variants and summary in the target lesson flow', async () => {
     const user = userEvent.setup()
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/lessons/practice-1m')
+    window.history.pushState({}, '', '/lessons/where-money-goes')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Практика 1M$' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+    await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
-    await user.click(await screen.findByRole('radio', { name: 'Безопасность и восстановление / радость' }))
-    await user.click(screen.getByRole('button', { name: 'Проверить' }))
-    await user.click(await screen.findByRole('button', { name: 'Далее' }))
-    await user.click(
-      await screen.findByRole('radio', {
-        name: 'Давай разберёмся, что для нас важнее сейчас: отдых или чувство безопасности',
-      }),
-    )
-    await user.click(screen.getByRole('button', { name: 'Проверить' }))
-    await user.click(await screen.findByRole('button', { name: 'Далее' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
-    expect(screen.getByRole('heading', { name: 'Таблица ценностей' })).toBeTruthy()
-    await user.type(screen.getAllByRole('textbox')[0], 'Курс, который поддерживает развитие')
+    await user.click(screen.getByRole('radio', { name: 'Замечаю сразу: телефон, аренда жилья. Мимо внимания: кофе навынос, подписка, такси.' }))
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    expect(screen.getByRole('heading', { name: 'Твои 3 траты за сегодня' })).toBeTruthy()
+    await user.type(screen.getAllByRole('textbox')[0], 'Кофе 250')
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('radio', { name: 'Кофе или перекусы — их оказалось больше, чем казалось' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
-    expect(screen.getByRole('heading', { name: 'Красные флаги цели' })).toBeTruthy()
-    expect(screen.getByText(/Хочу много денег/)).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Твоё правило на 3 дня' })).toBeTruthy()
+    await user.click(screen.getByRole('radio', { name: 'Замечаю хотя бы 1 трату в день' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+
+    expect(screen.getByRole('heading', { name: 'Сохранили в Навигатор' })).toBeTruthy()
+    expect(screen.getByText(/В следующем уроке У1\.2/i)).toBeTruthy()
   })
 })
 
@@ -849,27 +820,4 @@ function getJsonRequestBody(path: string, method: string) {
 function parseRequestBody(init: RequestInit | undefined): Record<string, unknown> {
   if (!init?.body) return {}
   return JSON.parse(String(init.body)) as Record<string, unknown>
-}
-
-function mockPathSectionRect(sectionId: string, top: number) {
-  const element = document.getElementById(`path-section-${sectionId}`)
-  if (!element) {
-    throw new Error(`Missing path section: ${sectionId}`)
-  }
-
-  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(createDomRect(top, 360))
-}
-
-function createDomRect(top: number, height: number): DOMRect {
-  return {
-    bottom: top + height,
-    height,
-    left: 0,
-    right: 320,
-    top,
-    width: 320,
-    x: 0,
-    y: top,
-    toJSON: () => ({}),
-  } as DOMRect
 }

@@ -77,7 +77,7 @@ describe('content API contract', () => {
 
     try {
       const modulesResponse = await app.inject('/api/modules')
-      const moduleResponse = await app.inject('/api/modules/financial-goals')
+      const moduleResponse = await app.inject('/api/modules/t1-start')
 
       expect(modulesResponse.statusCode).toBe(200)
       expect(z.array(moduleSchema).safeParse(modulesResponse.json()).success).toBe(true)
@@ -92,13 +92,19 @@ describe('content API contract', () => {
     const { app } = await setupTestApp()
 
     try {
-      const unitResponse = await app.inject('/api/units/values-and-goals')
-      const lessonResponse = await app.inject('/api/lessons/why-values-matter')
+      const unitResponse = await app.inject('/api/units/money-and-operations')
+      const planningUnitResponse = await app.inject('/api/units/planning-and-management')
+      const lessonResponse = await app.inject('/api/lessons/where-money-goes')
+      const reserveLessonResponse = await app.inject('/api/lessons/reserve-amount')
 
       expect(unitResponse.statusCode).toBe(200)
       expect(unitDetailsSchema.safeParse(unitResponse.json()).success).toBe(true)
+      expect(planningUnitResponse.statusCode).toBe(200)
+      expect(unitDetailsSchema.safeParse(planningUnitResponse.json()).success).toBe(true)
       expect(lessonResponse.statusCode).toBe(200)
       expect(lessonDetailsSchema.safeParse(lessonResponse.json()).success).toBe(true)
+      expect(reserveLessonResponse.statusCode).toBe(200)
+      expect(lessonDetailsSchema.safeParse(reserveLessonResponse.json()).success).toBe(true)
     } finally {
       await app.close()
     }

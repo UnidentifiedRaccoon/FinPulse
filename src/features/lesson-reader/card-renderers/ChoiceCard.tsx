@@ -1,7 +1,8 @@
 import { LessonFeedback } from '@/features/lesson-reader/LessonFeedback'
 import type { ChoiceCard as ChoiceCardType, ChoiceState } from '@/features/lesson-reader/lessonInteraction'
 import { getChoiceOptions, getChoiceQuestion, getCorrectOption } from '@/features/lesson-reader/lessonInteraction'
-import { cn } from '@/lib/utils'
+
+import { SelectableOption } from './shared'
 
 export function ChoiceCard({
   card,
@@ -29,7 +30,7 @@ export function ChoiceCard({
           {card.body}
         </p>
       ) : null}
-      <p className="text-base font-medium leading-7 text-[var(--fr-text-primary)]">{question}</p>
+      <p className="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]">{question}</p>
       <fieldset className="flex flex-col gap-3">
         <legend className="sr-only">{question}</legend>
         <ul className="flex flex-col gap-3">
@@ -40,32 +41,19 @@ export function ChoiceCard({
 
             return (
               <li key={option.id}>
-                <label
-                  className={cn(
-                    'flex min-h-14 cursor-pointer items-start gap-3 rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] px-4 py-3 text-sm leading-6 text-[var(--fr-text-secondary)] shadow-[var(--fr-shadow-sm)] transition-colors [overflow-wrap:anywhere] hover:bg-[var(--fr-surface-soft)] focus-within:ring-4 focus-within:ring-[var(--fr-color-brand-500)]/15',
-                    isSelected &&
-                      'border-[var(--fr-color-sky-500)] bg-[var(--fr-color-brand-50)] text-[var(--fr-text-primary)]',
-                    showStatus &&
-                      optionIsCorrect &&
-                      'border-[var(--fr-color-learn-correct-500)]/60 bg-[var(--fr-color-learn-correct-50)]',
-                    showStatus &&
-                      !optionIsCorrect &&
-                      'border-[var(--fr-color-learn-almost-500)]/60 bg-[var(--fr-color-learn-almost-50)]',
-                  )}
+                <SelectableOption
+                  inputProps={{
+                    'aria-describedby': showStatus ? feedbackId : undefined,
+                    checked: isSelected,
+                    name: `${card.id}-choice`,
+                    onChange: () => onSelect(option.id),
+                    type: 'radio',
+                    value: option.id,
+                  }}
+                  state={getOptionState({ isSelected, optionIsCorrect, showStatus })}
                 >
-                  <input
-                    aria-describedby={showStatus ? feedbackId : undefined}
-                    checked={isSelected}
-                    className="mt-1 size-4 shrink-0 accent-[var(--fr-color-sky-500)]"
-                    name={`${card.id}-choice`}
-                    onChange={() => onSelect(option.id)}
-                    type="radio"
-                    value={option.id}
-                  />
-                  <span className="flex min-w-0 flex-col gap-1">
-                    <span>{option.label}</span>
-                  </span>
-                </label>
+                  {option.label}
+                </SelectableOption>
               </li>
             )
           })}
@@ -84,6 +72,21 @@ export function ChoiceCard({
       ) : null}
     </div>
   )
+}
+
+function getOptionState({
+  isSelected,
+  optionIsCorrect,
+  showStatus,
+}: {
+  isSelected: boolean
+  optionIsCorrect: boolean
+  showStatus: boolean
+}) {
+  if (showStatus && optionIsCorrect) return 'correct'
+  if (showStatus && !optionIsCorrect) return 'retry'
+  if (isSelected) return 'selected'
+  return 'default'
 }
 
 function ChoiceFeedback({

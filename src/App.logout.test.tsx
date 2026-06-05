@@ -11,7 +11,7 @@ const program = parsedProgram.success ? parsedProgram.data : null
 const savedProgress: ProgressResponse = {
   lessons: [
     {
-      lessonSlug: 'why-values-matter',
+      lessonSlug: 'where-money-goes',
       viewed: true,
       completed: true,
       viewedAt: '2026-05-30T00:00:00.000Z',
@@ -88,7 +88,7 @@ describe('App logout flow', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Модули' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
 
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
 

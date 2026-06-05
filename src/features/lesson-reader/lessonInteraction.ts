@@ -19,10 +19,13 @@ export type ReflectionState = {
   textValue: string
   singleValue: string
   multiValues: string[]
+  isCustomSelected: boolean
 }
 
 export type ArtifactState = {
   selectedVariant: string
+  isCustomVariantSelected: boolean
+  customVariantValue: string
   checkedRows: string[]
   templateValues: string[]
   fallbackValue: string
@@ -41,11 +44,14 @@ export const emptyReflectionState: ReflectionState = {
   textValue: '',
   singleValue: '',
   multiValues: [],
+  isCustomSelected: false,
 }
 
 export function createArtifactState(card: ArtifactCard): ArtifactState {
   return {
     selectedVariant: '',
+    isCustomVariantSelected: false,
+    customVariantValue: '',
     checkedRows: [],
     templateValues: card.template?.map(() => '') ?? [''],
     fallbackValue: '',
@@ -56,7 +62,7 @@ export function buildReflectionAnswerPayload(card: ReflectionCard, state: Reflec
   const inputType = card.inputType ?? 'freeform'
 
   if (inputType === 'single_select') {
-    return { singleValue: state.singleValue }
+    return { singleValue: state.isCustomSelected ? state.textValue : state.singleValue }
   }
 
   if (inputType === 'multi_select') {
@@ -68,7 +74,7 @@ export function buildReflectionAnswerPayload(card: ReflectionCard, state: Reflec
 
 export function buildArtifactAnswerPayload(state: ArtifactState): ReflectionAnswerPayload {
   return {
-    selectedVariant: state.selectedVariant,
+    selectedVariant: state.isCustomVariantSelected ? state.customVariantValue : state.selectedVariant,
     checkedRows: state.checkedRows,
     templateValues: state.templateValues,
     fallbackValue: state.fallbackValue,
@@ -79,7 +85,9 @@ export function isReflectionAnswerFilled(card: ReflectionCard, state: Reflection
   if (card.readOnly) return true
 
   const inputType = card.inputType ?? 'freeform'
-  if (inputType === 'single_select') return state.singleValue.trim().length > 0
+  if (inputType === 'single_select') {
+    return state.isCustomSelected ? state.textValue.trim().length > 0 : state.singleValue.trim().length > 0
+  }
   if (inputType === 'multi_select') return state.multiValues.length > 0
 
   return state.textValue.trim().length > 0
@@ -89,6 +97,11 @@ export function isArtifactAnswerFilled(card: ArtifactCard, state: ArtifactState)
   if (card.readOnly) return true
 
   const hasTemplate = Boolean(card.template?.length)
+  if (card.customOption) {
+    if (state.isCustomVariantSelected) return state.customVariantValue.trim().length > 0
+    if (state.selectedVariant.trim().length > 0) return true
+  }
+
   if (hasTemplate) {
     return state.templateValues.some((value) => value.trim().length > 0)
   }

@@ -1,4 +1,4 @@
-import { CheckCircle2 } from 'lucide-react'
+import { CheckCircle2, Target } from 'lucide-react'
 import type { Dispatch, SetStateAction } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
@@ -138,9 +138,9 @@ export function LessonSession({
 
   if (isComplete) {
     return (
-      <div className="-mx-4 -my-6 min-h-svh bg-[var(--fr-surface-canvas)] px-4 pb-8 sm:mx-0 sm:rounded-3xl">
+      <div className="-mx-4 -my-6 min-h-svh bg-[var(--fr-surface-canvas)] px-5 pb-8 sm:mx-0 sm:rounded-3xl">
         <LessonProgressHeader
-          backLabel={`Вернуться к модулю ${details.module.title}`}
+          backLabel={`Вернуться к тиру ${details.module.title}`}
           backTo={`/modules/${details.module.slug}`}
           context={context}
           current={cards.length}
@@ -149,14 +149,14 @@ export function LessonSession({
           title={details.lesson.title}
           total={cards.length}
         />
-        <section className="mx-auto flex w-full max-w-[520px] flex-col gap-5 pt-8">
+        <section className="mx-auto flex w-full max-w-[480px] flex-col gap-5 pt-8">
           <div className="flex flex-col items-start gap-4 rounded-[20px] border border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)] p-5 shadow-[var(--fr-shadow-md)]">
             <div className="flex min-w-0 flex-col gap-4">
               <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--fr-color-learn-correct-50)] text-[var(--fr-color-learn-correct-500)]">
                 <CheckCircle2 aria-hidden="true" />
               </span>
               <div className="flex flex-col gap-2">
-                <h1 className="text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">Урок завершён</h1>
+                <h1 className="text-2xl font-bold leading-8 text-balance tracking-normal text-[var(--fr-text-primary)]">Урок завершён</h1>
                 <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">
                   {canSaveProgress
                     ? 'Прогресс урока сохранён как завершённый.'
@@ -175,7 +175,7 @@ export function LessonSession({
               </Button>
             ) : (
               <Button asChild className="min-h-12 rounded-xl" variant="outline">
-                <Link to={`/modules/${details.module.slug}`}>Вернуться к модулю</Link>
+                <Link to={`/modules/${details.module.slug}`}>Вернуться к тиру</Link>
               </Button>
             )}
           </div>
@@ -185,9 +185,9 @@ export function LessonSession({
   }
 
   return (
-    <article className="-mx-4 -my-6 flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] px-4 sm:mx-0 sm:rounded-3xl">
+    <article className="-mx-4 -my-6 flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] px-5 sm:mx-0 sm:rounded-3xl">
       <LessonProgressHeader
-        backLabel={`Вернуться к модулю ${details.module.title}`}
+        backLabel={`Вернуться к тиру ${details.module.title}`}
         backTo={`/modules/${details.module.slug}`}
         context={context}
         current={currentPosition}
@@ -197,17 +197,9 @@ export function LessonSession({
         total={cards.length}
       />
 
-      <div className="mx-auto flex w-full max-w-[520px] flex-1 flex-col gap-5 py-5 pb-[calc(8rem+env(safe-area-inset-bottom))]">
+      <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-4 py-4 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:py-5">
         {showLessonIntro ? (
-          <div className="rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
-            {details.lesson.description ? <p>{details.lesson.description}</p> : null}
-            {details.lesson.learningGoal ? (
-              <p className={details.lesson.description ? 'mt-2' : undefined}>
-                <span className="font-semibold text-[var(--fr-text-primary)]">Цель: </span>
-                {details.lesson.learningGoal}
-              </p>
-            ) : null}
-          </div>
+          <LessonBrief description={details.lesson.description} learningGoal={details.lesson.learningGoal} />
         ) : null}
 
         <LessonCardFrame card={activeCard} current={currentPosition} total={cards.length}>
@@ -226,6 +218,42 @@ export function LessonSession({
         secondaryLabel={activeIndex > 0 ? 'Назад' : undefined}
       />
     </article>
+  )
+}
+
+function LessonBrief({ description, learningGoal }: { description?: string; learningGoal?: string }) {
+  return (
+    <section
+      aria-label="Кратко об уроке"
+      className="relative overflow-hidden rounded-[20px] border border-[var(--fr-color-brand-200)] bg-[linear-gradient(135deg,var(--fr-color-brand-50)_0%,var(--fr-surface-card)_58%,var(--fr-color-learn-correct-50)_100%)] p-4 text-[var(--fr-text-primary)] shadow-[var(--fr-shadow-sm)]"
+    >
+      <div aria-hidden="true" className="absolute inset-y-4 left-0 w-1 rounded-r-full bg-[var(--fr-color-sky-500)]" />
+      <div className="flex flex-col gap-3 pl-2">
+        {description ? (
+          <div className="flex flex-col gap-1">
+            <p className="text-[11px] font-bold uppercase leading-4 tracking-normal text-[var(--fr-color-brand-700)]">
+              В этом уроке
+            </p>
+            <p className="text-pretty text-[15px] font-bold leading-6 text-[var(--fr-text-primary)]">{description}</p>
+          </div>
+        ) : null}
+        {learningGoal ? (
+          <div className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 rounded-2xl border border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)] p-3 shadow-[var(--fr-shadow-sm)]">
+            <span className="flex size-8 items-center justify-center rounded-xl bg-[var(--fr-color-brand-500)] text-[var(--fr-text-inverse)]">
+              <Target aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold uppercase leading-4 tracking-normal text-[var(--fr-color-sky-600)]">
+                Цель урока
+              </p>
+              <p className="mt-0.5 text-pretty text-sm font-semibold leading-5 text-[var(--fr-text-primary)]">
+                {learningGoal}
+              </p>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </section>
   )
 }
 

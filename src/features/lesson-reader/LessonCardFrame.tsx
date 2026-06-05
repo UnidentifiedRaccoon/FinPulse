@@ -26,11 +26,11 @@ export function LessonCardFrame({
   return (
     <section
       aria-labelledby={`${card.id}-title`}
-      className="flex flex-col gap-5 rounded-[20px] border border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)] p-5 text-[var(--fr-text-primary)] shadow-[var(--fr-shadow-md)] [overflow-wrap:anywhere]"
+      className="flex flex-col gap-4 rounded-[20px] border border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)] shadow-[var(--fr-shadow-md)] [overflow-wrap:anywhere] sm:p-5"
     >
       <header>
         {card.title ? (
-          <h2 className="text-xl font-bold leading-7 tracking-normal text-[var(--fr-text-primary)]" id={`${card.id}-title`}>
+          <h2 className="text-xl font-bold leading-7 text-balance tracking-normal text-[var(--fr-text-primary)]" id={`${card.id}-title`}>
             {card.title}
           </h2>
         ) : (

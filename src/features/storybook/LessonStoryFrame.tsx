@@ -15,7 +15,7 @@ export function LessonStoryFrame({
   total?: number
 }) {
   return (
-    <div className="w-[420px] max-w-full">
+    <div className="mx-auto w-full max-w-[420px]">
       <LessonCardFrame card={card} current={current} total={total}>
         {children}
       </LessonCardFrame>
