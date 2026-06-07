@@ -11,6 +11,8 @@ Read:
 - relevant task file
 - changed files/diff
 - relevant docs
+- docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md for content,
+  methodology, or lesson changes
 - docs/engineering/contributing.md if branch, commit, push, or PR output is in scope
 
 Verify:
@@ -19,11 +21,14 @@ Verify:
 - no MVP exclusions were added;
 - publish rules were followed when commit, push, or PR work was requested;
 - JSON/content model remains valid;
+- new or changed T1 lessons follow the exact eight-screen contract and have no
+  forbidden MVP mechanics;
 - TypeScript and build checks pass if runnable;
 - UI remains mobile-first and accessible if UI changed.
 
 Run when possible:
 - `./scripts/verify.sh`
+- `npm run check:content` for content/JSON changes
 
 Return:
 - accept / reject / accept with follow-up;

@@ -66,7 +66,7 @@ export function EntryPage({
               id="auth-entry-heading"
               className="text-[2rem] font-bold leading-9 tracking-normal text-[var(--fr-text-primary)] [overflow-wrap:anywhere]"
             >
-              Войдите в FinPulse
+              Войдите в ФинПульс
             </h1>
           </div>
 

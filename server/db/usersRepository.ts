@@ -85,18 +85,6 @@ export class UsersRepository {
 
     return row ? toUserRecord(row) : null
   }
-
-  async findUserById(userId: string): Promise<UserRecord | null> {
-    const row = await queryOne<UserRow>(
-      this.pool,
-      `SELECT id, login, password_hash, created_at
-       FROM users
-       WHERE id = $1::uuid`,
-      [userId],
-    )
-
-    return row ? toUserRecord(row) : null
-  }
 }
 
 function toUserRecord(row: UserRow): UserRecord {

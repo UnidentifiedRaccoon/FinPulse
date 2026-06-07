@@ -39,8 +39,9 @@ Do not add without a separate decision:
 - rewards, streaks, coins, shops, or gamification loops;
 - reminders, adaptive spaced repetition, psychotype-based UI adaptation, or B2B
   analytics;
-- new runtime interactions such as `sorting`, `matching`, calculators, hotspots,
-  branching dialogues, scored multi-select, or expense-diary schemas.
+- new runtime interactions beyond the accepted objective `multi_select` and
+  `categorization` practice cards, such as matching, calculators, hotspots,
+  branching dialogues, scored tests, or expense-diary schemas.
 
 ## Runtime Hierarchy
 
@@ -69,11 +70,13 @@ T1 Старт -> module `t1-start`
 
 ## Card Adaptation Rules
 
-Use only these runtime card types:
+The general runtime model currently supports these card types:
 
 - `theory`
 - `callout`
 - `single_choice`
+- `multi_select`
+- `categorization`
 - `reflection`
 - `scenario`
 - `artifact`
@@ -81,16 +84,54 @@ Use only these runtime card types:
 - `summary`
 - `video` only when a real playable `src` is available
 
+For new T1 lessons, do not treat the full list above as free choice. Use the
+accepted eight-screen T1 architecture below and only the card types named in
+that table. In particular, do not introduce `callout`, `multi_select`,
+`checklist`, matching, calculators, diary schemas, branching dialogue, scoring,
+diagnostics, reminders, gamification, psychotype adaptation, analytics, or
+personalized recommendations in a T1 runtime lesson.
+
 Adapt target-only screens safely:
 
 | Target pattern | MVP adaptation |
 |---|---|
-| Sorting | `single_choice`, `scenario`, or `artifact` with explicit explanation |
+| Sorting into named categories | `categorization` when the answer is objective and all target categories are known |
+| Multiple correct choices | For non-T1 content, `multi_select` when the source asks to mark several objectively correct options. For T1 screen 3, rewrite as `categorization`. |
 | Expense diary | `artifact.template` or `reflection.inputType: "table"` |
+| `Блок статистики` / `Статистика по теме` inside a source screen | `card.statistics` on the same runtime card; preserve values and sources |
 | Reminder setup | `artifact.variants` or `summary.nextStep`; do not schedule reminders |
 | Psychotype-specific feedback | Preserve in source or neutral guidance; do not infer psychotype |
 | Navigator save | Persist only neutral `reflection`/`artifact` answers allowed by ADR-0007 |
 | Video placeholder | Keep as text in `theory`; add `video` only after a real URL exists |
+
+When adapting a scripted lesson, scan every source screen for `Блок статистики`
+or `Статистика по теме`. If the block exists, it must become `statistics` on
+the runtime card whose `sourceSection` references that screen. Do not drop it
+because the main screen is an `artifact`, `scenario`, or `single_choice`.
+
+## Required T1 Lesson Architecture
+
+Create every new T1 lesson as exactly eight screens. One screen is one runtime
+card and one user action. The lesson should take 3-5 minutes and move from a
+recognizable situation to a personal action and saved result.
+
+| Order | Screen | Type | Checkability | Required shape |
+|---:|---|---|---|---|
+| 1 | Зацепка | `single_choice` | `subjective` | Recognizable life situation. No correct answer; any option is accepted. Do not set `correctOptionId` or `isCorrect`. |
+| 2 | Мини-теория | `theory` | `objective` | One main idea, with an optional short example or fact. Mention video only as text unless there is a real playable URL. |
+| 3 | Объективная практика | `categorization` | `objective` | Sort examples into known categories that train the lesson's main distinction. Include feedback. Never use `single_choice` or `multi_select` here. |
+| 4 | Внешний пример / Real World A | `scenario` | `objective` | Short external life example, not the learner's personal data. Exactly three options, one correct answer, and feedback for correct and incorrect answers. Put source statistics in `card.statistics` when present. |
+| 5 | Личное применение / Real World B | `artifact` | `mixed` | Small draft on the learner's data: expenses, markup, possible situation, amount, first step, or similar personal artifact. Do not check personal data as right/wrong. |
+| 6 | Личная рефлексия | `reflection` | `subjective` | Options plus `customOption` labelled `Свой вариант`. No correct or incorrect answer. |
+| 7 | Микро-правило / первый шаг | `artifact` | `mixed` | Exactly two ready rule/first-step formulations plus `customOption` labelled `Свой вариант`. Do not create real reminders, schedules, or habit mechanics. |
+| 8 | Итог / Навигатор | `summary` | `subjective` | Briefly list what is saved in the Navigator and bridge to the next lesson. |
+
+For JSON, every T1 card must have a stable `id`, `order` from 1 to 8, `type`,
+`sourceSection` ending with `Экран N`, and the required `checkability`. Objective
+screens 3 and 4 must include feedback. If the source practice is written as a
+choice list, adapt it into screen-3 category sorting. If the source contains
+`Блок статистики` or `Статистика по теме`, attach it to screen 4 as
+`card.statistics`; do not make statistics a separate card.
 
 ## Lesson Quality Checklist
 
@@ -116,6 +157,8 @@ Before calling a content task done:
 - `correctOptionId` values match option IDs;
 - `reflection` and `artifact` cards that should save user work have meaningful
   titles/prompts/templates;
+- every source `Блок статистики` / `Статистика по теме` is represented as
+  `card.statistics` with `items` and, when present in source, `sources`;
 - content validates with `npm run check:content`;
 - app/backend tests are updated for new slugs and titles.
 

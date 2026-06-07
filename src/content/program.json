@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "finpulse-learning-mvp",
   "slug": "finpulse-learning-mvp",
-  "title": "FinPulse",
+  "title": "ФинПульс",
   "description": "Мобильный тренажёр финансовой грамотности, культуры и привычек.",
   "modules": [
     {

@@ -4,8 +4,8 @@ import { StrictMode } from 'react'
 import { afterEach, beforeEach, vi } from 'vitest'
 
 import type { ApiUser, ProgressResponse, ReflectionAnswersResponse } from '@/api/client'
-import { parsedProgram } from '@/content/loadProgram'
-import { getAllLessons, getOrderedModules, getOrderedUnits } from '@/content/program'
+import { getAllLessons, getOrderedModules, getOrderedUnits } from '@/content/order'
+import { parsedProgram } from '@/test/loadProgram'
 
 import App from './App'
 
@@ -198,7 +198,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
     expect(getRequestCount('/api/reflections')).toBe(0)
     expect(screen.getByRole('button', { name: 'Войти' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Регистрация' })).toBeTruthy()
@@ -212,7 +212,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
     expect(screen.queryByRole('heading', { name: 'Тиры' })).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
@@ -317,18 +317,14 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/modules/t1-start')
   })
 
-  it('renders the lesson block design variants preview without auth shell', async () => {
-    window.history.pushState({}, '', '/design/lesson-block-variants')
+  it('redirects the removed lesson completion experiment page to the program', async () => {
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/design/lesson-completion-variants')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Варианты блока урока' })).toBeTruthy()
-    expect(screen.getAllByRole('article')).toHaveLength(3)
-    expect(screen.getAllByRole('heading', { name: 'Деньги утекают по капле' })).toHaveLength(3)
-    expect(screen.getByRole('progressbar', { name: 'Прогресс урока' })).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Войдите в FinPulse' })).toBeNull()
-    expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
-    expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
+    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Завершение урока' })).toBeNull()
   })
 
   it('does not restore private profile state when navigating back after logout', async () => {
@@ -369,14 +365,14 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
 
-    expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
     expect(screen.queryByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeNull()
 
     window.history.pushState({}, '', '/profile')
     fireEvent.popState(window)
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
+      expect(screen.getByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
     })
     expect(screen.queryByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
@@ -616,9 +612,10 @@ describe('App', () => {
     await user.click(screen.getByRole('radio', { name: 'Иногда бывает' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
-    await user.click(screen.getByRole('radio', { name: 'Замечаю сразу: телефон, аренда жилья. Мимо внимания: кофе навынос, подписка, такси.' }))
+    await completeWhereMoneyGoesPractice(user)
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await completeWhereMoneyGoesExternalExample(user)
     await user.type(screen.getAllByRole('textbox')[0], 'Кофе 250')
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
@@ -725,7 +722,7 @@ describe('App', () => {
     await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
-    expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
     expect(screen.queryByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
   })
@@ -741,9 +738,10 @@ describe('App', () => {
     await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
-    await user.click(screen.getByRole('radio', { name: 'Замечаю сразу: телефон, аренда жилья. Мимо внимания: кофе навынос, подписка, такси.' }))
+    await completeWhereMoneyGoesPractice(user)
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await completeWhereMoneyGoesExternalExample(user)
     expect(screen.getByRole('heading', { name: 'Твои 3 траты за сегодня' })).toBeTruthy()
     await user.type(screen.getAllByRole('textbox')[0], 'Кофе 250')
     await user.click(screen.getByRole('button', { name: 'Далее' }))
@@ -766,6 +764,38 @@ function getProgressWriteCount(path: string) {
       const requestPath = new URL(String(input), 'http://localhost').pathname
       return requestPath === path && init?.method === 'PUT'
     }).length
+}
+
+async function completeWhereMoneyGoesPractice(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(within(screen.getByRole('group', { name: 'Покупка телефона' })).getByRole('radio', { name: 'Замечаю сразу' }))
+  await waitFor(() => expect(screen.getByRole('group', { name: 'Аренда жилья' })).toBeTruthy())
+  await user.click(within(screen.getByRole('group', { name: 'Аренда жилья' })).getByRole('radio', { name: 'Замечаю сразу' }))
+  await waitFor(() => expect(screen.getByRole('group', { name: 'Кофе навынос' })).toBeTruthy())
+  await user.click(
+    within(screen.getByRole('group', { name: 'Кофе навынос' })).getByRole('radio', { name: 'Проходит мимо внимания' }),
+  )
+  await waitFor(() => expect(screen.getByRole('group', { name: 'Подписка на сервис' })).toBeTruthy())
+  await user.click(
+    within(screen.getByRole('group', { name: 'Подписка на сервис' })).getByRole('radio', { name: 'Проходит мимо внимания' }),
+  )
+  await waitFor(() => expect(screen.getByRole('group', { name: 'Поездка на такси' })).toBeTruthy())
+  await user.click(
+    within(screen.getByRole('group', { name: 'Поездка на такси' })).getByRole('radio', { name: 'Проходит мимо внимания' }),
+  )
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'Поездка на такси: Проходит мимо внимания' })).toBeTruthy(),
+  )
+}
+
+async function completeWhereMoneyGoesExternalExample(user: ReturnType<typeof userEvent.setup>) {
+  expect(await screen.findByRole('heading', { name: 'Подписка, которая проходит мимо' })).toBeTruthy()
+  expect(screen.getByText('56%')).toBeTruthy()
+
+  await user.click(screen.getByRole('radio', { name: 'Мелкая автоматическая трата может долго проходить мимо внимания' }))
+  await user.click(screen.getByRole('button', { name: 'Проверить' }))
+
+  expect(await screen.findByRole('status')).toHaveTextContent('Верно')
+  await user.click(screen.getByRole('button', { name: 'Далее' }))
 }
 
 function getRequestCount(path: string, method = 'GET') {

@@ -798,7 +798,8 @@ describe('backend API', () => {
           cards: [
             expect.objectContaining({ id: 'card_t1u1l1_01_hook', type: 'single_choice' }),
             expect.objectContaining({ id: 'card_t1u1l1_02_theory_leaks', type: 'theory' }),
-            expect.objectContaining({ id: 'card_t1u1l1_03_sorting_choice', type: 'single_choice' }),
+            expect.objectContaining({ id: 'card_t1u1l1_03_sorting_choice', type: 'categorization' }),
+            expect.objectContaining({ id: 'card_t1u1l1_04_subscription_example', type: 'scenario' }),
             expect.objectContaining({ id: 'card_t1u1l1_04_expense_diary', type: 'artifact' }),
             expect.objectContaining({ id: 'card_t1u1l1_05_surprise_reflection', type: 'reflection' }),
             expect.objectContaining({ id: 'card_t1u1l1_06_micro_rule', type: 'artifact' }),
@@ -814,6 +815,9 @@ describe('backend API', () => {
         lesson: expect.objectContaining({
           slug: 'mandatory-and-desired',
           title: 'Обязательное и желаемое',
+          cards: expect.arrayContaining([
+            expect.objectContaining({ id: 'card_t1u1l2_03_sorting_choice', type: 'categorization' }),
+          ]),
         }),
         next: expect.objectContaining({
           lesson: expect.objectContaining({ slug: 'why-emergency-fund' }),
@@ -830,6 +834,16 @@ describe('backend API', () => {
         lesson: expect.objectContaining({
           slug: 'why-emergency-fund',
           title: 'Зачем нужна подушка',
+          cards: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'card_t1u2l1_03_where_fund_helps',
+              type: 'categorization',
+              categories: expect.arrayContaining([
+                expect.objectContaining({ id: 'helps', label: 'Подушка помогает' }),
+                expect.objectContaining({ id: 'not-for-fund', label: 'Не для подушки' }),
+              ]),
+            }),
+          ]),
         }),
         next: expect.objectContaining({
           lesson: expect.objectContaining({ slug: 'reserve-amount' }),

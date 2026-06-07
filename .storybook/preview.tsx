@@ -5,9 +5,9 @@ import '../src/index.css'
 const preview: Preview = {
   parameters: {
     backgrounds: {
-      default: 'FinPulse canvas',
+      default: 'ФинПульс canvas',
       values: [
-        { name: 'FinPulse canvas', value: '#f7fbff' },
+        { name: 'ФинПульс canvas', value: '#f7fbff' },
         { name: 'White', value: '#ffffff' },
       ],
     },

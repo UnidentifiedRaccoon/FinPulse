@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { ApiUser, ProgressResponse } from '@/api/client'
-import { parsedProgram } from '@/content/loadProgram'
+import { parsedProgram } from '@/test/loadProgram'
 
 import App from './App'
 
@@ -95,7 +95,7 @@ describe('App logout flow', () => {
     await waitFor(() => {
       expect(window.location.pathname).toBe('/')
     })
-    expect(await screen.findByRole('heading', { name: 'Войдите в FinPulse' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
     expect(screen.queryByText('learner')).toBeNull()
     expect(fetch).toHaveBeenCalledWith('/api/auth/logout', expect.objectContaining({ method: 'POST' }))
   })

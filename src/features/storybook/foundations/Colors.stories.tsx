@@ -61,10 +61,10 @@ export const Palette: Story = {
   render: () => (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-8 p-6">
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-semibold text-[var(--fr-color-brand-700)]">FinPulse tokens</p>
+        <p className="text-sm font-semibold text-[var(--fr-color-brand-700)]">ФинПульс tokens</p>
         <h1 className="text-2xl font-bold tracking-normal text-[var(--fr-text-primary)]">Color system</h1>
         <p className="max-w-2xl text-sm leading-6 text-[var(--fr-text-secondary)]">
-          Use the FinPulse `--fr-*` tokens for product surfaces, learning states, and UI accents.
+          Use the ФинПульс `--fr-*` tokens for product surfaces, learning states, and UI accents.
         </p>
       </header>
       <div className="grid gap-8 lg:grid-cols-3">

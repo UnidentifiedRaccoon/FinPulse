@@ -471,10 +471,13 @@ The next UX direction should make lessons feel like focused sessions rather than
 
 Recommended MVP structure:
 1. lightweight top bar with back action and lesson progress;
-2. one active card on screen;
-3. short theory/practice/reflection content;
-4. immediate feedback after interaction;
-5. sticky bottom CTA.
+2. optional first-screen lesson goal card when `learningGoal` is present;
+3. one active card on screen;
+4. short theory/practice/reflection content;
+5. immediate feedback after interaction;
+6. sticky bottom CTA.
+
+The first-screen intro should use `learningGoal` as the single learner-facing goal card. Do not show `lesson.description` inside the lesson reader intro; descriptions may remain useful on navigation surfaces, but repeating them beside the goal makes the first screen heavier without adding a distinct job.
 
 This pattern is allowed even while content remains public and progress save requires auth.
 
@@ -519,13 +522,21 @@ Do not use this pattern for interactive answer rows, reflection inputs, artifact
 
 Practice types allowed in MVP:
 - single choice;
+- multi-select;
+- categorization;
 - true/false;
 - checklist;
 - short scenario question;
 - reflection prompt with transient local answer.
 
 Rules:
-- 2-4 answer options for choice tasks;
+- target objective practice on the third lesson screen uses a card-flow pattern with no visible pattern labels or design metadata;
+- third-screen categorization uses an auto-advancing card flow: one item in focus, category buttons on the card, compact progress dots, then an editable result table before `Проверить`;
+- when a multi-answer prompt is really separating examples into known groups, prefer `categorization` with explicit positive/negative categories so it can use the same auto-flow pattern;
+- ordinary hooks, subjective choices, and scenario choices keep the list-style selectable rows unless a separate product decision explicitly promotes that specific screen to card-flow;
+- categorization uses category controls inside the focused item card, not drag-and-drop;
+- multi-select uses one option card at a time and preserves selected state across the flow;
+- choice tasks should stay short enough for a mobile card flow;
 - one main question;
 - feedback after answer;
 - no scoring, diagnostics, or financial profiling.

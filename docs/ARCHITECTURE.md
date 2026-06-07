@@ -24,7 +24,7 @@ Next.js/SSR can be reconsidered later if one of these becomes true:
 Build/dev:      Vite
 UI runtime:     React + TypeScript
 Routing:        React Router in SPA/declarative mode
-State:          Zustand for small client-side cross-route state
+State:          React state first; add Zustand only when small cross-route client state appears
 Data:           JSON files, validated by script/schema
 Styling:        Tailwind CSS
 UI primitives:  shadcn/ui
@@ -59,19 +59,15 @@ src/
   features/
     program-navigation/
     lesson-reader/
-  entities/
-    content/
-      model.ts
-      loadProgram.ts
-      selectors.ts
+  content/
+    program.ts
+    order.ts
+    program.json
+    modules/
   shared/
     ui/
     lib/
     config/
-  stores/
-    useReaderStore.ts
-  content/
-    program.json
   styles/
     globals.css
 server/
@@ -112,7 +108,7 @@ JSON content file
   -> backend content API
   -> frontend API client
   -> React pages/components
-  -> optional small Zustand store for reader UI state only
+  -> local UI state or optional small client store when justified
 ```
 
 ```txt
@@ -140,11 +136,7 @@ Use local React state for:
 - form-like transient UI;
 - small one-component interactions.
 
-Use Zustand for:
-- current reader preferences;
-- last opened lesson, if local-only;
-- navigation drawer state shared across routes;
-- small non-sensitive UI preferences.
+Add Zustand only when local React state or route/API state creates real duplication, for example small non-sensitive UI preferences shared across routes.
 
 Do not use Zustand for:
 - storing the entire content corpus without reason;
@@ -158,7 +150,8 @@ Current implementation:
 - use `src/content/program.json` as the program manifest;
 - keep module metadata in `src/content/modules/<module>/module.json`;
 - keep full unit runtime content in `src/content/modules/<module>/units/<unit>.json`;
-- hydrate the split files through the shared content loader;
+- hydrate and validate the split files on the backend and in test-only loaders;
+- keep pure ordering helpers in `src/content/order.ts` so rendered routes do not import Zod schemas;
 - validate before build using `scripts/check-content-json.mjs`.
 
 Stage 2 runtime policy:

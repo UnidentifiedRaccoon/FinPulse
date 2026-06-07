@@ -1,8 +1,8 @@
 # FinPulse MVP Harness
 
-This package is a repo-local harness for building the first mobile educational MVP.
+This package started as a repo-local harness for building the first mobile educational MVP.
 
-It is not a full application scaffold. It is the discipline layer around the future app:
+The app is now scaffolded; this file documents the remaining harness layer:
 - agent instructions;
 - architecture/product docs;
 - parallel-agent protocol;
@@ -15,7 +15,7 @@ It is not a full application scaffold. It is the discipline layer around the fut
 
 1. Copy these files into the root of the project repository.
 2. Scaffold the app with Vite React TypeScript.
-3. Add package scripts from `package.scripts.snippet.json`.
+3. Keep active scripts in `package.json`.
 4. Keep `AGENTS.md` short and maintain durable knowledge in `docs/`.
 5. Use `harness/tasks/` when multiple agents work in parallel.
 6. Add evals only after real product flows exist.
@@ -24,7 +24,7 @@ It is not a full application scaffold. It is the discipline layer around the fut
 
 ```bash
 npm create vite@latest . -- --template react-ts
-npm install react-router zustand zod
+npm install react-router zod
 npm install -D vitest @testing-library/react @testing-library/user-event @testing-library/jest-dom jsdom
 npm run verify
 ```

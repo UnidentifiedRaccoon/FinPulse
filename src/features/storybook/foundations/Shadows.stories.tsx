@@ -30,7 +30,7 @@ export const ElevationAndStates: Story = {
         <p className="text-sm font-semibold text-[var(--fr-color-brand-700)]">Soft elevation</p>
         <h1 className="text-2xl font-bold tracking-normal text-[var(--fr-text-primary)]">Shadows and semantic states</h1>
         <p className="max-w-2xl text-sm leading-6 text-[var(--fr-text-secondary)]">
-          FinPulse uses cold, low-contrast elevation and non-red learning states.
+          ФинПульс uses cold, low-contrast elevation and non-red learning states.
         </p>
       </header>
       <div className="grid gap-4 md:grid-cols-3">

@@ -31,4 +31,7 @@ npm run test:run --if-present
 echo "[verify] build"
 npm run build --if-present
 
+echo "[verify] storybook build"
+npm run build:storybook --if-present
+
 echo "[verify] done"

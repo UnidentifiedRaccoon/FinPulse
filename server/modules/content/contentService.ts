@@ -1,11 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
+import { getAllLessons, getOrderedCards, getOrderedModules, getOrderedUnits } from '../../../src/content/order'
 import {
-  getAllLessons,
-  getOrderedCards,
-  getOrderedModules,
-  getOrderedUnits,
   parseProgram,
   type Card,
   type Lesson,
@@ -77,9 +74,6 @@ export function createContentService(contentRoot = resolve(process.cwd(), 'src/c
     },
     hasCard(cardId: string) {
       return getCardDetailsFromProgram(program, cardId) !== null
-    },
-    getCard(cardId: string): Card | null {
-      return getCardDetailsFromProgram(program, cardId)?.card ?? null
     },
     getCardDetails(cardId: string): CardDetails | null {
       return getCardDetailsFromProgram(program, cardId)

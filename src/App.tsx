@@ -5,7 +5,6 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate 
 import { api, ApiError, type ApiUser, type ProgressResponse, type ReflectionAnswerPayload, type ReflectionAnswersResponse } from '@/api/client'
 import { LessonPage } from '@/pages/LessonPage'
 import { EntryPage } from '@/pages/EntryPage'
-import { LessonBlockVariantsPage } from '@/pages/LessonBlockVariantsPage'
 import { ModulePage } from '@/pages/ModulePage'
 import { ProgramOverviewPage } from '@/pages/ProgramOverviewPage'
 import { UnitPage } from '@/pages/UnitPage'
@@ -269,8 +268,7 @@ function AppShell({
   const location = useLocation()
   const navigate = useNavigate()
   const isLessonRoute = location.pathname.startsWith('/lessons/')
-  const isDesignPreviewRoute = location.pathname === '/design/lesson-block-variants'
-  const showAuthenticatedShell = Boolean(user) && !isDesignPreviewRoute
+  const showAuthenticatedShell = Boolean(user)
   const showMobileNavigation = showAuthenticatedShell && !isLessonRoute
   const handleLogoutAndRedirect = useCallback(async () => {
     const didLogout = await onLogout()
@@ -299,11 +297,9 @@ function AppShell({
       <main
         className={cn(
           'mx-auto w-full px-4',
-          isDesignPreviewRoute
-            ? 'max-w-[1180px] py-5 sm:py-8'
-            : showAuthenticatedShell && isLessonRoute
-              ? 'max-w-none py-6 lg:px-8'
-              : 'max-w-[560px] py-5 sm:py-6 lg:max-w-[720px]',
+          showAuthenticatedShell && isLessonRoute
+            ? 'max-w-none py-6 lg:px-8'
+            : 'max-w-[560px] py-5 sm:py-6 lg:max-w-[720px]',
           showMobileNavigation ? 'pb-[calc(6.75rem+env(safe-area-inset-bottom))] lg:pb-8' : null,
         )}
       >
@@ -317,12 +313,7 @@ function AppShell({
               </p>
             ))
           : null}
-        {isDesignPreviewRoute ? (
-          <Routes>
-            <Route path="/design/lesson-block-variants" element={<LessonBlockVariantsPage />} />
-            <Route path="*" element={<Navigate to="/design/lesson-block-variants" replace />} />
-          </Routes>
-        ) : showAuthenticatedShell ? (
+        {showAuthenticatedShell ? (
           <Routes>
             <Route path="/" element={<Navigate to="/program" replace />} />
             <Route
@@ -445,7 +436,7 @@ function DesktopAppSidebar({
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] lg:flex">
       <div className="px-6 pb-6 pt-8">
         <Link
-          aria-label="FinPulse"
+          aria-label="ФинПульс"
           className="inline-flex min-h-11 items-center rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25"
           to="/program"
         >
@@ -453,9 +444,9 @@ function DesktopAppSidebar({
             alt=""
             aria-hidden="true"
             className="h-auto w-[212px] max-w-full object-contain"
-            height={227}
-            src="/assets/brand/finpulse-wordmark.png"
-            width={1200}
+            height={265}
+            src="/assets/brand/finpulse-large-logo.png"
+            width={1400}
           />
         </Link>
       </div>

@@ -9,6 +9,8 @@ Read first:
 - harness/PROJECT_STATE.md
 - relevant task file
 - relevant docs under `docs/`
+- docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md when touching JSON,
+  methodology, or lesson content
 - docs/engineering/contributing.md if the task includes branch, commit, push, or PR work
 
 Work on exactly one bounded task.
@@ -24,9 +26,12 @@ During work:
 - keep changes small;
 - avoid unrelated refactors;
 - preserve MVP scope.
+- for new or changed T1 lessons, follow the exact eight-screen contract in
+  docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md.
 
 After work:
 - run `./scripts/verify.sh` if available;
+- run `npm run check:content` for content/JSON/methodology tasks;
 - run task-specific checks;
 - update the task result packet.
 - if publishing was requested, use the branch, commit, PR, and PR body rules in `docs/engineering/contributing.md`.

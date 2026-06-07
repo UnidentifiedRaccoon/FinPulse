@@ -289,3 +289,36 @@ Revisit when:
 - Yandex Managed PostgreSQL or Serverless Containers are provisioned;
 - production secrets, backups, observability, rate limiting, and retention policies are defined;
 - a managed content workflow, admin panel, or CMS is intentionally added by a separate ADR.
+
+## ADR-0009 — Add objective practice card types
+
+Status: Accepted
+
+Decision: Add two runtime card types for objective practice screens in methodology-authored lessons:
+- `multi_select` for marking several correct options among incorrect distractors;
+- `categorization` for assigning known items to known categories.
+
+Rationale:
+- Methodologist scripts use practice screens that ask learners to act on several options, not only choose one pre-grouped answer.
+- Compressing sorting and checkbox tasks into `single_choice` preserves facts but weakens the intended practice.
+- Mobile-first radio/checkbox controls are more accessible and stable for the MVP than drag-and-drop.
+
+Scope:
+- These cards are checked locally in the lesson reader and can show supportive feedback before the learner continues.
+- Existing viewed/completed progress markers still apply by `card.id`.
+- Selected answers are not persisted through `/api/reflections`.
+- `reflection` and `artifact` remain the only persistable personal-answer card types accepted by ADR-0007.
+
+Out of scope:
+- scores, diagnostics, labels, levels, inferred traits, analytics, or recommendations;
+- blocking the learner until the answer is correct;
+- drag-and-drop sorting, matching, calculators, branching dialogues, or expense-diary schemas.
+
+Validation:
+- `multi_select` requires at least one correct and one incorrect option.
+- `categorization` requires at least two categories, at least two items, unique ids, and item `correctCategoryId` values that match category ids.
+
+Revisit when:
+- richer practice interactions are needed beyond category assignment and multiple-correct selection;
+- answer attempts need to be persisted for a deliberately scoped product reason;
+- accessibility testing supports a drag-and-drop implementation that does not degrade mobile or keyboard use.

@@ -5,7 +5,7 @@ import {
 } from '@/features/lesson-reader/lessonInteraction'
 import { cn } from '@/lib/utils'
 
-import { SelectableOption } from './shared'
+import { CustomOptionTextarea, NoBreakText, SelectableOption } from './shared'
 
 export function ArtifactCard({
   card,
@@ -22,12 +22,14 @@ export function ArtifactCard({
   if (card.readOnly) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base leading-7 text-[var(--fr-text-secondary)]">{card.body}</p>
+        <p className="text-base leading-7 text-[var(--fr-text-secondary)]">
+          <NoBreakText text={card.body} />
+        </p>
         {card.template ? (
           <ul className="flex flex-col gap-2 text-sm leading-6 text-[var(--fr-text-secondary)]">
             {card.template.map((item) => (
               <li className="rounded-2xl border border-[var(--fr-border-default)] px-4 py-3" key={item}>
-                {item}
+                <NoBreakText text={item} />
               </li>
             ))}
           </ul>
@@ -38,7 +40,9 @@ export function ArtifactCard({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-base leading-7 text-[var(--fr-text-secondary)]">{card.body}</p>
+      <p className="text-base leading-7 text-[var(--fr-text-secondary)]">
+        <NoBreakText text={card.body} />
+      </p>
 
       {card.variants?.length ? (
         <div className="flex flex-col gap-2">
@@ -64,7 +68,7 @@ export function ArtifactCard({
                   }
                   type="button"
                 >
-                  {variant}
+                  <NoBreakText text={variant} />
                 </button>
               ))}
             </div>
@@ -80,7 +84,7 @@ export function ArtifactCard({
             return (
               <li className="flex flex-col gap-3 rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-3" key={`${item}-${index}`}>
                 <label className="text-sm font-semibold leading-6 text-[var(--fr-text-primary)]" htmlFor={fieldId}>
-                  {item}
+                  <NoBreakText text={item} />
                 </label>
                 <textarea
                   aria-describedby={statusId}
@@ -191,27 +195,20 @@ function ArtifactVariantRadioGroup({
               {card.customOption.label}
             </SelectableOption>
             {state.isCustomVariantSelected ? (
-              <div className="mt-2">
-                <label className="sr-only" htmlFor={customInputId}>
-                  Введите свой вариант
-                </label>
-                <input
-                  aria-describedby={statusId}
-                  className="min-h-12 w-full rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] px-4 py-3 text-base leading-6 text-[var(--fr-text-primary)] outline-none transition placeholder:text-[var(--fr-text-tertiary)] focus-visible:border-[var(--fr-color-brand-500)] focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
-                  id={customInputId}
-                  onChange={(event) =>
-                    onChange({
-                      ...state,
-                      customVariantValue: event.target.value,
-                      isCustomVariantSelected: true,
-                      selectedVariant: '',
-                    })
-                  }
-                  placeholder={card.customOption.placeholder ?? 'Напиши свой вариант'}
-                  type="text"
-                  value={state.customVariantValue}
-                />
-              </div>
+              <CustomOptionTextarea
+                describedBy={statusId}
+                id={customInputId}
+                onValueChange={(value) =>
+                  onChange({
+                    ...state,
+                    customVariantValue: value,
+                    isCustomVariantSelected: true,
+                    selectedVariant: '',
+                  })
+                }
+                placeholder={card.customOption.placeholder}
+                value={state.customVariantValue}
+              />
             ) : null}
           </li>
         ) : null}

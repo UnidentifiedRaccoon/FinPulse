@@ -96,9 +96,44 @@ export const scenarioCard = {
   ],
 } satisfies Extract<Card, { type: 'scenario' }>
 
+export const multiSelectCard = {
+  id: 'story-multi-select-card',
+  order: 5,
+  type: 'multi_select',
+  title: 'Где поможет резерв?',
+  question: 'Отметьте ситуации, для которых подходит финансовая подушка.',
+  feedback: 'Подушка нужна для непредвиденного и важного, а не для импульсивных покупок.',
+  options: [
+    { id: 'repair', label: 'Внезапная поломка техники', isCorrect: true },
+    { id: 'income-gap', label: 'Задержка или потеря дохода', isCorrect: true },
+    { id: 'treatment', label: 'Срочное лечение', isCorrect: true },
+    { id: 'status-phone', label: 'Новый телефон для статуса' },
+    { id: 'sale', label: 'Спонтанный шопинг на распродаже' },
+  ],
+} satisfies Extract<Card, { type: 'multi_select' }>
+
+export const categorizationCard = {
+  id: 'story-categorization-card',
+  order: 6,
+  type: 'categorization',
+  title: 'Разделите траты',
+  question: 'Распределите траты по группам.',
+  feedback: 'Категории помогают увидеть, где необходимость, а где свобода выбора.',
+  categories: [
+    { id: 'required', label: 'Обязательное' },
+    { id: 'desired', label: 'Желаемое' },
+  ],
+  items: [
+    { id: 'utilities', label: 'Оплата ЖКХ', correctCategoryId: 'required' },
+    { id: 'transport', label: 'Проездной на месяц', correctCategoryId: 'required' },
+    { id: 'streaming', label: 'Подписка на стриминг', correctCategoryId: 'desired' },
+    { id: 'console', label: 'Новая игровая приставка', correctCategoryId: 'desired' },
+  ],
+} satisfies Extract<Card, { type: 'categorization' }>
+
 export const checklistCard = {
   id: 'story-checklist-card',
-  order: 5,
+  order: 7,
   type: 'checklist',
   title: 'Мини-проверка цели',
   body: 'Отметьте признаки, которые уже есть в вашей формулировке.',
@@ -107,7 +142,7 @@ export const checklistCard = {
 
 export const reflectionCard = {
   id: 'story-reflection-card',
-  order: 6,
+  order: 8,
   type: 'reflection',
   title: 'Личное наблюдение',
   prompt: 'Какая денежная цель сейчас кажется достаточно маленькой, чтобы начать без напряжения?',
@@ -117,7 +152,7 @@ export const reflectionCard = {
 
 export const reflectionSelectCard = {
   id: 'story-reflection-select-card',
-  order: 7,
+  order: 9,
   type: 'reflection',
   title: 'Выбор фокуса',
   prompt: 'Что важнее поддержать в ближайшие две недели?',
@@ -128,7 +163,7 @@ export const reflectionSelectCard = {
 
 export const reflectionMultiCard = {
   id: 'story-reflection-multi-card',
-  order: 8,
+  order: 10,
   type: 'reflection',
   title: 'Опоры',
   prompt: 'Какие опоры уже есть?',
@@ -138,7 +173,7 @@ export const reflectionMultiCard = {
 
 export const artifactCard = {
   id: 'story-artifact-card',
-  order: 9,
+  order: 11,
   type: 'artifact',
   title: 'Черновик плана',
   body: 'Соберите короткий план на неделю. Данные не сохраняются за пределами текущего экрана.',
@@ -148,7 +183,7 @@ export const artifactCard = {
 
 export const summaryCard = {
   id: 'story-summary-card',
-  order: 10,
+  order: 12,
   type: 'summary',
   title: 'Что забрать с собой',
   body: 'Спокойный прогресс начинается с небольшой конкретной формулировки.',
@@ -172,6 +207,8 @@ export const lessonFixture = {
     choiceCard,
     videoCard,
     scenarioCard,
+    multiSelectCard,
+    categorizationCard,
     checklistCard,
     reflectionCard,
     reflectionSelectCard,

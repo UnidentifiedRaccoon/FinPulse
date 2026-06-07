@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import type { Card } from '@/content/program'
 
-import { PillList, StaticChecklist, StaticChoiceList } from './shared'
+import { NoBreakText, PillList, StaticChecklist, StaticChoiceList } from './shared'
 
 type PassiveCard =
   | Extract<Card, { type: 'theory' }>
@@ -35,7 +35,7 @@ export function TheoryCard({ card }: { card: PassiveCard }) {
               Следующий шаг
             </p>
             <p className="mt-[var(--fr-space-2)] text-pretty text-[length:var(--fr-type-body-sm-size)] leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-secondary)]">
-              {card.nextStep}
+              <NoBreakText text={card.nextStep} />
             </p>
           </ExplanatorySurface>
         ) : null}
@@ -50,14 +50,14 @@ export function TheoryCard({ card }: { card: PassiveCard }) {
       ) : null}
       {'question' in card && card.question ? (
         <p className="text-pretty text-[length:var(--fr-type-body-lg-size)] font-semibold leading-[var(--fr-type-body-lg-line)] text-[var(--fr-text-primary)]">
-          {card.question}
+          <NoBreakText text={card.question} />
         </p>
       ) : null}
       {'options' in card && card.options ? <StaticChoiceList options={card.options} /> : null}
       {'feedback' in card && card.feedback ? (
         <ExplanatorySurface tone="soft">
           <p className="text-pretty text-[length:var(--fr-type-body-sm-size)] leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-secondary)]">
-            {card.feedback}
+            <NoBreakText text={card.feedback} />
           </p>
         </ExplanatorySurface>
       ) : null}
@@ -115,7 +115,7 @@ function InsightPanel({ text }: { text: string }) {
       {calculation ? <CalculationSteps steps={calculation.steps} operators={calculation.operators} /> : null}
       {body ? (
         <p className="mt-[var(--fr-space-3)] text-pretty text-[length:var(--fr-type-body-sm-size)] font-medium leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-primary)]">
-          {body}
+          <NoBreakText text={body} />
         </p>
       ) : null}
     </ExplanatorySurface>
@@ -157,7 +157,7 @@ function CalculationFragment({
             : 'fr-calculation-step'
         }
       >
-        {step}
+        <NoBreakText text={step} />
       </div>
       {operator ? (
         <span className="fr-calculation-operator">
@@ -188,7 +188,7 @@ function TextParagraphs({
           }
           key={paragraph}
         >
-          {paragraph}
+          <NoBreakText text={paragraph} />
         </p>
       ))}
     </div>
