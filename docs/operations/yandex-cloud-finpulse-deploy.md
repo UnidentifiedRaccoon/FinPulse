@@ -59,6 +59,7 @@ Required GitHub Actions secret:
 | Secret | Purpose |
 | --- | --- |
 | `YC_DB_START_URL` | Public DB start function URL. Treat as sensitive because it starts or extends paid DB runtime. |
+| `FINPULSE_DATABASE_PASSWORD` | PostgreSQL password for `finpulse_app`, passed to the deployed Serverless Container revision. |
 
 The remaining resource IDs are committed in `.github/workflows/deploy.yml` because they are non-secret infrastructure identifiers. Move them to repository variables later if operators need to retarget environments without code changes.
 

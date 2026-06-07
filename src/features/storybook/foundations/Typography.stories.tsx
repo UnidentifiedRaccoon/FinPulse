@@ -27,7 +27,7 @@ export const Scale: Story = {
   render: () => (
     <section className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-semibold text-[var(--fr-color-brand-700)]">FinPulse typography</p>
+        <p className="text-sm font-semibold text-[var(--fr-color-brand-700)]">ФинПульс typography</p>
         <h1 className="text-2xl font-bold tracking-normal text-[var(--fr-text-primary)]">Mobile-first type scale</h1>
         <p className="max-w-2xl text-sm leading-6 text-[var(--fr-text-secondary)]">
           Keep lesson text compact, readable, and calm. Do not scale type with viewport width.

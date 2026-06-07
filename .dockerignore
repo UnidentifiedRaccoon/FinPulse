@@ -5,7 +5,11 @@ coverage
 dist
 dist-server
 node_modules
+data
 npm-debug.log*
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 *.tsbuildinfo
 .env
 .env.*

@@ -1,8 +1,6 @@
 import type { ProgressResponse } from '@/api/client'
+import { getOrderedLessons, getOrderedModules, getOrderedUnits } from '@/content/order'
 import {
-  getOrderedLessons,
-  getOrderedModules,
-  getOrderedUnits,
   type Lesson,
   type Module,
   type Program,

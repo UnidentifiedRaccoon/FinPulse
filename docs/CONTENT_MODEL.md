@@ -24,6 +24,7 @@ src/content/
       module.json
       units/
         unit_01_money_and_operations.json
+        unit_02_planning_and_management.json
 ```
 
 `program.json` is the program manifest. It stores program metadata and references module JSON files.
@@ -133,6 +134,7 @@ type CardBase = {
   thinkingType?: string
   develops?: string
   checkability?: 'objective' | 'subjective' | 'mixed'
+  statistics?: CardStatistics
 }
 ```
 
@@ -144,6 +146,8 @@ export type Card =
   | VideoCard
   | CalloutCard
   | SingleChoiceCard
+  | MultiSelectCard
+  | CategorizationCard
   | ReflectionCard
   | ScenarioCard
   | ArtifactCard
@@ -158,16 +162,43 @@ Minimal type-specific fields:
   For RUTUBE, use the platform embed URL (`https://rutube.ru/play/embed/...`); the reader renders it inline and keeps a source link as fallback.
 - `callout`: `body`, optional `tone`.
 - `single_choice`: `question`, `options`, optional `correctOptionId`, `feedback`, `readOnly`.
+- `multi_select`: `question`, `options`, optional `feedback`, `readOnly`.
+  `options` use `{ id, label, isCorrect?, feedback? }`; at least one option must be correct and at least one must be incorrect.
+- `categorization`: `question`, `categories`, `items`, optional `feedback`, `readOnly`.
+  `categories` use `{ id, label }`; `items` use `{ id, label, correctCategoryId, feedback? }`.
+  Every `correctCategoryId` must match a category id.
 - `reflection`: `prompt`, optional `options`, `customOption`, `inputType`, `saveKey`, `guidance`, `readOnly`.
 - `scenario`: `body`, optional `question`, `options`, `correctOptionId`, `feedback`, `readOnly`.
 - `artifact`: `body`, optional `template`, `variants`, `customOption`, `readOnly`.
 - `checklist`: `items`, optional `body`.
 - `summary`: `points`, optional `body`, `nextStep`.
 
+Every card may also include a source-backed statistics block:
+
+```ts
+export type CardStatistics = {
+  title?: string
+  items: Array<{
+    value: string
+    label: string
+  }>
+  sources?: string[]
+}
+```
+
+Use `statistics` for methodologist source sections named `Блок статистики` or `Статистика по теме`.
+It is card-level metadata, not a separate card type, because statistics may support an `artifact`, `scenario`,
+`single_choice`, or other screen without changing the lesson ladder. Preserve the source numbers and sources;
+do not convert them into diagnostics, scores, analytics, labels, recommendations, or personal financial advice.
+If a runtime card's `sourceSection` points to a Markdown screen containing `Блок статистики`, the content validator
+requires `card.statistics`.
+
 `readOnly: true` means the reader must force static rendering even when that card type supports interaction.
 If `readOnly` is omitted or `false`, the card is eligible for the reader's interactive behavior.
 
 Authenticated `reflection` and `artifact` answers may be persisted as the learner's private personal artifact. This persistence uses `card.id`, optional `reflection.saveKey`, and lesson/module/unit context. It must not add answer scoring, diagnostics, labels, inferred traits, analytics, or recommendations.
+
+`multi_select` and `categorization` are objective practice cards. They may show checked-answer feedback and then allow the learner to continue, but their selected answers are not persisted through `/api/reflections` and must not create scores, labels, diagnostics, analytics, or recommendations.
 
 For `reflection.inputType: "single_select"`, use `customOption` when the learner may enter their own option:
 
@@ -191,6 +222,30 @@ For `artifact` cards with `variants`, use `customOption` when the learner may wr
 
 The reader renders artifact `variants` plus `customOption` as a selectable group when `customOption` is present. When the custom row is selected, the saved answer stores the learner's typed text in the existing `selectedVariant` field.
 
+## T1 lesson contract
+
+Current T1 lessons use a fixed eight-card runtime architecture. General card
+types such as `callout`, `multi_select`, and `checklist` remain in the content
+model for older or non-T1 material, but they are not valid for new T1 lessons
+unless a later content-model decision changes this contract.
+
+Every T1 lesson must have exactly eight cards with orders `1` through `8`:
+
+| Order | Required type | Required checkability | Runtime rule |
+|---:|---|---|---|
+| 1 | `single_choice` | `subjective` | Hook into a familiar situation. No `correctOptionId`; no option should be marked `isCorrect`. |
+| 2 | `theory` | `objective` | One main idea. Use text placeholders for video unless a real playable `video.src` exists in a later approved model change. |
+| 3 | `categorization` | `objective` | Core objective practice only. Sort examples into known categories; do not use `single_choice` or `multi_select`. Include feedback. |
+| 4 | `scenario` | `objective` | External Real World A example. Exactly three options, exactly one correct answer, card-level feedback, and feedback on every option. Attach source statistics here when present. |
+| 5 | `artifact` | `mixed` | Personal Real World B draft on the learner's data. Personal data is accepted, not marked right/wrong. |
+| 6 | `reflection` | `subjective` | Personal reflection with options plus `customOption` / `Свой вариант`; no correct answer. |
+| 7 | `artifact` | `mixed` | Micro-rule or first step with exactly two ready `variants` plus `customOption` / `Свой вариант`. Do not create reminders, schedules, or habit mechanics. |
+| 8 | `summary` | `subjective` | Navigator summary and bridge to the next lesson. |
+
+Each T1 card must include a stable `id`, `order`, `type`, `checkability`, and a
+`sourceSection` ending with `/ Экран N`. `npm run check:content` enforces this
+contract for active `T1` runtime lessons.
+
 ## Supplemental content
 
 Large support material that should not become the main lesson path belongs in `UnitFile.supplemental`.
@@ -205,7 +260,7 @@ Use it for:
 
 Supplemental items should keep enough source detail to restore the exercise without reopening the original Markdown. Use `summary` for a short reviewer-facing description and optional `content: string[]` for full prompts, tables, options, answers, feedback, or scenario text.
 
-The first Module 1 unit keeps supplemental material there to avoid bloating the primary reader while preserving all source content.
+Supplemental material should stay out of the primary reader unless a future content task intentionally promotes it into runtime lessons.
 
 ## Content rules
 
@@ -242,7 +297,9 @@ Validation checks:
 - referenced paths are normalized relative JSON paths;
 - ordered arrays are sorted and do not reuse `order`;
 - lessons contain cards;
-- card type-specific fields are present.
+- card type-specific fields are present;
+- active T1 lessons contain exactly eight cards and match the required
+  screen-by-screen T1 architecture.
 
 ## Backend API policy
 

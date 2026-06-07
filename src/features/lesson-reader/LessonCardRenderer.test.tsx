@@ -33,7 +33,7 @@ describe('LessonSession', () => {
     expect(screen.getByRole('progressbar', { name: 'Прогресс урока' })).toHaveAttribute('aria-valuenow', '50')
   })
 
-  it('renders the lesson intro as an explicit focus and goal block', () => {
+  it('renders the lesson goal as the only intro card', () => {
     renderSession([
       {
         id: 'card-theory',
@@ -44,12 +44,12 @@ describe('LessonSession', () => {
       },
     ])
 
-    const brief = screen.getByRole('region', { name: 'Кратко об уроке' })
+    const goalCard = screen.getByRole('region', { name: 'Цель урока' })
 
-    expect(within(brief).getByText('В этом уроке')).toBeInTheDocument()
-    expect(within(brief).getByText('Описание урока.')).toBeInTheDocument()
-    expect(within(brief).getByText('Цель урока')).toBeInTheDocument()
-    expect(within(brief).getByText('Сделать один маленький шаг.')).toBeInTheDocument()
+    expect(within(goalCard).getByText('Цель урока')).toBeInTheDocument()
+    expect(within(goalCard).getByText('Сделать один маленький шаг.')).toBeInTheDocument()
+    expect(screen.queryByText('В этом уроке')).not.toBeInTheDocument()
+    expect(screen.queryByText('Описание урока.')).not.toBeInTheDocument()
   })
 
   it('renders theory explanation with the selected calculation pattern and no decorative icon', () => {
@@ -90,7 +90,7 @@ describe('LessonSession', () => {
         type: 'theory',
         order: 1,
         title: 'Правило 3–6 месяцев',
-        body: 'Базовый ориентир подушки — 3–6 месяцев твоих обязательных расходов.\n\nФормула простая: подушка = месячные обязательные расходы × 3–6.\n\nПример из сценария: если обязательные расходы — 40 000 ₽ в месяц, то подушка на 3 месяца — 120 000 ₽, а на 6 месяцев — 240 000 ₽.',
+        body: 'Базовый ориентир подушки — 3–6 месяцев твоих обязательных расходов.\n\nФормула простая: подушка = месячные обязательные расходы × 3–6.\n\nПример из сценария: Если обязательные расходы — 40 000 ₽ в месяц, то подушка на 3 месяца — 120 000 ₽, а на 6 месяцев — 240 000 ₽.',
       },
     ])
 
@@ -108,11 +108,65 @@ describe('LessonSession', () => {
     expect(card?.textContent).not.toContain('××')
     expect(card?.textContent).not.toContain('==')
     expect(lessonCard.getByText('Пример')).toBeInTheDocument()
-    expect(
-      lessonCard.getByText(
-        'если обязательные расходы — 40 000 ₽ в месяц, то подушка на 3 месяца — 120 000 ₽, а на 6 месяцев — 240 000 ₽.',
-      ),
-    ).toBeInTheDocument()
+    expect(card).toHaveTextContent(
+      'Если обязательные расходы — 40 000 ₽ в месяц, то подушка на 3 месяца — 120 000 ₽, а на 6 месяцев — 240 000 ₽.',
+    )
+    expect(lessonCard.getByText('40 000 ₽ в месяц')).toHaveClass('whitespace-nowrap')
+    expect(lessonCard.getByText('120 000 ₽')).toHaveClass('whitespace-nowrap')
+    expect(lessonCard.getByText('6 месяцев')).toHaveClass('whitespace-nowrap')
+  })
+
+  it('renders structured statistics and checked feedback on interactive scenario cards', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-scenario-statistics',
+        type: 'scenario',
+        order: 4,
+        title: 'Как выбрать горизонт',
+        body: 'У Даши обязательные расходы 40 000 ₽ в месяц, доход сезонный: в одни месяцы больше, в другие меньше.',
+        question: 'Фрилансеру с непостоянным доходом ближе к какому ориентиру?',
+        options: [
+          { id: 'three-months', label: '3 месяца' },
+          { id: 'six-plus', label: '6 месяцев и больше', isCorrect: true },
+        ],
+        correctOptionId: 'six-plus',
+        statistics: {
+          title: 'Статистика по теме (Россия)',
+          items: [
+            {
+              value: '3–6 зарплат',
+              label: 'рекомендация Банка России по размеру финансовой подушки.',
+            },
+            {
+              value: '12%',
+              label: 'россиян имеют запас на 3–6 месяцев.',
+            },
+          ],
+          sources: ['Банк России (2025)', 'SuperJob (2025)'],
+        },
+      },
+    ])
+
+    const card = screen.getByRole('heading', { name: 'Как выбрать горизонт' }).closest('section')
+    expect(card).not.toBeNull()
+
+    const lessonCard = within(card as HTMLElement)
+    expect(lessonCard.getByText('40 000 ₽ в месяц')).toHaveClass('whitespace-nowrap')
+    expect(lessonCard.getByRole('heading', { name: 'Статистика по теме (Россия)' })).toBeInTheDocument()
+    expect(lessonCard.getByText('3–6 зарплат')).toBeInTheDocument()
+    expect(lessonCard.getByText('рекомендация Банка России по размеру финансовой подушки.')).toBeInTheDocument()
+    expect(lessonCard.getByText('12%')).toBeInTheDocument()
+    expect(card).toHaveTextContent('россиян имеют запас на 3–6 месяцев.')
+    expect(lessonCard.getByText('3–6 месяцев')).toHaveClass('whitespace-nowrap')
+    expect(lessonCard.getByText('Источники: Банк России (2025); SuperJob (2025).')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: '6 месяцев и больше' }))
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('Верно')
+    expect(screen.getByRole('button', { name: 'Завершить' })).toBeEnabled()
   })
 
   it('continues through cards with the sticky CTA', async () => {
@@ -207,6 +261,197 @@ describe('LessonSession', () => {
     expect(feedback).toHaveTextContent('Лучше подходит: Подходит.')
     expect(feedback).toHaveTextContent('Общий фидбек')
     expect(screen.getByRole('button', { name: 'Завершить' })).toBeEnabled()
+  })
+
+  it('checks an objective multi-select answer and allows continuing after feedback', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-multi-select',
+        type: 'multi_select',
+        order: 3,
+        title: 'Где помогает подушка?',
+        question: 'Отметь ситуации, в которых финансовая подушка помогает.',
+        options: [
+          { id: 'breakdown', label: 'Внезапная поломка техники', isCorrect: true },
+          { id: 'income-loss', label: 'Задержка или потеря дохода', isCorrect: true },
+          { id: 'treatment', label: 'Срочное лечение', isCorrect: true },
+          { id: 'status-phone', label: 'Новый телефон для статуса' },
+        ],
+        feedback: 'Подушка — для непредвиденного и важного.',
+      },
+    ])
+
+    const checkButton = screen.getByRole('button', { name: 'Проверить' })
+    expect(checkButton).toBeDisabled()
+
+    await user.click(screen.getByRole('button', { name: 'Перейти к карточке 4' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Новый телефон для статуса' }))
+    expect(checkButton).toBeEnabled()
+    await user.click(checkButton)
+
+    const feedback = screen.getByRole('status')
+    expect(feedback).toHaveTextContent('Можно уточнить')
+    expect(feedback).toHaveTextContent('Ещё подходит: Внезапная поломка техники, Задержка или потеря дохода, Срочное лечение.')
+    expect(feedback).toHaveTextContent('Проверь лишнее: Новый телефон для статуса.')
+    expect(feedback).toHaveTextContent('Подушка — для непредвиденного и важного.')
+    expect(screen.getByRole('button', { name: 'Завершить' })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: 'Перейти к карточке 3' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Срочное лечение' }))
+    expect(screen.getByRole('button', { name: 'Проверить' })).toBeEnabled()
+  })
+
+  it('shows correct feedback for an objective multi-select answer', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-multi-select-correct',
+        type: 'multi_select',
+        order: 3,
+        title: 'Где помогает подушка?',
+        question: 'Отметь ситуации, в которых финансовая подушка помогает.',
+        options: [
+          { id: 'breakdown', label: 'Внезапная поломка техники', isCorrect: true },
+          { id: 'income-loss', label: 'Задержка или потеря дохода', isCorrect: true },
+          { id: 'shopping', label: 'Спонтанный шопинг' },
+        ],
+        feedback: 'Подушка — для непредвиденного и важного.',
+      },
+    ])
+
+    await user.click(screen.getByRole('checkbox', { name: 'Внезапная поломка техники' }))
+    await user.click(screen.getByRole('button', { name: 'Следующая карточка' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Задержка или потеря дохода' }))
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('Верно')
+    expect(screen.getByRole('status')).toHaveTextContent('Подушка — для непредвиденного и важного.')
+  })
+
+  it('checks an objective categorization answer and requires every item before checking', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-categorization',
+        type: 'categorization',
+        order: 3,
+        title: 'Где подушка реально выручает?',
+        question: 'Разбери ситуации: где подушка помогает, а где это отдельные желания.',
+        categories: [
+          { id: 'helps', label: 'Подушка помогает' },
+          { id: 'not-for-fund', label: 'Не для подушки' },
+        ],
+        items: [
+          { id: 'breakdown', label: 'Внезапная поломка техники', correctCategoryId: 'helps' },
+          { id: 'shopping', label: 'Спонтанный шопинг на распродаже', correctCategoryId: 'not-for-fund' },
+        ],
+        feedback: 'Подушка — страховка на «беду», не кошелёк для желаний.',
+      },
+    ])
+
+    const checkButton = screen.getByRole('button', { name: 'Проверить' })
+    expect(checkButton).toBeDisabled()
+
+    await user.click(
+      within(screen.getByRole('group', { name: 'Внезапная поломка техники' })).getByRole('radio', {
+        name: 'Не для подушки',
+      }),
+    )
+    expect(checkButton).toBeDisabled()
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Спонтанный шопинг на распродаже' })).toBeInTheDocument())
+
+    await user.click(
+      within(screen.getByRole('group', { name: 'Спонтанный шопинг на распродаже' })).getByRole('radio', {
+        name: 'Не для подушки',
+      }),
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Внезапная поломка техники: Подушка помогает' })).toBeInTheDocument(),
+    )
+    expect(screen.getByRole('button', { name: 'Внезапная поломка техники: Не для подушки' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Спонтанный шопинг на распродаже: Не для подушки' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(checkButton).toBeEnabled()
+    await user.click(checkButton)
+
+    const feedback = screen.getByRole('status')
+    expect(feedback).toHaveTextContent('Можно уточнить')
+    expect(feedback).toHaveTextContent('Уточни: Внезапная поломка техники → Подушка помогает.')
+    expect(feedback).toHaveTextContent('Подушка — страховка на «беду», не кошелёк для желаний.')
+    expect(screen.getByRole('button', { name: 'Завершить' })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: 'Внезапная поломка техники: Подушка помогает' }))
+    expect(screen.getByRole('button', { name: 'Проверить' })).toBeEnabled()
+  })
+
+  it('keeps money and duration fragments unwrapped in formula practice labels', () => {
+    renderSession([
+      {
+        id: 'card-categorization-formula',
+        type: 'categorization',
+        order: 3,
+        title: 'Проверь расчёты подушки',
+        question: 'Формула: обязательные расходы × число месяцев.',
+        categories: [
+          { id: 'correct', label: 'Верно' },
+          { id: 'error', label: 'Есть ошибка' },
+        ],
+        items: [
+          {
+            id: 'forty-six-months',
+            label: '40 000 ₽ в месяц × 6 месяцев = 200 000 ₽',
+            correctCategoryId: 'error',
+          },
+        ],
+      },
+    ])
+
+    expect(screen.getByText('40 000 ₽ в месяц')).toHaveClass('whitespace-nowrap')
+    expect(screen.getByText('6 месяцев')).toHaveClass('whitespace-nowrap')
+    expect(screen.getByText('200 000 ₽')).toHaveClass('whitespace-nowrap')
+  })
+
+  it('shows correct feedback for an objective categorization answer', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-categorization-correct',
+        type: 'categorization',
+        order: 3,
+        title: 'Раздели траты',
+        question: 'Распредели траты по группам.',
+        categories: [
+          { id: 'mandatory', label: 'Обязательное' },
+          { id: 'desired', label: 'Желаемое' },
+        ],
+        items: [
+          { id: 'utilities', label: 'Оплата ЖКХ', correctCategoryId: 'mandatory' },
+          { id: 'streaming', label: 'Подписка на стриминг', correctCategoryId: 'desired' },
+        ],
+        feedback: 'Обязательное — это «нужно жить», желаемое — «хочу лучше».',
+      },
+    ])
+
+    await user.click(within(screen.getByRole('group', { name: 'Оплата ЖКХ' })).getByRole('radio', { name: 'Обязательное' }))
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Подписка на стриминг' })).toBeInTheDocument())
+    await user.click(
+      within(screen.getByRole('group', { name: 'Подписка на стриминг' })).getByRole('radio', { name: 'Желаемое' }),
+    )
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Оплата ЖКХ: Обязательное' })).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('Верно')
+    expect(screen.getByRole('status')).toHaveTextContent('Обязательное — это «нужно жить», желаемое — «хочу лучше».')
   })
 
   it('requires and saves reflection text before completing the card', async () => {
@@ -319,8 +564,10 @@ describe('LessonSession', () => {
 
     await user.click(screen.getByRole('radio', { name: 'Свой вариант' }))
 
-    const customInput = screen.getByRole('textbox', { name: 'Введите свой вариант' })
+    const customInput = screen.getByRole('textbox', { name: 'Мой вариант' })
+    expect(customInput.tagName).toBe('TEXTAREA')
     expect(customInput).toHaveAttribute('placeholder', 'Напиши свой вариант')
+    expect(screen.getByText('Мой вариант')).toHaveClass('sr-only')
     expect(finishButton).toBeDisabled()
 
     await user.type(customInput, 'Подарок другу')
@@ -361,7 +608,7 @@ describe('LessonSession', () => {
 
     expect(await screen.findByText('Не удалось сохранить ответ.')).toBeInTheDocument()
     expect(onCardCompleted).not.toHaveBeenCalled()
-    expect(screen.queryByRole('heading', { name: 'Урок завершён' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Урок пройден' })).not.toBeInTheDocument()
   })
 
   it('renders artifact template rows as text fields without checklist checkboxes', async () => {
@@ -477,8 +724,10 @@ describe('LessonSession', () => {
 
     await user.click(screen.getByRole('radio', { name: 'Свой вариант' }))
 
-    const customInput = screen.getByRole('textbox', { name: 'Введите свой вариант' })
+    const customInput = screen.getByRole('textbox', { name: 'Мой вариант' })
+    expect(customInput.tagName).toBe('TEXTAREA')
     expect(customInput).toHaveAttribute('placeholder', 'Напиши свой вариант')
+    expect(screen.getByText('Мой вариант')).toHaveClass('sr-only')
     expect(screen.queryByRole('textbox', { name: 'Рабочий ответ' })).not.toBeInTheDocument()
     expect(finishButton).toBeDisabled()
 
@@ -556,7 +805,33 @@ describe('LessonSession', () => {
 
     await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-two'))
     expect(onLessonCompleted).toHaveBeenCalledWith('test-lesson')
-    expect(screen.getByRole('heading', { name: 'Урок завершён' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Урок пройден' })).toBeInTheDocument()
+    expect(screen.getByText('2 из 2 карточек')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'К списку уроков' })).toHaveAttribute('href', '/modules/module-1')
+  })
+
+  it('renders next lesson and lesson-list actions on completion when another lesson exists', async () => {
+    const user = userEvent.setup()
+
+    renderSession(
+      [
+        {
+          id: 'card-summary',
+          type: 'summary',
+          order: 1,
+          title: 'Итог',
+          points: ['Пункт'],
+        },
+      ],
+      { nextLessonSlug: 'next-lesson' },
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Завершить' }))
+
+    expect(screen.getByRole('heading', { name: 'Урок пройден' })).toBeInTheDocument()
+    expect(screen.getByText('Один небольшой шаг пройден. Можно перейти к следующему уроку или вернуться к списку уроков.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'К следующему уроку' })).toHaveAttribute('href', '/lessons/next-lesson')
+    expect(screen.getByRole('link', { name: 'К списку уроков' })).toHaveAttribute('href', '/modules/module-1')
   })
 })
 
@@ -564,13 +839,14 @@ function renderSession(
   cards: Card[],
   overrides: Partial<{
     canSaveProgress: boolean
+    nextLessonSlug: string
     onCardViewed: (cardId: string) => void | Promise<void>
     onCardCompleted: (cardId: string) => void | Promise<void>
     onReflectionAnswerSave: (cardId: string, payload: Record<string, unknown>) => void | Promise<void>
     onLessonCompleted: (lessonSlug: string) => void | Promise<void>
   }> = {},
 ) {
-  const details = createLessonDetails(cards)
+  const details = createLessonDetails(cards, overrides.nextLessonSlug)
 
   return render(
     <MemoryRouter>
@@ -587,7 +863,7 @@ function renderSession(
   )
 }
 
-function createLessonDetails(cards: Card[]): LessonDetails {
+function createLessonDetails(cards: Card[], nextLessonSlug?: string): LessonDetails {
   const lesson: Lesson = {
     id: 'lesson-1',
     slug: 'test-lesson',
@@ -597,6 +873,17 @@ function createLessonDetails(cards: Card[]): LessonDetails {
     order: 1,
     cards,
   }
+  const nextLesson: Lesson | null = nextLessonSlug
+    ? {
+        id: 'lesson-next',
+        slug: nextLessonSlug,
+        title: 'Следующий урок',
+        description: 'Описание следующего урока.',
+        learningGoal: 'Продолжить маршрут.',
+        order: 2,
+        cards: [],
+      }
+    : null
 
   const unit: Unit = {
     schemaVersion: 1,
@@ -605,7 +892,7 @@ function createLessonDetails(cards: Card[]): LessonDetails {
     title: 'Тестовый юнит',
     order: 1,
     source: 'test',
-    lessons: [lesson],
+    lessons: nextLesson ? [lesson, nextLesson] : [lesson],
   }
 
   const module: Module = {
@@ -622,6 +909,6 @@ function createLessonDetails(cards: Card[]): LessonDetails {
     unit,
     lesson,
     previous: null,
-    next: null,
+    next: nextLesson ? { module, unit, lesson: nextLesson } : null,
   }
 }

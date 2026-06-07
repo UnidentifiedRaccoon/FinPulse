@@ -13,7 +13,7 @@ npm install
 Then add expected MVP dependencies:
 
 ```bash
-npm install react-router zustand zod
+npm install react-router zod
 npm install -D vitest @testing-library/react @testing-library/user-event @testing-library/jest-dom jsdom
 ```
 
@@ -34,6 +34,8 @@ Add or adapt these scripts in `package.json`:
     "test:run": "vitest run",
     "test:watch": "vitest",
     "check:content": "node scripts/check-content-json.mjs",
+    "check:runtime-imports": "node scripts/check-runtime-content-imports.mjs",
+    "build:storybook": "storybook build -o dist/storybook --disable-telemetry",
     "verify": "bash ./scripts/verify.sh"
   }
 }

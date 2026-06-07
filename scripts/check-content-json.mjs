@@ -10,6 +10,8 @@ const allowedCardTypes = new Set([
   'video',
   'callout',
   'single_choice',
+  'multi_select',
+  'categorization',
   'reflection',
   'scenario',
   'artifact',
@@ -109,6 +111,31 @@ function requireCustomOption(obj, key, ctx) {
   requireOptionalString(customOption, 'placeholder', optionCtx);
 }
 
+function requireStatistics(obj, key, ctx) {
+  if (obj[key] === undefined) return;
+  const statistics = obj[key];
+  const statisticsCtx = `${ctx}.${key}`;
+  if (!requireObject(statistics, statisticsCtx)) return;
+
+  requireOnlyKeys(statistics, ['title', 'items', 'sources'], statisticsCtx);
+  requireOptionalString(statistics, 'title', statisticsCtx);
+
+  const items = requireArray(statistics, 'items', statisticsCtx, 1);
+  for (const [itemIndex, item] of items.entries()) {
+    const itemCtx = `${statisticsCtx}.items[${itemIndex}]`;
+    if (!requireObject(item, itemCtx)) continue;
+    requireOnlyKeys(item, ['value', 'label'], itemCtx);
+    requireString(item, 'value', itemCtx);
+    requireString(item, 'label', itemCtx);
+  }
+
+  requireStringArray(statistics, 'sources', statisticsCtx);
+}
+
+function hasNonEmptyString(obj, key) {
+  return typeof obj?.[key] === 'string' && obj[key].trim() !== '';
+}
+
 function requireArray(obj, key, ctx, min = 0) {
   if (!Array.isArray(obj[key]) || obj[key].length < min) {
     fail(`${ctx}.${key} must be an array with at least ${min} item(s)`);
@@ -181,7 +208,7 @@ function validateRefShape(ref, ctx) {
   requireString(ref, 'path', ctx);
 }
 
-function validateLesson(lesson, ctx, seen) {
+function validateLesson(lesson, ctx, seen, scope = {}) {
   if (!requireObject(lesson, ctx)) return;
   requireOnlyKeys(lesson, ['id', 'slug', 'title', 'subtitle', 'description', 'order', 'estimatedMinutes', 'learningGoal', 'mainSkill', 'tags', 'sourceSection', 'cards'], ctx);
   requireString(lesson, 'id', ctx);
@@ -205,6 +232,7 @@ function validateLesson(lesson, ctx, seen) {
   for (const [cardIndex, card] of cards.entries()) {
     validateCard(card, `${ctx}.cards[${cardIndex}]`, seen);
   }
+  validateT1LessonArchitecture(lesson, ctx, scope);
 }
 
 function validateChoiceOptions(card, ctx) {
@@ -227,6 +255,230 @@ function validateChoiceOptions(card, ctx) {
   }
 }
 
+function validateMultiSelectOptions(card, ctx) {
+  validateChoiceOptions(card, ctx);
+  const options = Array.isArray(card.options) ? card.options : [];
+  const hasCorrectOption = options.some((option) => isObject(option) && option.isCorrect === true);
+  const hasIncorrectOption = options.some((option) => isObject(option) && option.isCorrect !== true);
+
+  if (!hasCorrectOption) {
+    fail(`${ctx}.options must include at least one correct option`);
+  }
+  if (!hasIncorrectOption) {
+    fail(`${ctx}.options must include at least one incorrect option`);
+  }
+}
+
+function validateCategorization(card, ctx) {
+  const categories = requireArray(card, 'categories', ctx, 2);
+  const categoryIds = new Set();
+  for (const [categoryIndex, category] of categories.entries()) {
+    const categoryCtx = `${ctx}.categories[${categoryIndex}]`;
+    if (!requireObject(category, categoryCtx)) continue;
+    requireOnlyKeys(category, ['id', 'label'], categoryCtx);
+    requireString(category, 'id', categoryCtx);
+    requireString(category, 'label', categoryCtx);
+    checkUnique(category.id, categoryIds, `${ctx} category id`);
+  }
+
+  const items = requireArray(card, 'items', ctx, 2);
+  const itemIds = new Set();
+  for (const [itemIndex, item] of items.entries()) {
+    const itemCtx = `${ctx}.items[${itemIndex}]`;
+    if (!requireObject(item, itemCtx)) continue;
+    requireOnlyKeys(item, ['id', 'label', 'correctCategoryId', 'feedback'], itemCtx);
+    requireString(item, 'id', itemCtx);
+    requireString(item, 'label', itemCtx);
+    requireString(item, 'correctCategoryId', itemCtx);
+    requireOptionalString(item, 'feedback', itemCtx);
+    checkUnique(item.id, itemIds, `${ctx} item id`);
+    if (typeof item.correctCategoryId === 'string' && !categoryIds.has(item.correctCategoryId)) {
+      fail(`${itemCtx}.correctCategoryId must match one of the category ids`);
+    }
+  }
+}
+
+function isT1Lesson(lesson, scope) {
+  return (
+    scope.moduleSlug === 't1-start' ||
+    (Array.isArray(lesson.tags) && lesson.tags.includes('T1')) ||
+    (typeof lesson.id === 'string' && lesson.id.startsWith('lesson_t1_')) ||
+    (typeof lesson.sourceSection === 'string' && lesson.sourceSection.includes('/t1-start/'))
+  );
+}
+
+function cardByOrder(cards, order) {
+  return cards.find((card) => isObject(card) && card.order === order);
+}
+
+function requireT1ScreenBase(card, lessonCtx, order, type, checkability) {
+  const screenCtx = `${lessonCtx}.cards(order=${order})`;
+  if (!card) {
+    fail(`${screenCtx} is required for the T1 eight-screen architecture`);
+    return false;
+  }
+
+  if (card.type !== type) {
+    fail(`${screenCtx}.type must be ${type}`);
+  }
+  if (card.checkability !== checkability) {
+    fail(`${screenCtx}.checkability must be ${checkability}`);
+  }
+  requireString(card, 'sourceSection', screenCtx);
+  if (typeof card.sourceSection === 'string' && !new RegExp(`/\\s*Экран\\s*${order}\\s*$`, 'iu').test(card.sourceSection)) {
+    fail(`${screenCtx}.sourceSection must end with "/ Экран ${order}"`);
+  }
+  if (card.statistics !== undefined && order !== 4) {
+    fail(`${screenCtx}.statistics belongs on T1 screen 4`);
+  }
+
+  return true;
+}
+
+function requireNoCorrectChoice(card, ctx) {
+  if (card.correctOptionId !== undefined) {
+    fail(`${ctx}.correctOptionId must be omitted for a subjective T1 hook`);
+  }
+
+  const options = Array.isArray(card.options) ? card.options : [];
+  for (const [optionIndex, option] of options.entries()) {
+    if (isObject(option) && option.isCorrect === true) {
+      fail(`${ctx}.options[${optionIndex}].isCorrect must be omitted for a subjective T1 hook`);
+    }
+  }
+}
+
+function requireCustomOptionLabel(card, ctx) {
+  if (!isObject(card.customOption)) {
+    fail(`${ctx}.customOption is required`);
+    return;
+  }
+  if (card.customOption.label !== 'Свой вариант') {
+    fail(`${ctx}.customOption.label must be "Свой вариант"`);
+  }
+}
+
+function requireScenarioScreenFour(card, ctx) {
+  if (!hasNonEmptyString(card, 'question')) {
+    fail(`${ctx}.question is required for T1 screen 4`);
+  }
+  if (!hasNonEmptyString(card, 'correctOptionId')) {
+    fail(`${ctx}.correctOptionId is required for T1 screen 4`);
+  }
+  if (!hasNonEmptyString(card, 'feedback')) {
+    fail(`${ctx}.feedback is required for T1 screen 4`);
+  }
+
+  const options = Array.isArray(card.options) ? card.options : [];
+  if (options.length !== 3) {
+    fail(`${ctx}.options must contain exactly 3 options for T1 screen 4`);
+  }
+
+  for (const [optionIndex, option] of options.entries()) {
+    if (!isObject(option)) continue;
+    if (!hasNonEmptyString(option, 'feedback')) {
+      fail(`${ctx}.options[${optionIndex}].feedback is required for T1 screen 4`);
+    }
+  }
+
+  const explicitlyCorrectOptions = options.filter((option) => isObject(option) && option.isCorrect === true);
+  if (explicitlyCorrectOptions.length > 0) {
+    if (explicitlyCorrectOptions.length !== 1) {
+      fail(`${ctx}.options must mark at most one explicit isCorrect option for T1 screen 4`);
+    } else if (explicitlyCorrectOptions[0].id !== card.correctOptionId) {
+      fail(`${ctx}.options isCorrect option must match correctOptionId`);
+    }
+  }
+}
+
+function validateT1LessonArchitecture(lesson, ctx, scope) {
+  if (!isT1Lesson(lesson, scope)) return;
+
+  const cards = Array.isArray(lesson.cards) ? lesson.cards : [];
+  if (cards.length !== 8) {
+    fail(`${ctx}.cards must contain exactly 8 cards for the T1 lesson architecture`);
+  }
+
+  for (let order = 1; order <= 8; order += 1) {
+    if (!cardByOrder(cards, order)) {
+      fail(`${ctx}.cards must include order ${order} for the T1 lesson architecture`);
+    }
+  }
+
+  const screen1 = cardByOrder(cards, 1);
+  if (requireT1ScreenBase(screen1, ctx, 1, 'single_choice', 'subjective')) {
+    requireNoCorrectChoice(screen1, `${ctx}.cards(order=1)`);
+  }
+
+  requireT1ScreenBase(cardByOrder(cards, 2), ctx, 2, 'theory', 'objective');
+
+  const screen3 = cardByOrder(cards, 3);
+  if (requireT1ScreenBase(screen3, ctx, 3, 'categorization', 'objective') && !hasNonEmptyString(screen3, 'feedback')) {
+    fail(`${ctx}.cards(order=3).feedback is required for T1 objective practice`);
+  }
+
+  const screen4 = cardByOrder(cards, 4);
+  if (requireT1ScreenBase(screen4, ctx, 4, 'scenario', 'objective')) {
+    requireScenarioScreenFour(screen4, `${ctx}.cards(order=4)`);
+  }
+
+  requireT1ScreenBase(cardByOrder(cards, 5), ctx, 5, 'artifact', 'mixed');
+
+  const screen6 = cardByOrder(cards, 6);
+  if (requireT1ScreenBase(screen6, ctx, 6, 'reflection', 'subjective')) {
+    const options = Array.isArray(screen6.options) ? screen6.options : [];
+    if (options.length === 0) {
+      fail(`${ctx}.cards(order=6).options is required for T1 personal reflection`);
+    }
+    requireCustomOptionLabel(screen6, `${ctx}.cards(order=6)`);
+  }
+
+  const screen7 = cardByOrder(cards, 7);
+  if (requireT1ScreenBase(screen7, ctx, 7, 'artifact', 'mixed')) {
+    const variants = Array.isArray(screen7.variants) ? screen7.variants : [];
+    if (variants.length !== 2) {
+      fail(`${ctx}.cards(order=7).variants must contain exactly 2 ready formulations`);
+    }
+    requireCustomOptionLabel(screen7, `${ctx}.cards(order=7)`);
+  }
+
+  requireT1ScreenBase(cardByOrder(cards, 8), ctx, 8, 'summary', 'subjective');
+}
+
+const sourceScreenStatisticsCache = new Map();
+
+function getSourceScreenText(sourceSection) {
+  if (typeof sourceSection !== 'string') return null;
+
+  const match = /^(?<file>.+?\.md)\s*\/\s*Экран\s*(?<screen>\d+)/iu.exec(sourceSection);
+  if (!match?.groups) return null;
+
+  const sourceFile = path.join(root, ...match.groups.file.split('/'));
+  const cacheKey = `${sourceFile}#${match.groups.screen}`;
+  if (sourceScreenStatisticsCache.has(cacheKey)) {
+    return sourceScreenStatisticsCache.get(cacheKey);
+  }
+
+  if (!fs.existsSync(sourceFile)) {
+    sourceScreenStatisticsCache.set(cacheKey, null);
+    return null;
+  }
+
+  const sourceText = fs.readFileSync(sourceFile, 'utf8');
+  const screenPattern = new RegExp(
+    `(?:^|\\n)\\s*ЭКРАН\\s+${match.groups.screen}\\b[\\s\\S]*?(?=\\n\\s*ЭКРАН\\s+\\d+\\b|\\n\\s*\\d+\\.\\s+Соответствие|$)`,
+    'iu',
+  );
+  const screenText = sourceText.match(screenPattern)?.[0] ?? null;
+  sourceScreenStatisticsCache.set(cacheKey, screenText);
+  return screenText;
+}
+
+function sourceSectionRequiresStatistics(sourceSection) {
+  const screenText = getSourceScreenText(sourceSection);
+  return Boolean(screenText && /Блок статистики|Статистика по теме/iu.test(screenText));
+}
+
 function validateCard(card, ctx, seen) {
   if (!requireObject(card, ctx)) return;
   requireString(card, 'id', ctx);
@@ -239,12 +491,14 @@ function validateCard(card, ctx, seen) {
     fail(`${ctx}.type has unsupported value: ${card.type}`);
     return;
   }
-  const baseCardKeys = ['id', 'type', 'order', 'title', 'sourceSection', 'thinkingType', 'develops', 'checkability'];
+  const baseCardKeys = ['id', 'type', 'order', 'title', 'sourceSection', 'thinkingType', 'develops', 'checkability', 'statistics'];
   const cardKeysByType = {
     theory: [...baseCardKeys, 'body', 'examples'],
     video: [...baseCardKeys, 'src', 'provider', 'transcript', 'timecodes'],
     callout: [...baseCardKeys, 'tone', 'body'],
     single_choice: [...baseCardKeys, 'question', 'options', 'correctOptionId', 'feedback', 'readOnly'],
+    multi_select: [...baseCardKeys, 'question', 'options', 'feedback', 'readOnly'],
+    categorization: [...baseCardKeys, 'question', 'categories', 'items', 'feedback', 'readOnly'],
     reflection: [...baseCardKeys, 'prompt', 'inputType', 'options', 'customOption', 'saveKey', 'guidance', 'readOnly'],
     scenario: [...baseCardKeys, 'body', 'question', 'options', 'correctOptionId', 'feedback', 'readOnly'],
     artifact: [...baseCardKeys, 'body', 'template', 'variants', 'customOption', 'readOnly'],
@@ -254,6 +508,10 @@ function validateCard(card, ctx, seen) {
   requireOnlyKeys(card, cardKeysByType[card.type], ctx);
   if (card.checkability !== undefined && !allowedCheckability.has(card.checkability)) {
     fail(`${ctx}.checkability must be objective, subjective, or mixed`);
+  }
+  requireStatistics(card, 'statistics', ctx);
+  if (sourceSectionRequiresStatistics(card.sourceSection) && card.statistics === undefined) {
+    fail(`${ctx}.statistics is required because ${card.sourceSection} contains a "Блок статистики" section`);
   }
   checkUnique(card.id, seen.cardIds, 'card id');
 
@@ -287,6 +545,18 @@ function validateCard(card, ctx, seen) {
     requireString(card, 'question', ctx);
     validateChoiceOptions(card, ctx);
     requireOptionalString(card, 'correctOptionId', ctx);
+    requireOptionalString(card, 'feedback', ctx);
+    if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
+  }
+  if (card.type === 'multi_select') {
+    requireString(card, 'question', ctx);
+    validateMultiSelectOptions(card, ctx);
+    requireOptionalString(card, 'feedback', ctx);
+    if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
+  }
+  if (card.type === 'categorization') {
+    requireString(card, 'question', ctx);
+    validateCategorization(card, ctx);
     requireOptionalString(card, 'feedback', ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
@@ -461,7 +731,10 @@ function validateProgramGraph(programFile, contentRoot) {
       const lessons = requireArray(unit, 'lessons', unitCtx, 1);
       validateOrderSequence(lessons, `${unitCtx}.lessons`);
       for (const [lessonIndex, lesson] of lessons.entries()) {
-        validateLesson(lesson, `${unitCtx}.lessons[${lessonIndex}]`, seen);
+        validateLesson(lesson, `${unitCtx}.lessons[${lessonIndex}]`, seen, {
+          moduleSlug: module.slug,
+          unitSlug: unit.slug,
+        });
       }
       validateSupplemental(unit, unitCtx);
     }

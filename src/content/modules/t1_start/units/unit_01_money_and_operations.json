@@ -61,52 +61,114 @@
           "thinkingType": "memory",
           "develops": "hard skills",
           "checkability": "objective",
-          "body": "Большие траты мы помним. А маленькие — кофе, такси, подписка, доставка — проходят мимо внимания. За месяц из них набегает заметная сумма.\n\nГлавное правило: чтобы управлять деньгами, их сначала нужно увидеть. Управлять можно только тем, что замечаешь.\n\nФакт из сценария урока: 5 трат по 200 ₽ в день — это 30 000 ₽ в месяц. По отдельности незаметно, в сумме ощутимо.",
-          "examples": [
-            "Кофе навынос",
-            "Такси или доставка",
-            "Подписка на сервис",
-            "Маленькая покупка по дороге"
-          ]
+          "body": "Большие траты мы помним. А маленькие — кофе, такси, подписка, доставка — проходят мимо внимания. За месяц из них набегает заметная сумма.\n\nГлавное правило: чтобы управлять деньгами, их сначала нужно увидеть. Управлять можно только тем, что замечаешь.\n\nФакт из сценария урока: 5 трат по 200 ₽ в день — это 30 000 ₽ в месяц. По отдельности незаметно, в сумме ощутимо."
         },
         {
           "id": "card_t1u1l1_03_sorting_choice",
-          "type": "single_choice",
+          "type": "categorization",
           "order": 3,
           "title": "Заметные и незаметные траты",
           "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 3",
           "thinkingType": "understanding",
           "develops": "hard skills",
           "checkability": "objective",
-          "question": "Какой вариант лучше всего разделяет траты на «замечаю сразу» и «проходит мимо внимания»?",
-          "options": [
+          "question": "Распредели траты на две группы: «замечаю сразу» и «проходит мимо внимания».",
+          "categories": [
             {
-              "id": "correct-split",
-              "label": "Замечаю сразу: телефон, аренда жилья. Мимо внимания: кофе навынос, подписка, такси.",
-              "isCorrect": true,
-              "feedback": "Точно. Именно «мимо внимания» траты обычно и создают утечку."
+              "id": "visible",
+              "label": "Замечаю сразу"
             },
             {
-              "id": "all-visible",
-              "label": "Замечаю сразу: все пять трат.",
-              "feedback": "Почти. Крупные траты правда заметнее, но автоматические и мелкие покупки часто исчезают из памяти."
-            },
-            {
-              "id": "all-hidden",
-              "label": "Мимо внимания: все пять трат.",
-              "feedback": "Почти. Телефон и аренда обычно заметны сразу, потому что они крупные или регулярные."
+              "id": "unnoticed",
+              "label": "Проходит мимо внимания"
             }
           ],
-          "correctOptionId": "correct-split",
-          "feedback": "Категории условны — важно само наблюдение, а не идеальная точность."
+          "items": [
+            {
+              "id": "phone",
+              "label": "Покупка телефона",
+              "correctCategoryId": "visible"
+            },
+            {
+              "id": "rent",
+              "label": "Аренда жилья",
+              "correctCategoryId": "visible"
+            },
+            {
+              "id": "coffee",
+              "label": "Кофе навынос",
+              "correctCategoryId": "unnoticed"
+            },
+            {
+              "id": "subscription",
+              "label": "Подписка на сервис",
+              "correctCategoryId": "unnoticed"
+            },
+            {
+              "id": "taxi",
+              "label": "Поездка на такси",
+              "correctCategoryId": "unnoticed"
+            }
+          ],
+          "feedback": "Категории условны — важно само наблюдение, а не идеальная точность. Именно «мимо внимания» траты обычно и создают утечку."
+        },
+        {
+          "id": "card_t1u1l1_04_subscription_example",
+          "type": "scenario",
+          "order": 4,
+          "title": "Подписка, которая проходит мимо",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 4",
+          "thinkingType": "real world A",
+          "develops": "soft skills",
+          "checkability": "objective",
+          "body": "Марина платит 299 ₽ за подписку, которую почти не открывает. Отдельно сумма кажется маленькой, но за год набегает больше 3 500 ₽.",
+          "question": "Что здесь главное заметить?",
+          "options": [
+            {
+              "id": "cancel-all",
+              "label": "Все подписки нужно отменить",
+              "feedback": "Задача не в запретах. Сначала нужно увидеть регулярную трату и решить, нужна ли она тебе сейчас."
+            },
+            {
+              "id": "small-automatic-expense",
+              "label": "Мелкая автоматическая трата может долго проходить мимо внимания",
+              "isCorrect": true,
+              "feedback": "Точно. Небольшая автоматическая трата легко пропадает из внимания, но за месяцы превращается в заметную сумму."
+            },
+            {
+              "id": "ignore-small",
+              "label": "Если сумма маленькая, её можно не учитывать",
+              "feedback": "Маленькая сумма всё равно влияет на бюджет, если повторяется регулярно."
+            }
+          ],
+          "correctOptionId": "small-automatic-expense",
+          "feedback": "Важно не ругать себя за подписку, а заметить её и вернуть себе выбор.",
+          "statistics": {
+            "title": "Статистика по теме (Россия)",
+            "items": [
+              {
+                "value": "56%",
+                "label": "россиян не ведут учёт доходов и расходов, а 9% даже приблизительно не знают, сколько потратили."
+              },
+              {
+                "value": "197 ₽",
+                "label": "средний чек за кофе навынос; за год он вырос на 12%. Одна привычка — больше 5 000 ₽ в месяц."
+              },
+              {
+                "value": "54%",
+                "label": "россиян пользуются платными подписками, но точную сумму расходов на них назовёт только 51% — остальные знают примерно или вовсе не следят."
+              }
+            ],
+            "sources": ["НАФИ", "«Платформа ОФД» / Т—Ж (2025)", "Финансы Mail (2025)"]
+          }
         },
         {
           "id": "card_t1u1l1_04_expense_diary",
           "type": "artifact",
-          "order": 4,
+          "order": 5,
           "title": "Твои 3 траты за сегодня",
-          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 4",
-          "thinkingType": "real world A",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 5",
+          "thinkingType": "personal world",
           "develops": "soft skills",
           "checkability": "mixed",
           "body": "Вспомни и запиши 3 траты за сегодня. Просто сумма и категория — без оценок «хорошо/плохо».\n\nНе помнишь точно? Поставь примерно: точность здесь не главное.",
@@ -119,9 +181,9 @@
         {
           "id": "card_t1u1l1_05_surprise_reflection",
           "type": "reflection",
-          "order": 5,
+          "order": 6,
           "title": "Что удивило?",
-          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 5",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 6",
           "thinkingType": "personal world",
           "develops": "psychology",
           "checkability": "subjective",
@@ -142,9 +204,9 @@
         {
           "id": "card_t1u1l1_06_micro_rule",
           "type": "artifact",
-          "order": 6,
+          "order": 7,
           "title": "Твоё правило на 3 дня",
-          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 6",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 7",
           "thinkingType": "habit",
           "develops": "habits",
           "checkability": "mixed",
@@ -161,9 +223,9 @@
         {
           "id": "card_t1u1l1_07_navigator_summary",
           "type": "summary",
-          "order": 7,
+          "order": 8,
           "title": "Сохранили в Навигатор",
-          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 7",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md / Экран 8",
           "thinkingType": "artifact",
           "develops": "habits",
           "checkability": "subjective",
@@ -231,54 +293,119 @@
           "thinkingType": "memory",
           "develops": "hard skills",
           "checkability": "objective",
-          "body": "Обязательные траты — то, без чего не обойтись: жильё, еда, проезд, связь, лекарства, обязательные платежи.\n\nЖелаемые траты — то, что улучшает жизнь, но без чего можно прожить: развлечения, новые вещи «для радости», импульсивные покупки.\n\nЖелаемое — это не «плохо». Цель не запретить, а видеть разницу и выбирать осознанно.\n\nПростой тест из сценария: «Что будет, если этого не купить прямо сейчас?» Если ничего критичного — это скорее желаемое.",
-          "examples": [
-            "Жильё",
-            "Еда",
-            "Проезд",
-            "Связь",
-            "Подписка на стриминг",
-            "Импульсивная покупка"
-          ]
+          "body": "Обязательные траты — то, без чего не обойтись: жильё, еда, проезд, связь, лекарства, обязательные платежи.\n\nЖелаемые траты — то, что улучшает жизнь, но без чего можно прожить: развлечения, новые вещи «для радости», импульсивные покупки.\n\nЖелаемое — это не «плохо». Цель не запретить, а видеть разницу и выбирать осознанно.\n\nПростой тест из сценария: «Что будет, если этого не купить прямо сейчас?» Если ничего критичного — это скорее желаемое."
         },
         {
           "id": "card_t1u1l2_03_sorting_choice",
-          "type": "single_choice",
+          "type": "categorization",
           "order": 3,
           "title": "Раздели траты на две группы",
           "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 3",
           "thinkingType": "application",
           "develops": "hard skills",
           "checkability": "objective",
-          "question": "Какой вариант лучше всего делит траты на «обязательное» и «желаемое»?",
-          "options": [
+          "question": "Распредели траты: «обязательное» или «желаемое».",
+          "categories": [
             {
-              "id": "correct-split",
-              "label": "Обязательное: ЖКХ, проездной, лекарства по рецепту. Желаемое: стриминг, новая приставка, кофе навынос каждый день.",
-              "isCorrect": true,
-              "feedback": "Верно. Обязательное — это «нужно жить», желаемое — «хочу лучше». Разница не в сумме, а в необходимости."
+              "id": "mandatory",
+              "label": "Обязательное"
             },
             {
-              "id": "all-required",
-              "label": "Обязательное: все шесть трат, потому что человек уже привык ими пользоваться.",
-              "feedback": "Привычка не всегда делает трату обязательной. Проверь вопросом: что случится, если этого не купить?"
-            },
-            {
-              "id": "all-desired",
-              "label": "Желаемое: все шесть трат, потому что любую трату можно сократить.",
-              "feedback": "Некоторые траты поддерживают базовую жизнь и здоровье. Их важно отличать от приятного, но необязательного."
+              "id": "desired",
+              "label": "Желаемое"
             }
           ],
-          "correctOptionId": "correct-split",
-          "feedback": "Если сомневаешься, спроси себя: это для жизни или для радости?"
+          "items": [
+            {
+              "id": "utilities",
+              "label": "Оплата ЖКХ",
+              "correctCategoryId": "mandatory"
+            },
+            {
+              "id": "transport-pass",
+              "label": "Проездной на месяц",
+              "correctCategoryId": "mandatory"
+            },
+            {
+              "id": "streaming",
+              "label": "Подписка на стриминг",
+              "correctCategoryId": "desired"
+            },
+            {
+              "id": "game-console",
+              "label": "Новая игровая приставка",
+              "correctCategoryId": "desired"
+            },
+            {
+              "id": "medicine",
+              "label": "Лекарства по рецепту",
+              "correctCategoryId": "mandatory"
+            },
+            {
+              "id": "daily-coffee",
+              "label": "Кофе навынос каждый день",
+              "correctCategoryId": "desired"
+            }
+          ],
+          "feedback": "Верно. Обязательное — это «нужно жить», желаемое — «хочу лучше». Если сомневаешься, спроси себя: это для жизни или для радости?"
+        },
+        {
+          "id": "card_t1u1l2_04_sale_example",
+          "type": "scenario",
+          "order": 4,
+          "title": "Покупка на распродаже",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 4",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Илья увидел на распродаже наушники за 3 500 ₽. Старые работают, но новые приятнее. Деньги есть, но покупка не планировалась.",
+          "question": "Какой шаг лучше всего применяет правило урока?",
+          "options": [
+            {
+              "id": "mandatory-because-discount",
+              "label": "Записать как обязательную, потому что есть скидка",
+              "feedback": "Скидка не делает покупку обязательной. Сначала нужно понять, необходимость это или желание."
+            },
+            {
+              "id": "mark-desired-and-check-now",
+              "label": "Отметить покупку как желаемую и спросить: точно ли сейчас?",
+              "isCorrect": true,
+              "feedback": "Верно. Скидка не делает покупку обязательной. Сначала называем её желаемой, потом решаем, нужна ли она сейчас."
+            },
+            {
+              "id": "ignore-sale",
+              "label": "Не учитывать покупку, если она по акции",
+              "feedback": "Покупка по акции всё равно остаётся тратой. Её полезно учитывать и выбирать осознанно."
+            }
+          ],
+          "correctOptionId": "mark-desired-and-check-now",
+          "feedback": "Акция и скидка не меняют категорию траты. Важно отделить необходимость от желания и оставить себе выбор.",
+          "statistics": {
+            "title": "Статистика по теме (Россия)",
+            "items": [
+              {
+                "value": "63%",
+                "label": "россиян имеют опыт спонтанных, импульсивных покупок (+6 п.п. к 2021 г.)."
+              },
+              {
+                "value": "35%",
+                "label": "совершают импульсивные покупки не реже раза в месяц, 18% — каждую неделю."
+              },
+              {
+                "value": "5%",
+                "label": "дохода — столько большинство готово тратить на незапланированные покупки."
+              }
+            ],
+            "sources": ["ВЦИОМ (2025)", "«Долями» / Tinkoff Data (2024)"]
+          }
         },
         {
           "id": "card_t1u1l2_04_expense_markup",
           "type": "artifact",
-          "order": 4,
+          "order": 5,
           "title": "Размечаем твои траты",
-          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 4",
-          "thinkingType": "real world A",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 5",
+          "thinkingType": "personal world",
           "develops": "hard skills",
           "checkability": "mixed",
           "body": "Возьми 5 своих трат за последние дни — можно из дневника У1.1. Отметь каждую: обязательная или желаемая.\n\nСомневаешься? Спроси себя: «Это для жизни или для радости?» Оба варианта нормальны.",
@@ -293,9 +420,9 @@
         {
           "id": "card_t1u1l2_05_reduce_without_pain",
           "type": "reflection",
-          "order": 5,
+          "order": 6,
           "title": "Что можно сократить без боли?",
-          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 5",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 6",
           "thinkingType": "personal world",
           "develops": "psychology",
           "checkability": "subjective",
@@ -316,9 +443,9 @@
         {
           "id": "card_t1u1l2_06_choice_rule",
           "type": "artifact",
-          "order": 6,
+          "order": 7,
           "title": "Твоё правило выбора",
-          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 6",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 7",
           "thinkingType": "habit",
           "develops": "habits",
           "checkability": "mixed",
@@ -335,9 +462,9 @@
         {
           "id": "card_t1u1l2_07_navigator_summary",
           "type": "summary",
-          "order": 7,
+          "order": 8,
           "title": "Сохранили в Навигатор",
-          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 7",
+          "sourceSection": "docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md / Экран 8",
           "thinkingType": "artifact",
           "develops": "habits",
           "checkability": "subjective",

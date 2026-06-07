@@ -1,7 +1,86 @@
-import type { InputHTMLAttributes, ReactNode } from 'react'
+import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
 import { Check, CheckCircle2, Circle } from 'lucide-react'
 
+import type { Card } from '@/content/program'
 import { cn } from '@/lib/utils'
+
+type CardStatistics = NonNullable<Card['statistics']>
+
+const noBreakNumberUnitPattern =
+  /~?\d+(?:[ \u00A0]\d{3})+(?:[ \u00A0]+(?:₽(?:[ \u00A0]+в[ \u00A0]+(?:месяц|день|неделю|год))?|месяц(?:а|ев)?|мес\.|день|дня|дней|трат(?:а|ы)?|зарплат(?:а|ы)?))?|~?\d+(?:[–-]\d+)?[ \u00A0]+(?:₽(?:[ \u00A0]+в[ \u00A0]+(?:месяц|день|неделю|год))?|месяц(?:а|ев)?|мес\.|день|дня|дней|трат(?:а|ы)?|зарплат(?:а|ы)?)/g
+
+export function NoBreakText({ text }: { text: string }) {
+  const parts = splitNoBreakNumberUnits(text)
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.noBreak ? (
+          <span className="whitespace-nowrap" key={`${part.text}-${index}`}>
+            {part.text}
+          </span>
+        ) : (
+          part.text
+        ),
+      )}
+    </>
+  )
+}
+
+function splitNoBreakNumberUnits(text: string) {
+  const parts: Array<{ text: string; noBreak: boolean }> = []
+  let cursor = 0
+
+  for (const match of text.matchAll(noBreakNumberUnitPattern)) {
+    const matchText = match[0]
+    const index = match.index ?? 0
+
+    if (index > cursor) {
+      parts.push({ text: text.slice(cursor, index), noBreak: false })
+    }
+
+    parts.push({ text: matchText, noBreak: true })
+    cursor = index + matchText.length
+  }
+
+  if (cursor < text.length) {
+    parts.push({ text: text.slice(cursor), noBreak: false })
+  }
+
+  return parts.length > 0 ? parts : [{ text, noBreak: false }]
+}
+
+export function StatisticsPanel({ statistics }: { statistics: CardStatistics }) {
+  const title = statistics.title ?? 'Статистика'
+
+  return (
+    <aside className="rounded-[var(--fr-radius-lg)] border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-[var(--fr-space-4)]">
+      <h3 className="text-[length:var(--fr-type-caption-sm-size)] font-bold uppercase leading-[var(--fr-type-caption-sm-line)] tracking-normal text-[var(--fr-color-sky-600)]">
+        {title}
+      </h3>
+      <dl className="mt-[var(--fr-space-3)] flex flex-col gap-[var(--fr-space-3)]">
+        {statistics.items.map((item) => (
+          <div
+            className="grid grid-cols-[minmax(4.5rem,max-content)_minmax(0,1fr)] gap-[var(--fr-space-3)] rounded-[var(--fr-radius-md)] bg-[var(--fr-surface-card)] px-[var(--fr-space-3)] py-[var(--fr-space-2)]"
+            key={`${item.value}-${item.label}`}
+          >
+            <dt className="text-[length:var(--fr-type-body-md-size)] font-bold leading-[var(--fr-type-body-md-line)] text-[var(--fr-text-primary)]">
+              <NoBreakText text={item.value} />
+            </dt>
+            <dd className="min-w-0 text-pretty text-[length:var(--fr-type-body-sm-size)] leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-secondary)]">
+              <NoBreakText text={item.label} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {statistics.sources?.length ? (
+        <p className="mt-[var(--fr-space-3)] text-pretty text-[length:var(--fr-type-caption-md-size)] leading-[var(--fr-type-caption-md-line)] text-[var(--fr-text-tertiary)]">
+          <NoBreakText text={`Источники: ${statistics.sources.join('; ')}.`} />
+        </p>
+      ) : null}
+    </aside>
+  )
+}
 
 export function PillList({ items }: { items: string[] }) {
   return (
@@ -11,7 +90,7 @@ export function PillList({ items }: { items: string[] }) {
           className="inline-flex min-h-9 max-w-full items-center rounded-[var(--fr-radius-full)] bg-[var(--fr-surface-soft)] px-[var(--fr-space-3)] py-[var(--fr-space-2)] text-[length:var(--fr-type-body-sm-size)] font-semibold leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-secondary)]"
           key={item}
         >
-          {item}
+          <NoBreakText text={item} />
         </li>
       ))}
     </ul>
@@ -31,7 +110,9 @@ export function StaticChecklist({ items, checked = false }: { items: string[]; c
           ) : (
             <Circle aria-hidden="true" className="shrink-0 text-[var(--fr-text-tertiary)]" />
           )}
-          <span>{item}</span>
+          <span>
+            <NoBreakText text={item} />
+          </span>
         </li>
       ))}
     </ul>
@@ -58,7 +139,7 @@ export function StaticChoiceList({ options }: { options: Array<{ id: string; lab
           )}
           <span>
             {option.isCorrect ? <span className="sr-only">Подходящий вариант: </span> : null}
-            {option.label}
+            <NoBreakText text={option.label} />
           </span>
         </li>
       ))}
@@ -126,7 +207,45 @@ export function SelectableOption({
           <span className="size-2 rounded-full bg-current" />
         ) : null}
       </span>
-      <span className="block min-w-0 text-pretty">{children}</span>
+      <span className="block min-w-0 text-pretty">
+        {typeof children === 'string' ? <NoBreakText text={children} /> : children}
+      </span>
     </label>
+  )
+}
+
+export function CustomOptionTextarea({
+  describedBy,
+  id,
+  label = 'Мой вариант',
+  onValueChange,
+  placeholder = 'Заполни здесь',
+  rows = 3,
+  value,
+}: {
+  describedBy?: string
+  id: string
+  label?: string
+  onValueChange: (value: string) => void
+  placeholder?: string
+  rows?: TextareaHTMLAttributes<HTMLTextAreaElement>['rows']
+  value: string
+}) {
+  return (
+    <div className="mt-2 flex flex-col gap-2 rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-3">
+      <label className="sr-only" htmlFor={id}>
+        {label}
+      </label>
+      <textarea
+        aria-describedby={describedBy}
+        autoFocus
+        className="min-h-20 w-full resize-y rounded-xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] px-3 py-2 text-sm leading-6 text-[var(--fr-text-primary)] outline-none transition placeholder:text-[var(--fr-text-tertiary)] focus-visible:border-[var(--fr-color-brand-500)] focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
+        id={id}
+        onChange={(event) => onValueChange(event.target.value)}
+        placeholder={placeholder}
+        rows={rows}
+        value={value}
+      />
+    </div>
   )
 }

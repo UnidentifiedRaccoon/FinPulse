@@ -99,6 +99,8 @@ Read first:
 - AGENTS.md
 - harness/PROJECT_STATE.md
 - docs/ARCHITECTURE.md
+- docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md, if touching JSON,
+  methodology, or lesson content
 - <task-specific docs>
 
 Task:
@@ -115,6 +117,7 @@ Success criteria:
 
 Required checks:
 - ./scripts/verify.sh, if project scaffold exists
+- npm run check:content, if content/JSON changed
 - task-specific checks
 
 Return:

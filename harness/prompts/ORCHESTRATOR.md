@@ -11,6 +11,8 @@ Read first:
 - harness/PARALLEL_AGENT_PROTOCOL.md
 - docs/PRODUCT.md
 - docs/ARCHITECTURE.md
+- docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md when planning
+  content or methodology work
 - docs/engineering/contributing.md when planning branch, commit, push, or PR work
 
 Mission:
@@ -26,7 +28,10 @@ Hard constraints:
 - React + TS SPA/Vite;
 - Zustand only for small client state;
 - Tailwind + shadcn/ui;
-- no accounts, diagnostics, rewards, analytics dashboards, backend, or SSR migration.
+- no accounts beyond accepted minimal learner auth, diagnostics, rewards,
+  analytics dashboards, personalized recommendations, or SSR migration;
+- new or changed T1 lessons must use the accepted eight-screen architecture
+  from docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md.
 
 When spawning a subagent, provide:
 1. task goal;

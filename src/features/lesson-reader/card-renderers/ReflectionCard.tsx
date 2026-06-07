@@ -4,7 +4,7 @@ import {
   type ReflectionState,
 } from '@/features/lesson-reader/lessonInteraction'
 
-import { PillList, SelectableOption } from './shared'
+import { CustomOptionTextarea, NoBreakText, PillList, SelectableOption } from './shared'
 
 export function ReflectionCard({
   card,
@@ -23,11 +23,13 @@ export function ReflectionCard({
   if (card.readOnly) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">{card.prompt}</p>
+        <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">
+          <NoBreakText text={card.prompt} />
+        </p>
         {displayOptions ? <PillList items={displayOptions} /> : null}
         {card.guidance ? (
           <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
-            {card.guidance}
+            <NoBreakText text={card.guidance} />
           </p>
         ) : null}
       </div>
@@ -41,7 +43,9 @@ export function ReflectionCard({
 
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">{card.prompt}</p>
+        <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">
+          <NoBreakText text={card.prompt} />
+        </p>
         <fieldset className="flex flex-col gap-3">
           <legend className="sr-only">{card.prompt}</legend>
           <ul className="flex flex-col gap-3">
@@ -78,27 +82,20 @@ export function ReflectionCard({
                   {card.customOption.label}
                 </SelectableOption>
                 {isCustomSelected ? (
-                  <div className="mt-2">
-                    <label className="sr-only" htmlFor={customInputId}>
-                      Введите свой вариант
-                    </label>
-                    <input
-                      aria-describedby={joinIds(guidanceId, statusId)}
-                      className="min-h-12 w-full rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] px-4 py-3 text-base leading-6 text-[var(--fr-text-primary)] outline-none transition placeholder:text-[var(--fr-text-tertiary)] focus-visible:border-[var(--fr-color-brand-500)] focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
-                      id={customInputId}
-                      onChange={(event) =>
-                        onChange({
-                          ...state,
-                          isCustomSelected: true,
-                          singleValue: '',
-                          textValue: event.target.value,
-                        })
-                      }
-                      placeholder={card.customOption.placeholder ?? 'Напиши свой вариант'}
-                      type="text"
-                      value={state.textValue}
-                    />
-                  </div>
+                  <CustomOptionTextarea
+                    describedBy={joinIds(guidanceId, statusId)}
+                    id={customInputId}
+                    onValueChange={(value) =>
+                      onChange({
+                        ...state,
+                        isCustomSelected: true,
+                        singleValue: '',
+                        textValue: value,
+                      })
+                    }
+                    placeholder={card.customOption.placeholder}
+                    value={state.textValue}
+                  />
                 ) : null}
               </li>
             ) : null}
@@ -111,7 +108,7 @@ export function ReflectionCard({
         />
         {card.guidance ? (
           <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
-            {card.guidance}
+            <NoBreakText text={card.guidance} />
           </p>
         ) : null}
       </div>
@@ -121,7 +118,9 @@ export function ReflectionCard({
   if (inputType === 'multi_select' && card.options?.length) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">{card.prompt}</p>
+        <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">
+          <NoBreakText text={card.prompt} />
+        </p>
         <fieldset className="flex flex-col gap-3">
           <legend className="sr-only">{card.prompt}</legend>
           <ul className="flex flex-col gap-3">
@@ -161,7 +160,7 @@ export function ReflectionCard({
         />
         {card.guidance ? (
           <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
-            {card.guidance}
+            <NoBreakText text={card.guidance} />
           </p>
         ) : null}
       </div>
@@ -170,7 +169,9 @@ export function ReflectionCard({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">{card.prompt}</p>
+      <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">
+        <NoBreakText text={card.prompt} />
+      </p>
       <label className="sr-only" htmlFor={`${card.id}-textarea`}>
         {inputType === 'table' ? 'Заполнить таблицу' : 'Ответ'}
       </label>
@@ -190,7 +191,7 @@ export function ReflectionCard({
       />
       {card.guidance ? (
         <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
-          {card.guidance}
+          <NoBreakText text={card.guidance} />
         </p>
       ) : null}
     </div>

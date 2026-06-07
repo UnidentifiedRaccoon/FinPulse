@@ -1,12 +1,15 @@
 import type { ReactNode } from 'react'
 
 import type { Card } from '@/content/program'
+import { NoBreakText } from '@/features/lesson-reader/card-renderers/shared'
 
 const cardTypeLabels: Record<Card['type'], string> = {
   theory: 'Короткое объяснение',
   video: 'Видео',
   callout: 'Подсказка',
   single_choice: 'Выбор',
+  multi_select: 'Практика',
+  categorization: 'Практика',
   reflection: 'Размышление',
   scenario: 'Ситуация',
   artifact: 'Рабочий блок',
@@ -31,7 +34,7 @@ export function LessonCardFrame({
       <header>
         {card.title ? (
           <h2 className="text-xl font-bold leading-7 text-balance tracking-normal text-[var(--fr-text-primary)]" id={`${card.id}-title`}>
-            {card.title}
+            <NoBreakText text={card.title} />
           </h2>
         ) : (
           <h2 className="sr-only" id={`${card.id}-title`}>

@@ -1,6 +1,6 @@
 # QA User Scenario Map — FinPulse
 
-Last updated: 2026-06-04
+Last updated: 2026-06-07
 
 ## Purpose
 
@@ -13,12 +13,15 @@ Out of scope remains unchanged: diagnostics, rewards, scoring, recommendations, 
 - Program: `/program`
 - Profile: `/profile`
 - Tier: `/modules/t1-start`
-- Unit: `/modules/t1-start/units/money-and-operations`
-- Lesson: `/lessons/where-money-goes`
+- Units: `/modules/t1-start/units/money-and-operations`, `/modules/t1-start/units/planning-and-management`
+- Lessons: `/lessons/where-money-goes`, `/lessons/mandatory-and-desired`, `/lessons/why-emergency-fund`, `/lessons/reserve-amount`
 
 Current runtime lesson set:
 
 - `where-money-goes`
+- `mandatory-and-desired`
+- `why-emergency-fund`
+- `reserve-amount`
 
 Removed legacy content must return 404 through content API and graceful load errors in the UI:
 
@@ -51,7 +54,7 @@ Minimum run:
 | New learner | Registers during test; no progress and no private answers. |
 | Returning learner | Existing valid session, no progress. |
 | In-progress learner | Viewed first lesson, completed cards, saved artifact/reflection answers. |
-| Completed learner | `where-money-goes` completed. |
+| Completed learner | One or more current T1 lessons completed. |
 | Expired-session learner | Progress/reflection API returns 401 during save. |
 | Second learner | Separate account for privacy boundary checks. |
 
@@ -63,7 +66,7 @@ Minimum run:
 |---|---|---|---|
 | ENTRY-01 | P0 | Open `/` without a session. | Auth screen is shown with login, password, login, and registration controls. |
 | ENTRY-02 | P0 | Open `/` with a valid session. | User is routed to `/program`; authenticated shell is available. |
-| ENTRY-03 | P0 | Refresh `/program`, `/modules/t1-start`, `/lessons/where-money-goes`, and `/profile` while authenticated. | Route survives refresh; content loads from API; progress/profile data stay tied to the user. |
+| ENTRY-03 | P0 | Refresh `/program`, `/modules/t1-start`, any current `/lessons/:lessonSlug`, and `/profile` while authenticated. | Route survives refresh; content loads from API; progress/profile data stay tied to the user. |
 | AUTH-01 | P0 | Register and login with email and username-style identifiers. | Account is created/authenticated; progress/reflection fetches run. |
 | AUTH-02 | P0 | Logout from desktop and mobile profile. | Session clears, app returns to auth screen, private state disappears, Back does not restore it. |
 | SHELL-01 | P0 | Desktop authenticated `/program`. | Fixed sidebar shows FinPulse, `Обучение`, `Профиль`, user login, and logout. |
@@ -74,9 +77,9 @@ Minimum run:
 | ID | Priority | Scenario | Expected Result |
 |---|---|---|---|
 | PROGRAM-01 | P0 | Open `/program` authenticated with no progress. | `Тиры` renders; `T1 Старт` card links to `/modules/t1-start`; progress starts at zero. |
-| PATH-01 | P0 | Open `/modules/t1-start` with no progress. | One section, `Юнит 1. Деньги и операции`, renders; `Куда уходят деньги` is the current lesson. |
+| PATH-01 | P0 | Open `/modules/t1-start` with no progress. | Both current units render; `Куда уходят деньги` is the current lesson. |
 | PATH-02 | P0 | Open current lesson node dialog. | Dialog shows title, `5 мин`, and action to `/lessons/where-money-goes`. |
-| PATH-03 | P0 | Open `/modules/t1-start/units/money-and-operations`. | Unit path renders the same single section and returns to the tier. |
+| PATH-03 | P0 | Open each current unit route. | Unit path renders only that unit's lesson section and returns to the tier. |
 | PATH-04 | P1 | Open invalid or legacy module/unit route. | Graceful load error appears; no stale content renders. |
 
 ### Lesson Reader
@@ -87,12 +90,13 @@ Minimum run:
 | LESSON-02 | P0 | Complete the full lesson. | Cards advance in order and final summary completes the lesson. |
 | LESSON-03 | P0 | Card 1 subjective `single_choice`. | Any selected option can continue without a correct-answer check. |
 | LESSON-04 | P0 | Card 2 theory. | Theory text includes the spending-leak fact/callout text; no video card is rendered without a real source. |
-| LESSON-05 | P0 | Card 3 objective `single_choice`. | Correct option identifies visible vs unnoticed expenses; feedback appears before continuing. |
-| LESSON-06 | P0 | Card 4 artifact template. | `Далее` is disabled until at least one expense row is filled; answer saves before card completion. |
-| LESSON-07 | P0 | Card 5 reflection single select. | `Далее` is disabled until a selection; answer saves under `unexpected_expense`. |
-| LESSON-08 | P0 | Card 6 artifact variants. | Radio variant selection enables continue; `Свой вариант` reveals a required text field and persists typed text as the artifact variant. |
-| LESSON-09 | P0 | Card 7 summary. | Summary bridges to У1.2 and final action completes the lesson. |
-| LESSON-10 | P1 | Open invalid or legacy lesson route. | Graceful "lesson could not load" state appears and no viewed progress is written. |
+| LESSON-05 | P0 | Card 3 objective `categorization`. | All expenses must be assigned to a category before checking; feedback appears before continuing. |
+| LESSON-06 | P0 | Card 4 external-example scenario/statistics. | Source-backed statistics render; objective interaction can be completed before continuing. |
+| LESSON-07 | P0 | Card 5 artifact template. | `Далее` is disabled until at least one expense row is filled; answer saves before card completion. |
+| LESSON-08 | P0 | Card 6 reflection single select. | `Далее` is disabled until a selection; answer saves under `unexpected_expense`. |
+| LESSON-09 | P0 | Card 7 artifact variants. | Radio variant selection enables continue; `Свой вариант` reveals a required text field and persists typed text as the artifact variant. |
+| LESSON-10 | P0 | Card 8 summary. | Summary bridges to the next lesson and final action completes the lesson. |
+| LESSON-11 | P1 | Open invalid or legacy lesson route. | Graceful "lesson could not load" state appears and no viewed progress is written. |
 
 ### Progress, Answers, And Profile
 
@@ -110,7 +114,7 @@ Minimum run:
 
 | ID | Priority | Scenario | Expected Result |
 |---|---|---|---|
-| API-01 | P0 | `GET /api/program`, `/api/modules/t1-start`, `/api/units/money-and-operations`, `/api/lessons/where-money-goes`. | Responses match shared content schemas. |
+| API-01 | P0 | `GET /api/program`, `/api/modules/t1-start`, both current `/api/units/:unitSlug`, and all current `/api/lessons/:lessonSlug`. | Responses match shared content schemas. |
 | API-02 | P0 | Legacy content API calls. | Old module/unit/lesson slugs return 404. |
 | API-03 | P0 | Protected auth/progress/reflection endpoints without cookie. | Protected endpoints return 401; no private data is returned. |
 | API-04 | P0 | Reflection save for non-reflection/non-artifact card. | Backend rejects as `non_persistable_card`. |
@@ -125,7 +129,7 @@ Minimum run:
 3. Confirm `/program` opens and authenticated mobile nav appears.
 4. Open `t1-start`.
 5. Open `where-money-goes` from the lesson node dialog.
-6. Complete all seven cards: subjective choice, theory, objective choice, expense artifact, reflection, 3-day rule artifact, summary.
+6. Complete all eight cards: subjective choice, theory, objective categorization, external example/statistics, expense artifact, reflection, 3-day rule artifact, summary.
 7. Open `/profile`.
 8. Confirm progress stats and saved answers under `Персональный финансовый навигатор`.
 9. Refresh `/profile` and confirm data persists.

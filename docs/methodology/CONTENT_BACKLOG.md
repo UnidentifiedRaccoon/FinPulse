@@ -44,7 +44,9 @@ Historical task files under `harness/tasks/review/**` remain as project history.
 | Target feature | Current handling |
 |---|---|
 | Tier as first-class schema level | Mapped to runtime `module` until schema changes. |
-| Sorting/matching/calculators/diaries | Adapted into existing cards; no new card types yet. |
+| Sorting into categories | Supported through objective `categorization` practice cards. |
+| Multiple correct choices | Supported through objective `multi_select` practice cards. |
+| Matching/calculators/diaries | Still adapted into existing cards or deferred. |
 | Psychotype diagnosis and adaptive feedback | Preserved in source only; no diagnosis or adaptation UI. |
 | Spaced repetition and daily warmups | Deferred product scope. |
 | Streaks, freeze days, gamification loops | Deferred product scope. |
@@ -54,7 +56,8 @@ Historical task files under `harness/tasks/review/**` remain as project history.
 
 ## Runtime Adaptation Rules
 
-- Use current card types only.
+- Use current card types only; objective category sorting and multiple-correct
+  practice should use `categorization` and `multi_select`.
 - Keep `reflection`/`artifact` persistence neutral: no scores, labels, inferred
   traits, diagnostics, recommendations, or analytics.
 - Keep quickly changing values as examples or lookup skills.

@@ -9,6 +9,8 @@ Read first:
 - AGENTS.md
 - harness/PROJECT_STATE.md
 - docs/ARCHITECTURE.md
+- docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md, if touching JSON,
+  methodology, or lesson content
 - <additional docs>
 
 Task ID:
@@ -27,13 +29,18 @@ Important constraints:
 - React + TypeScript SPA/Vite;
 - Zustand only for small client state;
 - Tailwind + shadcn/ui;
-- no accounts, diagnostics, rewards, analytics, backend, or SSR migration.
+- no accounts beyond accepted minimal learner auth, diagnostics, rewards,
+  analytics, personalized recommendations, or SSR migration;
+- T1 lesson content must follow the accepted eight-screen architecture:
+  `single_choice`, `theory`, `categorization`, `scenario`, `artifact`,
+  `reflection`, `artifact`, `summary`.
 
 Success criteria:
 -
 
 Required checks:
 - `./scripts/verify.sh` if scaffold exists
+- `npm run check:content` if content/JSON changed
 - <task-specific checks>
 
 Return exactly:

@@ -9,9 +9,32 @@ const choiceOptionSchema = z.object({
   feedback: z.string().optional(),
 }).strict()
 
+const categorySchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+}).strict()
+
+const categorizationItemSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  correctCategoryId: z.string().min(1),
+  feedback: z.string().optional(),
+}).strict()
+
 const customOptionSchema = z.object({
   label: z.string().min(1),
   placeholder: z.string().min(1).optional(),
+}).strict()
+
+const statisticItemSchema = z.object({
+  value: z.string().min(1),
+  label: z.string().min(1),
+}).strict()
+
+const cardStatisticsSchema = z.object({
+  title: z.string().min(1).optional(),
+  items: z.array(statisticItemSchema).min(1),
+  sources: z.array(z.string().min(1)).optional(),
 }).strict()
 
 const cardBaseSchema = z.object({
@@ -22,6 +45,7 @@ const cardBaseSchema = z.object({
   thinkingType: z.string().optional(),
   develops: z.string().optional(),
   checkability: checkabilitySchema.optional(),
+  statistics: cardStatisticsSchema.optional(),
 }).strict()
 
 export const cardSchema = z.discriminatedUnion('type', [
@@ -55,6 +79,21 @@ export const cardSchema = z.discriminatedUnion('type', [
     question: z.string().min(1),
     options: z.array(choiceOptionSchema).min(2),
     correctOptionId: z.string().optional(),
+    feedback: z.string().optional(),
+    readOnly: z.boolean().optional(),
+  }).strict(),
+  cardBaseSchema.extend({
+    type: z.literal('multi_select'),
+    question: z.string().min(1),
+    options: z.array(choiceOptionSchema).min(2),
+    feedback: z.string().optional(),
+    readOnly: z.boolean().optional(),
+  }).strict(),
+  cardBaseSchema.extend({
+    type: z.literal('categorization'),
+    question: z.string().min(1),
+    categories: z.array(categorySchema).min(2),
+    items: z.array(categorizationItemSchema).min(2),
     feedback: z.string().optional(),
     readOnly: z.boolean().optional(),
   }).strict(),
@@ -129,6 +168,61 @@ export const cardSchema = z.discriminatedUnion('type', [
         message: 'correctOptionId must match one of the option ids',
         path: ['correctOptionId'],
       })
+    }
+  }
+
+  if (card.type === 'multi_select') {
+    const hasCorrectOption = card.options.some((option) => option.isCorrect === true)
+    const hasIncorrectOption = card.options.some((option) => option.isCorrect !== true)
+
+    if (!hasCorrectOption) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'multi_select requires at least one correct option',
+        path: ['options'],
+      })
+    }
+
+    if (!hasIncorrectOption) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'multi_select requires at least one incorrect option',
+        path: ['options'],
+      })
+    }
+  }
+
+  if (card.type === 'categorization') {
+    const categoryIds = new Set<string>()
+    for (const [categoryIndex, category] of card.categories.entries()) {
+      if (categoryIds.has(category.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'category id must be unique',
+          path: ['categories', categoryIndex, 'id'],
+        })
+      }
+      categoryIds.add(category.id)
+    }
+
+    const itemIds = new Set<string>()
+    for (const [itemIndex, item] of card.items.entries()) {
+      if (itemIds.has(item.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'item id must be unique',
+          path: ['items', itemIndex, 'id'],
+        })
+      }
+      itemIds.add(item.id)
+
+      if (!categoryIds.has(item.correctCategoryId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'correctCategoryId must match one of the category ids',
+          path: ['items', itemIndex, 'correctCategoryId'],
+        })
+      }
     }
   }
 })
@@ -247,42 +341,6 @@ export type Unit = Module['units'][number]
 export type Lesson = Unit['lessons'][number]
 export type Card = Lesson['cards'][number]
 
-export function parseProgramManifest(data: unknown) {
-  return programManifestSchema.safeParse(data)
-}
-
-export function parseModuleFile(data: unknown) {
-  return moduleFileSchema.safeParse(data)
-}
-
-export function parseUnitFile(data: unknown) {
-  return unitFileSchema.safeParse(data)
-}
-
 export function parseProgram(data: unknown) {
   return programSchema.safeParse(data)
-}
-
-export function getOrderedModules(program: Program) {
-  return [...program.modules].sort((a, b) => a.order - b.order)
-}
-
-export function getOrderedUnits(module: Module) {
-  return [...module.units].sort((a, b) => a.order - b.order)
-}
-
-export function getOrderedLessons(unit: Unit) {
-  return [...unit.lessons].sort((a, b) => a.order - b.order)
-}
-
-export function getOrderedCards(lesson: Lesson) {
-  return [...lesson.cards].sort((a, b) => a.order - b.order)
-}
-
-export function getAllLessons(program: Program) {
-  return getOrderedModules(program).flatMap((module) =>
-    getOrderedUnits(module).flatMap((unit) =>
-      getOrderedLessons(unit).map((lesson) => ({ module, unit, lesson })),
-    ),
-  )
 }
