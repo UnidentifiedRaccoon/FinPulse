@@ -11,6 +11,16 @@ Rationale:
 - SEO and server rendering are not the primary MVP constraints;
 - development speed and a small mental model matter more right now.
 
+Approved educational content hierarchy:
+
+```txt
+Program -> Level -> Section -> Lesson -> Card
+```
+
+Runtime content JSON, TypeScript domain types, content API payloads, frontend
+routes, and persistence context use Level and Section directly. Old
+`module`/`unit` browser/API compatibility routes and payloads are not supported.
+
 Next.js/SSR can be reconsidered later if one of these becomes true:
 - public SEO landing/content discovery becomes a main growth channel;
 - lessons need server-side personalization;
@@ -54,7 +64,8 @@ src/
     providers.tsx
   pages/
     ProgramOverviewPage.tsx
-    ModulePage.tsx
+    LevelPage.tsx
+    SectionPage.tsx
     LessonPage.tsx
   features/
     program-navigation/
@@ -63,7 +74,7 @@ src/
     program.ts
     order.ts
     program.json
-    modules/
+    levels/
   shared/
     ui/
     lib/
@@ -91,6 +102,9 @@ server/
     password.ts
     sessions.ts
 ```
+
+The `server/modules/**` folder is generic backend module organization and is
+not part of the educational content hierarchy.
 
 Alternative for runtime-editable static content:
 
@@ -148,8 +162,8 @@ Do not use Zustand for:
 
 Current implementation:
 - use `src/content/program.json` as the program manifest;
-- keep module metadata in `src/content/modules/<module>/module.json`;
-- keep full unit runtime content in `src/content/modules/<module>/units/<unit>.json`;
+- keep Level metadata in `src/content/levels/<level>/level.json`;
+- keep full Section runtime content in `src/content/levels/<level>/sections/<section>.json`;
 - hydrate and validate the split files on the backend and in test-only loaders;
 - keep pure ordering helpers in `src/content/order.ts` so rendered routes do not import Zod schemas;
 - validate before build using `scripts/check-content-json.mjs`.
@@ -157,19 +171,19 @@ Current implementation:
 Stage 2 runtime policy:
 - JSON files remain source-of-truth in the repo;
 - the backend reads and validates the same split JSON graph;
-- frontend rendered routes fetch program/module/unit/lesson data from `/api/**`;
+- frontend rendered routes fetch program/level/section/lesson data from `/api/**`;
 - content API routes are read-only unless a later ADR introduces CMS/admin tooling.
 
 ## Backend/API boundary
 
-Initial public content routes:
+Current public content routes:
 
 ```txt
 GET /api/health
 GET /api/program
-GET /api/modules
-GET /api/modules/:moduleSlug
-GET /api/units/:unitSlug
+GET /api/levels
+GET /api/levels/:levelSlug
+GET /api/sections/:sectionSlug
 GET /api/lessons/:lessonSlug
 ```
 
@@ -219,9 +233,9 @@ Deploy resources, IAM, required GitHub secrets, smoke checks, rollback, and DB s
 
 The app should handle:
 - missing route slug;
-- missing module/lesson;
+- missing level/section/lesson;
 - malformed content in development;
-- empty modules or lessons;
+- empty levels, sections, or lessons;
 - unsupported content block type.
 
 ## Performance baseline

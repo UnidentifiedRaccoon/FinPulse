@@ -19,6 +19,9 @@ Verify:
 - task goal was met;
 - changes stayed inside scope;
 - no MVP exclusions were added;
+- product/methodology/docs changes use Program -> Level -> Section -> Lesson ->
+  Card and do not reintroduce Program -> Module -> Unit as the project
+  architecture;
 - publish rules were followed when commit, push, or PR work was requested;
 - JSON/content model remains valid;
 - new or changed T1 lessons follow the exact eight-screen contract and have no

@@ -1,36 +1,36 @@
 import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
-import { getAllLessons, getOrderedCards, getOrderedModules, getOrderedUnits } from '../../../src/content/order'
+import { getAllLessons, getOrderedCards, getOrderedLevels, getOrderedSections } from '../../../src/content/order'
 import {
   parseProgram,
   type Card,
   type Lesson,
-  type Module,
+  type Level,
   type Program,
-  type Unit,
+  type Section,
 } from '../../../src/content/program'
 
-type LoadedModuleFile = {
-  units: Array<{ path: string }>
+type LoadedLevelFile = {
+  sections: Array<{ path: string }>
 }
 
 export type LessonDetails = {
-  module: Module
-  unit: Unit
+  level: Level
+  section: Section
   lesson: Lesson
-  previous: { module: Module; unit: Unit; lesson: Lesson } | null
-  next: { module: Module; unit: Unit; lesson: Lesson } | null
+  previous: { level: Level; section: Section; lesson: Lesson } | null
+  next: { level: Level; section: Section; lesson: Lesson } | null
 }
 
-export type UnitDetails = {
-  module: Module
-  unit: Unit
+export type SectionDetails = {
+  level: Level
+  section: Section
 }
 
 export type CardDetails = {
-  module: Module
-  unit: Unit
+  level: Level
+  section: Section
   lesson: Lesson
   card: Card
 }
@@ -44,19 +44,14 @@ export function createContentService(contentRoot = resolve(process.cwd(), 'src/c
     getProgram() {
       return program
     },
-    getModules() {
-      return getOrderedModules(program)
+    getLevels() {
+      return getOrderedLevels(program)
     },
-    getModule(moduleSlug: string) {
-      return getOrderedModules(program).find((module) => module.slug === moduleSlug) ?? null
+    getLevel(levelSlug: string) {
+      return getOrderedLevels(program).find((level) => level.slug === levelSlug) ?? null
     },
-    getUnit(unitSlug: string): UnitDetails | null {
-      for (const module of getOrderedModules(program)) {
-        const unit = getOrderedUnits(module).find((candidate) => candidate.slug === unitSlug)
-        if (unit) return { module, unit }
-      }
-
-      return null
+    getSection(sectionSlug: string): SectionDetails | null {
+      return getSectionFromProgram(program, sectionSlug)
     },
     getLesson(lessonSlug: string): LessonDetails | null {
       const lessons = getAllLessons(program)
@@ -81,10 +76,19 @@ export function createContentService(contentRoot = resolve(process.cwd(), 'src/c
   }
 }
 
+function getSectionFromProgram(program: Program, sectionSlug: string): SectionDetails | null {
+  for (const level of getOrderedLevels(program)) {
+    const section = getOrderedSections(level).find((candidate) => candidate.slug === sectionSlug)
+    if (section) return { level, section }
+  }
+
+  return null
+}
+
 function getCardDetailsFromProgram(program: Program, cardId: string): CardDetails | null {
-  for (const { module, unit, lesson } of getAllLessons(program)) {
+  for (const { level, section, lesson } of getAllLessons(program)) {
     const card = getOrderedCards(lesson).find((candidate) => candidate.id === cardId)
-    if (card) return { module, unit, lesson, card }
+    if (card) return { level, section, lesson, card }
   }
 
   return null
@@ -93,27 +97,27 @@ function getCardDetailsFromProgram(program: Program, cardId: string): CardDetail
 function loadProgramFromFiles(contentRoot: string): Program {
   const programManifest = readContentJson(contentRoot, 'program.json')
 
-  if (!isObjectWithModules(programManifest)) {
-    throw new Error('Program manifest is missing modules')
+  if (!isObjectWithLevels(programManifest)) {
+    throw new Error('Program manifest is missing levels')
   }
 
   const hydratedProgram = {
     ...programManifest,
-    modules: programManifest.modules.map((moduleRef) => {
-      const modulePath = normalizeContentPath(moduleRef.path)
-      const moduleFile = readContentJson(contentRoot, modulePath)
+    levels: programManifest.levels.map((levelRef) => {
+      const levelPath = normalizeContentPath(levelRef.path)
+      const levelFile = readContentJson(contentRoot, levelPath)
 
-      if (!isObjectWithUnits(moduleFile)) {
-        throw new Error(`Module file is missing units: ${modulePath}`)
+      if (!isObjectWithSections(levelFile)) {
+        throw new Error(`Level file is missing sections: ${levelPath}`)
       }
 
-      const moduleBase = modulePath.split('/').slice(0, -1).join('/')
+      const levelBase = levelPath.split('/').slice(0, -1).join('/')
 
       return {
-        ...moduleFile,
-        units: moduleFile.units.map((unitRef) => {
-          const unitPath = joinContentPath(moduleBase, unitRef.path)
-          return readContentJson(contentRoot, unitPath)
+        ...levelFile,
+        sections: levelFile.sections.map((sectionRef) => {
+          const sectionPath = joinContentPath(levelBase, sectionRef.path)
+          return readContentJson(contentRoot, sectionPath)
         }),
       }
     }),
@@ -157,10 +161,10 @@ function joinContentPath(basePath: string, refPath: string) {
   return basePath ? join(basePath, normalizedRef) : normalizedRef
 }
 
-function isObjectWithModules(data: unknown): data is { modules: Array<{ path: string }> } {
-  return Boolean(data && typeof data === 'object' && !Array.isArray(data) && Array.isArray((data as { modules?: unknown }).modules))
+function isObjectWithLevels(data: unknown): data is { levels: Array<{ path: string }> } {
+  return Boolean(data && typeof data === 'object' && !Array.isArray(data) && Array.isArray((data as { levels?: unknown }).levels))
 }
 
-function isObjectWithUnits(data: unknown): data is LoadedModuleFile {
-  return Boolean(data && typeof data === 'object' && !Array.isArray(data) && Array.isArray((data as { units?: unknown }).units))
+function isObjectWithSections(data: unknown): data is LoadedLevelFile {
+  return Boolean(data && typeof data === 'object' && !Array.isArray(data) && Array.isArray((data as { sections?: unknown }).sections))
 }

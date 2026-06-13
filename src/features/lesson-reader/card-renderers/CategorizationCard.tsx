@@ -224,7 +224,7 @@ function AutoCategorizationFlow({
             </p>
           </div>
 
-          <ul className="grid grid-cols-1 gap-[var(--fr-space-2)] min-[360px]:grid-cols-2">
+          <ul className="grid grid-cols-1 items-stretch gap-[var(--fr-space-2)] min-[360px]:grid-cols-2">
             {card.categories.map((category) => {
               const selectedCategoryId = state.selectedCategoryIdsByItemId[activeItem.id] ?? ''
               const isSelected = selectedCategoryId === category.id
@@ -236,7 +236,7 @@ function AutoCategorizationFlow({
               })
 
               return (
-                <li key={category.id}>
+                <li className="flex" key={category.id}>
                   <FlowCategoryOption
                     ariaDescribedBy={state.isChecked ? feedbackId : undefined}
                     checked={isSelected}
@@ -281,7 +281,7 @@ function FlowCategoryOption({
   return (
     <label
       className={cn(
-        'relative flex min-h-10 cursor-pointer items-center justify-center rounded-[var(--fr-radius-lg)] border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] px-[var(--fr-space-2)] py-[var(--fr-space-2)] text-center text-[length:var(--fr-type-caption-md-size)] font-bold leading-[var(--fr-type-caption-md-line)] text-[var(--fr-text-secondary)] transition-[background-color,border-color,color,box-shadow,transform] duration-200 active:scale-[0.98] hover:border-[var(--fr-color-sky-500)] hover:bg-[var(--fr-surface-card)] hover:text-[var(--fr-text-primary)] hover:shadow-[var(--fr-shadow-md)] focus-within:ring-2 focus-within:ring-[var(--fr-color-sky-500)]',
+        'relative flex h-full min-h-12 cursor-pointer items-center justify-center rounded-[var(--fr-radius-lg)] border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] px-[var(--fr-space-2)] py-[var(--fr-space-2)] text-center text-[length:var(--fr-type-caption-md-size)] font-bold leading-[var(--fr-type-caption-md-line)] text-[var(--fr-text-secondary)] transition-[background-color,border-color,color,box-shadow,transform] duration-200 active:scale-[0.98] hover:border-[var(--fr-color-sky-500)] hover:bg-[var(--fr-surface-card)] hover:text-[var(--fr-text-primary)] hover:shadow-[var(--fr-shadow-md)] focus-within:ring-2 focus-within:ring-[var(--fr-color-sky-500)]',
         state === 'selected' && 'border-[var(--fr-color-sky-500)] bg-[var(--fr-color-brand-50)] text-[var(--fr-text-primary)]',
         state === 'correct' &&
           'border-[var(--fr-color-learn-correct-500)]/60 bg-[var(--fr-color-learn-correct-50)] text-[var(--fr-text-primary)]',

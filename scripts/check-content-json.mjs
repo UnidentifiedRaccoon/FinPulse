@@ -300,7 +300,7 @@ function validateCategorization(card, ctx) {
 
 function isT1Lesson(lesson, scope) {
   return (
-    scope.moduleSlug === 't1-start' ||
+    scope.levelSlug === 't1-start' ||
     (Array.isArray(lesson.tags) && lesson.tags.includes('T1')) ||
     (typeof lesson.id === 'string' && lesson.id.startsWith('lesson_t1_')) ||
     (typeof lesson.sourceSection === 'string' && lesson.sourceSection.includes('/t1-start/'))
@@ -410,7 +410,10 @@ function validateT1LessonArchitecture(lesson, ctx, scope) {
     requireNoCorrectChoice(screen1, `${ctx}.cards(order=1)`);
   }
 
-  requireT1ScreenBase(cardByOrder(cards, 2), ctx, 2, 'theory', 'objective');
+  const screen2 = cardByOrder(cards, 2);
+  if (requireT1ScreenBase(screen2, ctx, 2, 'theory', 'objective')) {
+    requireT1Screen2SourceCta(screen2, `${ctx}.cards(order=2)`);
+  }
 
   const screen3 = cardByOrder(cards, 3);
   if (requireT1ScreenBase(screen3, ctx, 3, 'categorization', 'objective') && !hasNonEmptyString(screen3, 'feedback')) {
@@ -460,13 +463,14 @@ function getSourceScreenText(sourceSection) {
   }
 
   if (!fs.existsSync(sourceFile)) {
+    fail(`sourceSection file does not exist: ${match.groups.file}`);
     sourceScreenStatisticsCache.set(cacheKey, null);
     return null;
   }
 
   const sourceText = fs.readFileSync(sourceFile, 'utf8');
   const screenPattern = new RegExp(
-    `(?:^|\\n)\\s*ЭКРАН\\s+${match.groups.screen}\\b[\\s\\S]*?(?=\\n\\s*ЭКРАН\\s+\\d+\\b|\\n\\s*\\d+\\.\\s+Соответствие|$)`,
+    `(?:^|\\n)\\s*(?:#{1,6}\\s*)?ЭКРАН\\s+${match.groups.screen}\\b[\\s\\S]*?(?=\\n\\s*(?:#{1,6}\\s*)?ЭКРАН\\s+\\d+\\b|\\n\\s*\\d+\\.\\s+Соответствие|$)`,
     'iu',
   );
   const screenText = sourceText.match(screenPattern)?.[0] ?? null;
@@ -479,19 +483,65 @@ function sourceSectionRequiresStatistics(sourceSection) {
   return Boolean(screenText && /Блок статистики|Статистика по теме/iu.test(screenText));
 }
 
+function normalizeSourceCtaLabel(value) {
+  return value
+    .replace(/<br\s*\/?>/giu, ' ')
+    .replace(/&nbsp;/giu, ' ')
+    .replace(/[«»"']/gu, '')
+    .replace(/[\[\]]/gu, '')
+    .replace(/\s*(?:→|->|➡)\s*/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim();
+}
+
+function getSourceScreenCtaLabel(sourceSection) {
+  const screenText = getSourceScreenText(sourceSection);
+  if (!screenText) return null;
+
+  const tableMatch = /^\s*\|\s*Кнопка\s*\|\s*([^|\n]+?)\s*\|/imu.exec(screenText);
+  if (tableMatch) {
+    const label = normalizeSourceCtaLabel(tableMatch[1]);
+    return label || null;
+  }
+
+  const microcopyMatch = /(?:^|\n)\s*Микро-копирайт\s*\n\s*([^\n]+)/iu.exec(screenText);
+  if (microcopyMatch) {
+    const label = normalizeSourceCtaLabel(microcopyMatch[1]);
+    return label || null;
+  }
+
+  return null;
+}
+
+function requireT1Screen2SourceCta(card, ctx) {
+  const sourceCtaLabel = getSourceScreenCtaLabel(card.sourceSection);
+  if (!sourceCtaLabel) return;
+
+  if (!hasNonEmptyString(card, 'ctaLabel')) {
+    fail(`${ctx}.ctaLabel is required because ${card.sourceSection} defines screen button "${sourceCtaLabel}"`);
+    return;
+  }
+
+  const runtimeCtaLabel = normalizeSourceCtaLabel(card.ctaLabel);
+  if (runtimeCtaLabel !== sourceCtaLabel) {
+    fail(`${ctx}.ctaLabel must match source screen button "${sourceCtaLabel}"`);
+  }
+}
+
 function validateCard(card, ctx, seen) {
   if (!requireObject(card, ctx)) return;
   requireString(card, 'id', ctx);
   requireOrder(card, ctx);
   requireOptionalString(card, 'title', ctx);
   requireOptionalString(card, 'sourceSection', ctx);
+  requireOptionalString(card, 'ctaLabel', ctx);
   requireOptionalString(card, 'thinkingType', ctx);
   requireOptionalString(card, 'develops', ctx);
   if (!allowedCardTypes.has(card.type)) {
     fail(`${ctx}.type has unsupported value: ${card.type}`);
     return;
   }
-  const baseCardKeys = ['id', 'type', 'order', 'title', 'sourceSection', 'thinkingType', 'develops', 'checkability', 'statistics'];
+  const baseCardKeys = ['id', 'type', 'order', 'title', 'sourceSection', 'ctaLabel', 'thinkingType', 'develops', 'checkability', 'statistics'];
   const cardKeysByType = {
     theory: [...baseCardKeys, 'body', 'examples'],
     video: [...baseCardKeys, 'src', 'provider', 'transcript', 'timecodes'],
@@ -604,9 +654,9 @@ function validateCard(card, ctx, seen) {
   }
 }
 
-function validateSupplemental(unit, ctx) {
-  if (unit.supplemental === undefined) return;
-  const supplemental = unit.supplemental;
+function validateSupplemental(section, ctx) {
+  if (section.supplemental === undefined) return;
+  const supplemental = section.supplemental;
   if (!requireObject(supplemental, `${ctx}.supplemental`)) return;
   requireOnlyKeys(supplemental, ['strategy', 'sourceFiles', 'trainings', 'spacedRepetition', 'expansionScenarios', 'editorialRules', 'glossary', 'outcome'], `${ctx}.supplemental`);
   requireOptionalString(supplemental, 'strategy', `${ctx}.supplemental`);
@@ -643,100 +693,100 @@ function validateSupplemental(unit, ctx) {
 function validateProgramGraph(programFile, contentRoot) {
   const program = readJson(programFile);
   const seen = {
-    moduleIds: new Set(),
-    moduleSlugs: new Set(),
-    unitIds: new Set(),
-    unitSlugs: new Set(),
+    levelIds: new Set(),
+    levelSlugs: new Set(),
+    sectionIds: new Set(),
+    sectionSlugs: new Set(),
     lessonIds: new Set(),
     lessonSlugs: new Set(),
     cardIds: new Set(),
   };
 
   if (requireObject(program, 'program')) {
-  requireOnlyKeys(program, ['schemaVersion', 'id', 'slug', 'title', 'description', 'modules'], 'program');
+  requireOnlyKeys(program, ['schemaVersion', 'id', 'slug', 'title', 'description', 'levels'], 'program');
   if (program.schemaVersion !== 1) fail('program.schemaVersion must be 1');
   requireString(program, 'id', 'program');
   requireSlug(program, 'slug', 'program');
   requireString(program, 'title', 'program');
   requireOptionalString(program, 'description', 'program');
 
-  const moduleRefs = requireArray(program, 'modules', 'program', 1);
-  validateOrderSequence(moduleRefs, 'program.modules');
-  for (const [moduleIndex, moduleRef] of moduleRefs.entries()) {
-    const refCtx = `program.modules[${moduleIndex}]`;
-    validateRefShape(moduleRef, refCtx);
-    checkUnique(moduleRef.id, seen.moduleIds, 'module id');
-    checkUnique(moduleRef.slug, seen.moduleSlugs, 'module slug');
+  const levelRefs = requireArray(program, 'levels', 'program', 1);
+  validateOrderSequence(levelRefs, 'program.levels');
+  for (const [levelIndex, levelRef] of levelRefs.entries()) {
+    const refCtx = `program.levels[${levelIndex}]`;
+    validateRefShape(levelRef, refCtx);
+    checkUnique(levelRef.id, seen.levelIds, 'level id');
+    checkUnique(levelRef.slug, seen.levelSlugs, 'level slug');
 
-    const modulePath = resolveRef(contentRoot, moduleRef.path, refCtx);
-    if (!modulePath || !fs.existsSync(modulePath)) {
-      fail(`${refCtx}.path does not exist: ${moduleRef.path}`);
+    const levelPath = resolveRef(contentRoot, levelRef.path, refCtx);
+    if (!levelPath || !fs.existsSync(levelPath)) {
+      fail(`${refCtx}.path does not exist: ${levelRef.path}`);
       continue;
     }
 
-    const module = readJson(modulePath);
-    const moduleCtx = `${rel(modulePath)}`;
-    if (!requireObject(module, moduleCtx)) continue;
-    requireOnlyKeys(module, ['schemaVersion', 'id', 'slug', 'title', 'description', 'order', 'source', 'units'], moduleCtx);
-    if (module.schemaVersion !== 1) fail(`${moduleCtx}.schemaVersion must be 1`);
-    requireString(module, 'id', moduleCtx);
-    requireSlug(module, 'slug', moduleCtx);
-    requireString(module, 'title', moduleCtx);
-    requireOptionalString(module, 'description', moduleCtx);
-    requireOptionalString(module, 'source', moduleCtx);
-    requireOrder(module, moduleCtx);
+    const level = readJson(levelPath);
+    const levelCtx = `${rel(levelPath)}`;
+    if (!requireObject(level, levelCtx)) continue;
+    requireOnlyKeys(level, ['schemaVersion', 'id', 'slug', 'title', 'description', 'order', 'source', 'sections'], levelCtx);
+    if (level.schemaVersion !== 1) fail(`${levelCtx}.schemaVersion must be 1`);
+    requireString(level, 'id', levelCtx);
+    requireSlug(level, 'slug', levelCtx);
+    requireString(level, 'title', levelCtx);
+    requireOptionalString(level, 'description', levelCtx);
+    requireOptionalString(level, 'source', levelCtx);
+    requireOrder(level, levelCtx);
 
     for (const key of ['id', 'slug', 'title', 'order']) {
-      if (moduleRef[key] !== module[key]) {
-        fail(`${refCtx}.${key} must match ${moduleCtx}.${key}`);
+      if (levelRef[key] !== level[key]) {
+        fail(`${refCtx}.${key} must match ${levelCtx}.${key}`);
       }
     }
 
-    const unitRefs = requireArray(module, 'units', moduleCtx, 1);
-    validateOrderSequence(unitRefs, `${moduleCtx}.units`);
-    const unitIdsInModule = new Set();
-    const unitSlugsInModule = new Set();
-    for (const [unitIndex, unitRef] of unitRefs.entries()) {
-      const unitRefCtx = `${moduleCtx}.units[${unitIndex}]`;
-      validateRefShape(unitRef, unitRefCtx);
-      checkUnique(unitRef.id, unitIdsInModule, `${moduleCtx} unit id`);
-      checkUnique(unitRef.slug, unitSlugsInModule, `${moduleCtx} unit slug`);
-      checkUnique(unitRef.id, seen.unitIds, 'unit id');
-      checkUnique(unitRef.slug, seen.unitSlugs, 'unit slug');
+    const sectionRefs = requireArray(level, 'sections', levelCtx, 1);
+    validateOrderSequence(sectionRefs, `${levelCtx}.sections`);
+    const sectionIdsInLevel = new Set();
+    const sectionSlugsInLevel = new Set();
+    for (const [sectionIndex, sectionRef] of sectionRefs.entries()) {
+      const sectionRefCtx = `${levelCtx}.sections[${sectionIndex}]`;
+      validateRefShape(sectionRef, sectionRefCtx);
+      checkUnique(sectionRef.id, sectionIdsInLevel, `${levelCtx} section id`);
+      checkUnique(sectionRef.slug, sectionSlugsInLevel, `${levelCtx} section slug`);
+      checkUnique(sectionRef.id, seen.sectionIds, 'section id');
+      checkUnique(sectionRef.slug, seen.sectionSlugs, 'section slug');
 
-      const unitPath = resolveRef(path.dirname(modulePath), unitRef.path, unitRefCtx);
-      if (!unitPath || !fs.existsSync(unitPath)) {
-        fail(`${unitRefCtx}.path does not exist: ${unitRef.path}`);
+      const sectionPath = resolveRef(path.dirname(levelPath), sectionRef.path, sectionRefCtx);
+      if (!sectionPath || !fs.existsSync(sectionPath)) {
+        fail(`${sectionRefCtx}.path does not exist: ${sectionRef.path}`);
         continue;
       }
 
-      const unit = readJson(unitPath);
-      const unitCtx = `${rel(unitPath)}`;
-      if (!requireObject(unit, unitCtx)) continue;
-      requireOnlyKeys(unit, ['schemaVersion', 'id', 'slug', 'title', 'description', 'order', 'source', 'lessons', 'supplemental'], unitCtx);
-      if (unit.schemaVersion !== 1) fail(`${unitCtx}.schemaVersion must be 1`);
-      requireString(unit, 'id', unitCtx);
-      requireSlug(unit, 'slug', unitCtx);
-      requireString(unit, 'title', unitCtx);
-      requireOptionalString(unit, 'description', unitCtx);
-      requireOrder(unit, unitCtx);
-      requireString(unit, 'source', unitCtx);
+      const section = readJson(sectionPath);
+      const sectionCtx = `${rel(sectionPath)}`;
+      if (!requireObject(section, sectionCtx)) continue;
+      requireOnlyKeys(section, ['schemaVersion', 'id', 'slug', 'title', 'description', 'order', 'source', 'lessons', 'supplemental'], sectionCtx);
+      if (section.schemaVersion !== 1) fail(`${sectionCtx}.schemaVersion must be 1`);
+      requireString(section, 'id', sectionCtx);
+      requireSlug(section, 'slug', sectionCtx);
+      requireString(section, 'title', sectionCtx);
+      requireOptionalString(section, 'description', sectionCtx);
+      requireOrder(section, sectionCtx);
+      requireString(section, 'source', sectionCtx);
 
       for (const key of ['id', 'slug', 'title', 'order']) {
-        if (unitRef[key] !== unit[key]) {
-          fail(`${unitRefCtx}.${key} must match ${unitCtx}.${key}`);
+        if (sectionRef[key] !== section[key]) {
+          fail(`${sectionRefCtx}.${key} must match ${sectionCtx}.${key}`);
         }
       }
 
-      const lessons = requireArray(unit, 'lessons', unitCtx, 1);
-      validateOrderSequence(lessons, `${unitCtx}.lessons`);
+      const lessons = requireArray(section, 'lessons', sectionCtx, 1);
+      validateOrderSequence(lessons, `${sectionCtx}.lessons`);
       for (const [lessonIndex, lesson] of lessons.entries()) {
-        validateLesson(lesson, `${unitCtx}.lessons[${lessonIndex}]`, seen, {
-          moduleSlug: module.slug,
-          unitSlug: unit.slug,
+        validateLesson(lesson, `${sectionCtx}.lessons[${lessonIndex}]`, seen, {
+          levelSlug: level.slug,
+          sectionSlug: section.slug,
         });
       }
-      validateSupplemental(unit, unitCtx);
+      validateSupplemental(section, sectionCtx);
     }
   }
   }

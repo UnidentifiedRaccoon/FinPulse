@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "id": "unit-example",
+  "id": "section-example",
   "slug": "getting-started",
   "title": "Getting started",
-  "description": "Example unit description.",
+  "description": "Example section description.",
   "order": 1,
-  "source": "examples/content/modules/module_example/units/unit_example.md",
+  "source": "examples/content/levels/level_example/sections/section_example.md",
   "lessons": [
     {
       "id": "lesson-example",
@@ -34,7 +34,7 @@
           "order": 2,
           "title": "Summary card",
           "sourceSection": "example",
-          "points": ["The example includes program, module, unit, lesson, and cards."]
+          "points": ["The example includes program, level, section, lesson, and cards."]
         }
       ]
     }

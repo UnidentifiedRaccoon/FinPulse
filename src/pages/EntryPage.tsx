@@ -243,7 +243,7 @@ function PersonalAnswerItem({ answer }: { answer: ReflectionAnswer }) {
       <div className="flex flex-col gap-3">
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase leading-4 tracking-normal text-[var(--fr-text-tertiary)]">
-            {stripSectionCode(answer.unitTitle)} · {answer.lessonTitle}
+            {stripSectionCode(answer.sectionTitle)} · {answer.lessonTitle}
           </p>
           <h4 className="mt-1 text-base font-black leading-6 tracking-normal text-[var(--fr-text-primary)]">
             {answer.cardTitle ?? (answer.cardType === 'artifact' ? 'Рабочий блок' : 'Ответ')}

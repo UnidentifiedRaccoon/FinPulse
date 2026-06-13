@@ -2,11 +2,16 @@
 
 Active source:
 
+- `METHODOLOGY.10-06.2026.docx` — current methodologist-provided DOCX source.
 - `METHODOLOGY.md` — central target methodology imported from the
-  methodologist-provided Google Doc.
+  methodologist-provided Google Doc / DOCX.
 - `AUTHORING.md` — current MVP adaptation rules for agents and editors.
 - `CONTENT_BACKLOG.md` — active runtime coverage and deferred target-methodology
   features.
+
+The approved educational hierarchy is Program -> Level -> Section -> Lesson ->
+Card. Runtime JSON/API now use Level and Section directly. Old `module`/`unit`
+names may appear in historical records only.
 
 Previous Finzdorov/AI/personal-experience source directories were removed from
 the active methodology tree. Historical task records remain under

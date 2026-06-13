@@ -104,7 +104,7 @@ Avoid:
 Recommended placements:
 - entry/welcome state;
 - empty state where a next learning step is available;
-- module transition;
+- level transition;
 - lesson completion;
 - small illustration near "route", "map", or "next step" concepts.
 

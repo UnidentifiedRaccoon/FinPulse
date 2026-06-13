@@ -7,7 +7,7 @@ Build a lightweight mobile-first site for consuming the material of an education
 The MVP should help a user:
 1. open the program quickly on a phone;
 2. understand the program structure;
-3. navigate between modules and lessons;
+3. navigate between levels, sections, and lessons;
 4. read/watch/use lesson material comfortably;
 5. return to relevant material without needing an account in the first reader slice;
 6. in Stage 2, optionally create a simple learner login so lesson/card progress survives reloads.
@@ -16,10 +16,11 @@ The MVP should help a user:
 
 Included:
 - static educational program content;
-- module list;
+- level list;
+- section lesson paths;
 - lesson list;
 - lesson detail page;
-- simple navigation between lessons/modules;
+- simple navigation between levels, sections, and lessons;
 - optional local-only UI preferences such as theme or last-opened lesson;
 - Stage 2 backend API for content delivery;
 - Stage 2 simple learner registration/login for saved progress;
@@ -41,9 +42,9 @@ Excluded:
 ## Primary user journey
 
 1. User opens the site.
-2. User sees the educational program title and a clear module list.
-3. User opens a module.
-4. User chooses a lesson.
+2. User sees the educational program title and a clear level list.
+3. User opens a level and sees its sections.
+4. User chooses a lesson in a section.
 5. User consumes the lesson material.
 6. User navigates to the next or previous lesson.
 7. In Stage 2, signed-in users can keep basic progress across reloads.
@@ -61,21 +62,27 @@ Excluded:
 
 ## Initial routes
 
-Recommended initial route map:
+Target educational route map:
 
 ```txt
 /                         Program overview
-/modules/:moduleSlug       Module detail
+/levels/:levelSlug          Level detail
+/levels/:levelSlug/sections/:sectionSlug
+                          Section detail, if a focused section route is needed
 /lessons/:lessonSlug       Lesson detail
 /about                     Optional static about/program info
 ```
+
+Current educational routes use `/levels/:levelSlug` and
+`/levels/:levelSlug/sections/:sectionSlug`. Old `/modules/**` browser routes
+are not supported.
 
 ## Acceptance baseline for early MVP
 
 The app is minimally useful when:
 - a real JSON program file can be loaded;
-- the overview page renders all modules;
-- a module page renders its lessons;
+- the overview page renders all levels;
+- a level page renders its sections and lessons;
 - a lesson page renders the lesson content blocks;
 - invalid/missing content fails gracefully;
 - the app passes typecheck, content validation, and production build.

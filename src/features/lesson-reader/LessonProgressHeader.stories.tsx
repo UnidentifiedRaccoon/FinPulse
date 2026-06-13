@@ -1,7 +1,7 @@
 import { MemoryRouter } from 'react-router'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { lessonFixture, moduleFixture, unitFixture } from '@/features/storybook/fixtures'
+import { lessonFixture, levelFixture, sectionFixture } from '@/features/storybook/fixtures'
 
 import { LessonProgressHeader } from './LessonProgressHeader'
 
@@ -28,9 +28,9 @@ type Story = StoryObj<typeof meta>
 
 export const Current: Story = {
   args: {
-    backTo: `/modules/${moduleFixture.slug}`,
-    backLabel: `Вернуться к тиру ${moduleFixture.title}`,
-    context: `${moduleFixture.title} · ${unitFixture.title}`,
+    backTo: `/levels/${levelFixture.slug}`,
+    backLabel: `Вернуться к уровню ${levelFixture.title}`,
+    context: `${levelFixture.title} · ${sectionFixture.title}`,
     title: lessonFixture.title,
     current: 2,
     total: 9,
@@ -41,9 +41,9 @@ export const Current: Story = {
 
 export const SavedComplete: Story = {
   args: {
-    backTo: `/modules/${moduleFixture.slug}`,
-    backLabel: `Вернуться к тиру ${moduleFixture.title}`,
-    context: `${moduleFixture.title} · ${unitFixture.title}`,
+    backTo: `/levels/${levelFixture.slug}`,
+    backLabel: `Вернуться к уровню ${levelFixture.title}`,
+    context: `${levelFixture.title} · ${sectionFixture.title}`,
     title: lessonFixture.title,
     current: 9,
     total: 9,
@@ -54,9 +54,9 @@ export const SavedComplete: Story = {
 
 export const Complete: Story = {
   args: {
-    backTo: `/modules/${moduleFixture.slug}`,
-    backLabel: `Вернуться к тиру ${moduleFixture.title}`,
-    context: `${moduleFixture.title} · ${unitFixture.title}`,
+    backTo: `/levels/${levelFixture.slug}`,
+    backLabel: `Вернуться к уровню ${levelFixture.title}`,
+    context: `${levelFixture.title} · ${sectionFixture.title}`,
     title: lessonFixture.title,
     current: 9,
     total: 9,
@@ -67,9 +67,9 @@ export const Complete: Story = {
 
 export const LongRussianTitle: Story = {
   args: {
-    backTo: `/modules/${moduleFixture.slug}`,
-    backLabel: `Вернуться к тиру ${moduleFixture.title}`,
-    context: 'T1 Старт · Юнит 1. Деньги и операции',
+    backTo: `/levels/${levelFixture.slug}`,
+    backLabel: `Вернуться к уровню ${levelFixture.title}`,
+    context: 'T1 Старт · Раздел 1. Деньги и операции',
     title: 'Куда уходят деньги: первые денежные утечки без осуждения',
     current: 1,
     total: 7,

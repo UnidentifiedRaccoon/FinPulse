@@ -42,6 +42,7 @@ const cardBaseSchema = z.object({
   order: z.number().int().nonnegative(),
   title: z.string().optional(),
   sourceSection: z.string().optional(),
+  ctaLabel: z.string().min(1).optional(),
   thinkingType: z.string().optional(),
   develops: z.string().optional(),
   checkability: checkabilitySchema.optional(),
@@ -272,7 +273,7 @@ const supplementalSchema = z
   .strict()
   .optional()
 
-export const unitFileSchema = z.object({
+export const sectionFileSchema = z.object({
   schemaVersion: z.literal(1),
   id: z.string().min(1),
   slug: slugSchema,
@@ -284,7 +285,7 @@ export const unitFileSchema = z.object({
   supplemental: supplementalSchema,
 }).strict()
 
-const unitRefSchema = z.object({
+const sectionRefSchema = z.object({
   id: z.string().min(1),
   slug: slugSchema,
   title: z.string().min(1),
@@ -293,7 +294,7 @@ const unitRefSchema = z.object({
   path: z.string().min(1),
 }).strict()
 
-const moduleFileSchema = z.object({
+const levelFileSchema = z.object({
   schemaVersion: z.literal(1),
   id: z.string().min(1),
   slug: slugSchema,
@@ -301,10 +302,10 @@ const moduleFileSchema = z.object({
   description: z.string().optional(),
   order: z.number().int().nonnegative(),
   source: z.string().optional(),
-  units: z.array(unitRefSchema).min(1),
+  sections: z.array(sectionRefSchema).min(1),
 }).strict()
 
-const moduleRefSchema = z.object({
+const levelRefSchema = z.object({
   id: z.string().min(1),
   slug: slugSchema,
   title: z.string().min(1),
@@ -319,26 +320,26 @@ export const programManifestSchema = z.object({
   slug: slugSchema,
   title: z.string().min(1),
   description: z.string().optional(),
-  modules: z.array(moduleRefSchema).min(1),
+  levels: z.array(levelRefSchema).min(1),
 }).strict()
 
-export const moduleSchema = moduleFileSchema.extend({
-  units: z.array(unitFileSchema).min(1),
+export const levelSchema = levelFileSchema.extend({
+  sections: z.array(sectionFileSchema).min(1),
 }).strict()
 
 export const programSchema = programManifestSchema.extend({
-  modules: z.array(moduleSchema).min(1),
+  levels: z.array(levelSchema).min(1),
 }).strict()
 
 export type ProgramManifest = z.infer<typeof programManifestSchema>
-export type ModuleRef = z.infer<typeof moduleRefSchema>
-export type ModuleFile = z.infer<typeof moduleFileSchema>
-export type UnitRef = z.infer<typeof unitRefSchema>
-export type UnitFile = z.infer<typeof unitFileSchema>
+export type LevelRef = z.infer<typeof levelRefSchema>
+export type LevelFile = z.infer<typeof levelFileSchema>
+export type SectionRef = z.infer<typeof sectionRefSchema>
+export type SectionFile = z.infer<typeof sectionFileSchema>
 export type Program = z.infer<typeof programSchema>
-export type Module = Program['modules'][number]
-export type Unit = Module['units'][number]
-export type Lesson = Unit['lessons'][number]
+export type Level = Program['levels'][number]
+export type Section = Level['sections'][number]
+export type Lesson = Section['lessons'][number]
 export type Card = Lesson['cards'][number]
 
 export function parseProgram(data: unknown) {

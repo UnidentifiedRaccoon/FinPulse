@@ -4,14 +4,14 @@
   "slug": "program-example",
   "title": "Example Educational Program",
   "description": "Placeholder example showing the split runtime shape.",
-  "modules": [
+  "levels": [
     {
-      "id": "module-example",
+      "id": "level-example",
       "slug": "introduction",
       "title": "Introduction",
-      "description": "Example module description.",
+      "description": "Example level description.",
       "order": 1,
-      "path": "modules/module_example/module.json"
+      "path": "levels/level_example/level.json"
     }
   ]
 }

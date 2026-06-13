@@ -1,6 +1,6 @@
 # QA User Scenario Map — FinPulse
 
-Last updated: 2026-06-07
+Last updated: 2026-06-13
 
 ## Purpose
 
@@ -12,22 +12,24 @@ Out of scope remains unchanged: diagnostics, rewards, scoring, recommendations, 
 
 - Program: `/program`
 - Profile: `/profile`
-- Tier: `/modules/t1-start`
-- Units: `/modules/t1-start/units/money-and-operations`, `/modules/t1-start/units/planning-and-management`
-- Lessons: `/lessons/where-money-goes`, `/lessons/mandatory-and-desired`, `/lessons/why-emergency-fund`, `/lessons/reserve-amount`
+- Level: `/levels/t1-start`
+- Sections: `/levels/t1-start/sections/money-and-operations`
+- Lessons: `/lessons/where-money-goes`, `/lessons/mandatory-and-desired`
+
+Product and methodology language uses Program -> Level -> Section -> Lesson ->
+Card. Old `/modules/**` browser routes and old `/api/modules*` /
+`/api/units*` content endpoints are not supported.
 
 Current runtime lesson set:
 
 - `where-money-goes`
 - `mandatory-and-desired`
-- `why-emergency-fund`
-- `reserve-amount`
 
 Removed legacy content must return 404 through content API and graceful load errors in the UI:
 
-- module `financial-goals`
-- units `values-and-goals`, `future-vision`, `financial-goals-map`, `goal-motivation`
-- lessons `why-values-matter`, `what-are-values`, `values-conflict`, `practice-1m`, `life-cycle-and-money`, `vuca-future-view`, `day-in-future`, `goal-levels`
+- level `financial-goals`
+- section slugs `planning-and-management`, `values-and-goals`, `future-vision`, `financial-goals-map`, `goal-motivation`
+- lessons `why-emergency-fund`, `reserve-amount`, `why-values-matter`, `what-are-values`, `values-conflict`, `practice-1m`, `life-cycle-and-money`, `vuca-future-view`, `day-in-future`, `goal-levels`
 
 ## Device Matrix
 
@@ -66,7 +68,7 @@ Minimum run:
 |---|---|---|---|
 | ENTRY-01 | P0 | Open `/` without a session. | Auth screen is shown with login, password, login, and registration controls. |
 | ENTRY-02 | P0 | Open `/` with a valid session. | User is routed to `/program`; authenticated shell is available. |
-| ENTRY-03 | P0 | Refresh `/program`, `/modules/t1-start`, any current `/lessons/:lessonSlug`, and `/profile` while authenticated. | Route survives refresh; content loads from API; progress/profile data stay tied to the user. |
+| ENTRY-03 | P0 | Refresh `/program`, `/levels/t1-start`, any current `/lessons/:lessonSlug`, and `/profile` while authenticated. | Route survives refresh; content loads from API; progress/profile data stay tied to the user. |
 | AUTH-01 | P0 | Register and login with email and username-style identifiers. | Account is created/authenticated; progress/reflection fetches run. |
 | AUTH-02 | P0 | Logout from desktop and mobile profile. | Session clears, app returns to auth screen, private state disappears, Back does not restore it. |
 | SHELL-01 | P0 | Desktop authenticated `/program`. | Fixed sidebar shows FinPulse, `Обучение`, `Профиль`, user login, and logout. |
@@ -76,11 +78,11 @@ Minimum run:
 
 | ID | Priority | Scenario | Expected Result |
 |---|---|---|---|
-| PROGRAM-01 | P0 | Open `/program` authenticated with no progress. | `Тиры` renders; `T1 Старт` card links to `/modules/t1-start`; progress starts at zero. |
-| PATH-01 | P0 | Open `/modules/t1-start` with no progress. | Both current units render; `Куда уходят деньги` is the current lesson. |
+| PROGRAM-01 | P0 | Open `/program` authenticated with no progress. | Level list renders; `T1 Старт` card links to `/levels/t1-start`; progress starts at zero. |
+| PATH-01 | P0 | Open `/levels/t1-start` with no progress. | The current section renders; `Куда уходят деньги` is the current lesson. |
 | PATH-02 | P0 | Open current lesson node dialog. | Dialog shows title, `5 мин`, and action to `/lessons/where-money-goes`. |
-| PATH-03 | P0 | Open each current unit route. | Unit path renders only that unit's lesson section and returns to the tier. |
-| PATH-04 | P1 | Open invalid or legacy module/unit route. | Graceful load error appears; no stale content renders. |
+| PATH-03 | P0 | Open each current section route. | Section path renders only that section's lesson list and returns to the level. |
+| PATH-04 | P1 | Open invalid or removed level/section route. | Graceful not-found or load-error state appears; no stale content renders. |
 
 ### Lesson Reader
 
@@ -96,7 +98,7 @@ Minimum run:
 | LESSON-08 | P0 | Card 6 reflection single select. | `Далее` is disabled until a selection; answer saves under `unexpected_expense`. |
 | LESSON-09 | P0 | Card 7 artifact variants. | Radio variant selection enables continue; `Свой вариант` reveals a required text field and persists typed text as the artifact variant. |
 | LESSON-10 | P0 | Card 8 summary. | Summary bridges to the next lesson and final action completes the lesson. |
-| LESSON-11 | P1 | Open invalid or legacy lesson route. | Graceful "lesson could not load" state appears and no viewed progress is written. |
+| LESSON-11 | P1 | Open invalid or removed lesson route. | Graceful "lesson could not load" state appears and no viewed progress is written. |
 
 ### Progress, Answers, And Profile
 
@@ -106,7 +108,7 @@ Minimum run:
 | PROGRESS-02 | P0 | Authenticated user completes each card and the lesson. | Completed markers are saved; transient save failures retry where supported; hard failures block advancement. |
 | PROGRESS-03 | P0 | Login as second user. | First user's progress is not visible. |
 | PROFILE-01 | P0 | Open `/profile` as authenticated learner. | Identity, progress stats, and `Персональный финансовый навигатор` render. |
-| PROFILE-02 | P0 | Save artifact and reflection answers, then open `/profile`. | Answers appear in one navigator list, without old unit-slug grouping. |
+| PROFILE-02 | P0 | Save artifact and reflection answers, then open `/profile`. | Answers appear in one navigator list with Level/Section context. |
 | PROFILE-03 | P0 | Logout after viewing profile. | Private answers disappear from UI and cannot be reached with Back/reload. |
 | PROFILE-04 | P1 | Very long answer text. | Text wraps and does not overflow mobile or desktop. |
 
@@ -114,11 +116,12 @@ Minimum run:
 
 | ID | Priority | Scenario | Expected Result |
 |---|---|---|---|
-| API-01 | P0 | `GET /api/program`, `/api/modules/t1-start`, both current `/api/units/:unitSlug`, and all current `/api/lessons/:lessonSlug`. | Responses match shared content schemas. |
-| API-02 | P0 | Legacy content API calls. | Old module/unit/lesson slugs return 404. |
-| API-03 | P0 | Protected auth/progress/reflection endpoints without cookie. | Protected endpoints return 401; no private data is returned. |
-| API-04 | P0 | Reflection save for non-reflection/non-artifact card. | Backend rejects as `non_persistable_card`. |
-| API-05 | P0 | Empty reflection/artifact payload. | Backend rejects; UI does not advance. |
+| API-01 | P0 | `GET /api/program`, `/api/levels/t1-start`, current `/api/sections/money-and-operations`, and all current `/api/lessons/:lessonSlug`. | Responses match shared Level/Section content schemas. |
+| API-02 | P0 | Removed old content API calls to `/api/modules`, `/api/modules/:moduleSlug`, and `/api/units/:unitSlug`. | Old endpoints return 404. |
+| API-03 | P0 | Removed legacy content API slugs. | Old level/section/lesson slugs return 404. |
+| API-04 | P0 | Protected auth/progress/reflection endpoints without cookie. | Protected endpoints return 401; no private data is returned. |
+| API-05 | P0 | Reflection save for non-reflection/non-artifact card. | Backend rejects as `non_persistable_card`. |
+| API-06 | P0 | Empty reflection/artifact payload. | Backend rejects; UI does not advance. |
 
 ## End-To-End Critical Paths
 
@@ -127,7 +130,7 @@ Minimum run:
 1. Open `/` on M-390.
 2. Register a new email user.
 3. Confirm `/program` opens and authenticated mobile nav appears.
-4. Open `t1-start`.
+4. Open Level `t1-start`.
 5. Open `where-money-goes` from the lesson node dialog.
 6. Complete all eight cards: subjective choice, theory, objective categorization, external example/statistics, expense artifact, reflection, 3-day rule artifact, summary.
 7. Open `/profile`.
@@ -146,9 +149,9 @@ Minimum run:
 
 ### E2E-P0-03 — Legacy Content Removed
 
-1. Authenticated user opens `/modules/financial-goals`.
-2. Confirm module load error, not old content.
-3. Open `/modules/t1-start/units/values-and-goals`.
-4. Confirm canonical redirect does not occur and old unit load fails.
+1. Authenticated user opens removed level route `/levels/financial-goals`.
+2. Confirm level load error, not old content.
+3. Open `/levels/t1-start/sections/values-and-goals`.
+4. Confirm old section load fails.
 5. Open `/lessons/why-values-matter`.
 6. Confirm lesson load error and no progress write.

@@ -4,34 +4,39 @@
 
 Represent the educational program as small JSON files that can be edited, reviewed, and validated without turning runtime content into one giant file.
 
-The runtime hierarchy is:
+The approved educational hierarchy is:
 
 ```txt
 Program
-└─ Module
-   └─ Unit
+└─ Level
+   └─ Section
       └─ Lesson
          └─ Card
 ```
+
+Runtime JSON, validators, TypeScript domain types, content API payloads,
+frontend routes, and persistence context use this hierarchy directly. Old
+`module`/`unit` API/browser routes and payloads are not supported.
 
 ## Runtime files
 
 ```txt
 src/content/
   program.json
-  modules/
+  levels/
     t1_start/
-      module.json
-      units/
-        unit_01_money_and_operations.json
-        unit_02_planning_and_management.json
+      level.json
+      sections/
+        section_01_money_and_operations.json
 ```
 
-`program.json` is the program manifest. It stores program metadata and references module JSON files.
+`program.json` is the program manifest. It stores program metadata and
+references Level JSON files through the `levels` key.
 
-`module.json` stores module metadata and references unit JSON files.
+`level.json` stores Level metadata and references Section JSON files through
+the `sections` key.
 
-Unit files store the full runtime lesson/card content for the unit.
+Section files store the full runtime lesson/card content for the Section.
 
 ## File shapes
 
@@ -42,10 +47,10 @@ export type ProgramManifest = {
   slug: string
   title: string
   description?: string
-  modules: ModuleRef[]
+  levels: LevelRef[]
 }
 
-export type ModuleRef = {
+export type LevelRef = {
   id: string
   slug: string
   title: string
@@ -54,7 +59,7 @@ export type ModuleRef = {
   path: string
 }
 
-export type ModuleFile = {
+export type LevelFile = {
   schemaVersion: 1
   id: string
   slug: string
@@ -62,10 +67,10 @@ export type ModuleFile = {
   description?: string
   order: number
   source?: string
-  units: UnitRef[]
+  sections: SectionRef[]
 }
 
-export type UnitRef = {
+export type SectionRef = {
   id: string
   slug: string
   title: string
@@ -74,7 +79,7 @@ export type UnitRef = {
   path: string
 }
 
-export type UnitFile = {
+export type SectionFile = {
   schemaVersion: 1
   id: string
   slug: string
@@ -83,22 +88,22 @@ export type UnitFile = {
   order: number
   source: string
   lessons: Lesson[]
-  supplemental?: UnitSupplemental
+  supplemental?: SectionSupplemental
 }
 ```
 
 After loading, the app works with hydrated objects:
 
 ```ts
-export type Program = Omit<ProgramManifest, 'modules'> & {
-  modules: Module[]
+export type Program = Omit<ProgramManifest, 'levels'> & {
+  levels: Level[]
 }
 
-export type Module = Omit<ModuleFile, 'units'> & {
-  units: Unit[]
+export type Level = Omit<LevelFile, 'sections'> & {
+  sections: Section[]
 }
 
-export type Unit = UnitFile
+export type Section = SectionFile
 ```
 
 ## Lesson
@@ -131,6 +136,7 @@ type CardBase = {
   order: number
   title?: string
   sourceSection?: string
+  ctaLabel?: string
   thinkingType?: string
   develops?: string
   checkability?: 'objective' | 'subjective' | 'mixed'
@@ -173,6 +179,12 @@ Minimal type-specific fields:
 - `checklist`: `items`, optional `body`.
 - `summary`: `points`, optional `body`, `nextStep`.
 
+`ctaLabel` is optional learner-facing microcopy for the card's primary continue
+action. Use it when the methodologist source gives a specific `Кнопка` label,
+for example `Разобраться, куда уходят мои деньги` or `Научиться различать`.
+Store clean text without decorative arrows; the reader owns the visual arrow.
+System actions such as `Проверить` and final `Завершить` override `ctaLabel`.
+
 Every card may also include a source-backed statistics block:
 
 ```ts
@@ -196,7 +208,7 @@ requires `card.statistics`.
 `readOnly: true` means the reader must force static rendering even when that card type supports interaction.
 If `readOnly` is omitted or `false`, the card is eligible for the reader's interactive behavior.
 
-Authenticated `reflection` and `artifact` answers may be persisted as the learner's private personal artifact. This persistence uses `card.id`, optional `reflection.saveKey`, and lesson/module/unit context. It must not add answer scoring, diagnostics, labels, inferred traits, analytics, or recommendations.
+Authenticated `reflection` and `artifact` answers may be persisted as the learner's private personal artifact. This persistence uses `card.id`, optional `reflection.saveKey`, and lesson/level/section context. Persistence must not add answer scoring, diagnostics, labels, inferred traits, analytics, or recommendations.
 
 `multi_select` and `categorization` are objective practice cards. They may show checked-answer feedback and then allow the learner to continue, but their selected answers are not persisted through `/api/reflections` and must not create scores, labels, diagnostics, analytics, or recommendations.
 
@@ -248,7 +260,8 @@ contract for active `T1` runtime lessons.
 
 ## Supplemental content
 
-Large support material that should not become the main lesson path belongs in `UnitFile.supplemental`.
+Large support material that should not become the main lesson path belongs to
+the Section and is stored in `SectionFile.supplemental`.
 
 Use it for:
 
@@ -256,7 +269,7 @@ Use it for:
 - spaced repetition cards;
 - expansion scenarios;
 - editorial rules;
-- unit outcome.
+- section outcome.
 
 Supplemental items should keep enough source detail to restore the exercise without reopening the original Markdown. Use `summary` for a short reviewer-facing description and optional `content: string[]` for full prompts, tables, options, answers, feedback, or scenario text.
 
@@ -265,7 +278,7 @@ Supplemental material should stay out of the primary reader unless a future cont
 ## Content rules
 
 - Every `id` must be stable and unique across its runtime type.
-- Every `slug` must be URL-safe and unique across modules, units, and lessons.
+- Every `slug` must be URL-safe and unique across Levels, Sections, and lessons.
 - Card ids must be unique across the program.
 - `order` defines display order; arrays should also be sorted by order.
 - Do not store arbitrary HTML in JSON for MVP.
@@ -290,11 +303,12 @@ npm run check:content
 Validation checks:
 
 - `src/content/program.json` exists and is valid;
-- referenced module and unit files exist;
-- module refs match module files;
-- unit refs match unit files;
+- referenced Level and Section files exist through `levels/**` and `sections/**`;
+- level refs match Level files;
+- section refs match Section files;
 - ids/slugs are unique in their scopes;
 - referenced paths are normalized relative JSON paths;
+- referenced source Markdown files exist for `sourceSection` values that point to local `.md` sources;
 - ordered arrays are sorted and do not reuse `order`;
 - lessons contain cards;
 - card type-specific fields are present;
@@ -303,9 +317,19 @@ Validation checks:
 
 ## Backend API policy
 
-Stage 2 serves the same hydrated Program -> Module -> Unit -> Lesson -> Card graph through read-only backend API routes.
+Stage 2 serves the same hydrated Program -> Level -> Section -> Lesson -> Card graph through read-only backend API routes.
 
-The JSON files remain the canonical source-of-truth. The backend must validate and hydrate the graph with the same model before returning content responses. Frontend routes may fetch program/module/unit/lesson data from the API, but content edits still happen in the repo JSON files and must pass `npm run check:content`.
+Primary content API routes:
+
+```txt
+GET /api/program
+GET /api/levels
+GET /api/levels/:levelSlug
+GET /api/sections/:sectionSlug
+GET /api/lessons/:lessonSlug
+```
+
+The JSON files remain the canonical source-of-truth. The backend must validate and hydrate the graph with the same model before returning content responses. Frontend routes fetch program/level/section/lesson data from the primary API. Content edits still happen in the repo JSON files and must pass `npm run check:content`.
 
 Saved progress may reference stable `lesson.slug` and `card.id` values only. It must not create a parallel content schema or rewrite lesson/card data.
 

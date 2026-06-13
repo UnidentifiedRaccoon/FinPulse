@@ -25,6 +25,9 @@ Do not touch:
 
 Important constraints:
 - mobile-first educational MVP;
+- approved educational hierarchy is Program -> Level -> Section -> Lesson ->
+  Card; do not reintroduce `module`/`unit` content architecture or
+  compatibility surfaces;
 - JSON data;
 - React + TypeScript SPA/Vite;
 - Zustand only for small client state;

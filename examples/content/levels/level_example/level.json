@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "level-example",
+  "slug": "introduction",
+  "title": "Introduction",
+  "description": "Example level description.",
+  "order": 1,
+  "source": "examples/content/levels/level_example/README.md",
+  "sections": [
+    {
+      "id": "section-example",
+      "slug": "getting-started",
+      "title": "Getting started",
+      "description": "Example section description.",
+      "order": 1,
+      "path": "sections/section_example.json"
+    }
+  ]
+}

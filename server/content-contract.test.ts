@@ -4,22 +4,22 @@ import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 
 import {
+  levelSchema,
   lessonSchema,
-  moduleSchema,
   programSchema,
-  unitFileSchema,
+  sectionFileSchema,
 } from '../src/content/program'
 
 import { createApp } from './app'
 
-const unitDetailsSchema = z.object({
-  module: moduleSchema,
-  unit: unitFileSchema,
+const sectionDetailsSchema = z.object({
+  level: levelSchema,
+  section: sectionFileSchema,
 }).strict()
 
 const lessonLocationSchema = z.object({
-  module: moduleSchema,
-  unit: unitFileSchema,
+  level: levelSchema,
+  section: sectionFileSchema,
   lesson: lessonSchema,
 }).strict()
 
@@ -72,39 +72,57 @@ describe('content API contract', () => {
     }
   })
 
-  it('serves module endpoints using the shared hydrated module schema', async () => {
+  it('serves level endpoints using the shared hydrated level schema', async () => {
     const { app } = await setupTestApp()
 
     try {
-      const modulesResponse = await app.inject('/api/modules')
-      const moduleResponse = await app.inject('/api/modules/t1-start')
+      const levelsResponse = await app.inject('/api/levels')
+      const levelResponse = await app.inject('/api/levels/t1-start')
 
-      expect(modulesResponse.statusCode).toBe(200)
-      expect(z.array(moduleSchema).safeParse(modulesResponse.json()).success).toBe(true)
-      expect(moduleResponse.statusCode).toBe(200)
-      expect(moduleSchema.safeParse(moduleResponse.json()).success).toBe(true)
+      expect(levelsResponse.statusCode).toBe(200)
+      expect(z.array(levelSchema).safeParse(levelsResponse.json()).success).toBe(true)
+      expect(levelResponse.statusCode).toBe(200)
+      expect(levelSchema.safeParse(levelResponse.json()).success).toBe(true)
     } finally {
       await app.close()
     }
   })
 
-  it('serves unit and lesson detail endpoints using shared content schemas', async () => {
+  it('serves section and lesson detail endpoints using shared content schemas', async () => {
     const { app } = await setupTestApp()
 
     try {
-      const unitResponse = await app.inject('/api/units/money-and-operations')
-      const planningUnitResponse = await app.inject('/api/units/planning-and-management')
+      const sectionResponse = await app.inject('/api/sections/money-and-operations')
       const lessonResponse = await app.inject('/api/lessons/where-money-goes')
-      const reserveLessonResponse = await app.inject('/api/lessons/reserve-amount')
+      const mandatoryLessonResponse = await app.inject('/api/lessons/mandatory-and-desired')
+      const removedPlanningSectionResponse = await app.inject('/api/sections/planning-and-management')
+      const removedReserveLessonResponse = await app.inject('/api/lessons/reserve-amount')
 
-      expect(unitResponse.statusCode).toBe(200)
-      expect(unitDetailsSchema.safeParse(unitResponse.json()).success).toBe(true)
-      expect(planningUnitResponse.statusCode).toBe(200)
-      expect(unitDetailsSchema.safeParse(planningUnitResponse.json()).success).toBe(true)
+      expect(sectionResponse.statusCode).toBe(200)
+      expect(sectionDetailsSchema.safeParse(sectionResponse.json()).success).toBe(true)
       expect(lessonResponse.statusCode).toBe(200)
       expect(lessonDetailsSchema.safeParse(lessonResponse.json()).success).toBe(true)
-      expect(reserveLessonResponse.statusCode).toBe(200)
-      expect(lessonDetailsSchema.safeParse(reserveLessonResponse.json()).success).toBe(true)
+      expect(mandatoryLessonResponse.statusCode).toBe(200)
+      expect(lessonDetailsSchema.safeParse(mandatoryLessonResponse.json()).success).toBe(true)
+      expect(mandatoryLessonResponse.json().next).toBeNull()
+      expect(removedPlanningSectionResponse.statusCode).toBe(404)
+      expect(removedReserveLessonResponse.statusCode).toBe(404)
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('does not serve removed module and unit content endpoints', async () => {
+    const { app } = await setupTestApp()
+
+    try {
+      const modulesResponse = await app.inject('/api/modules')
+      const moduleResponse = await app.inject('/api/modules/t1-start')
+      const unitResponse = await app.inject('/api/units/money-and-operations')
+
+      expect(modulesResponse.statusCode).toBe(404)
+      expect(moduleResponse.statusCode).toBe(404)
+      expect(unitResponse.statusCode).toBe(404)
     } finally {
       await app.close()
     }

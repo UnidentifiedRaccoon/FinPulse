@@ -1,7 +1,7 @@
 import { api, type ProgressResponse } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
 import { buildProgramLearningPath } from '@/features/program-navigation/learningPath'
-import { ModulePathNode } from '@/features/program-navigation/ModulePathNode'
+import { LevelPathNode } from '@/features/program-navigation/LevelPathNode'
 
 export function ProgramOverviewPage({ progress }: { progress: ProgressResponse | null }) {
   const programQuery = useApiQuery(api.getProgram, [])
@@ -20,14 +20,14 @@ export function ProgramOverviewPage({ progress }: { progress: ProgressResponse |
   return (
     <div className="flex flex-col gap-6 pb-8">
       <section className="flex flex-col gap-3 pt-2">
-        <h1 className="text-[2rem] font-bold leading-9 tracking-normal text-[var(--fr-text-primary)]">Тиры</h1>
+        <h1 className="text-[2rem] font-bold leading-9 tracking-normal text-[var(--fr-text-primary)]">Уровни</h1>
       </section>
 
-      <section className="flex flex-col gap-3" aria-label="Тиры программы">
-        {path.modules.length > 0 ? (
+      <section className="flex flex-col gap-3" aria-label="Уровни программы">
+        {path.levels.length > 0 ? (
           <div className="flex flex-col gap-3">
-            {path.modules.map((module, index) => (
-              <ModulePathNode index={index + 1} item={module} key={module.module.id} />
+            {path.levels.map((level, index) => (
+              <LevelPathNode index={index + 1} item={level} key={level.level.id} />
             ))}
           </div>
         ) : (

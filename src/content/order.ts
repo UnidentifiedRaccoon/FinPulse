@@ -1,15 +1,15 @@
-import type { Lesson, Module, Program, Unit } from './program'
+import type { Lesson, Level, Program, Section } from './program'
 
-export function getOrderedModules(program: Program) {
-  return [...program.modules].sort((a, b) => a.order - b.order)
+export function getOrderedLevels(program: Program) {
+  return [...program.levels].sort((a, b) => a.order - b.order)
 }
 
-export function getOrderedUnits(module: Module) {
-  return [...module.units].sort((a, b) => a.order - b.order)
+export function getOrderedSections(level: Level) {
+  return [...level.sections].sort((a, b) => a.order - b.order)
 }
 
-export function getOrderedLessons(unit: Unit) {
-  return [...unit.lessons].sort((a, b) => a.order - b.order)
+export function getOrderedLessons(section: Section) {
+  return [...section.lessons].sort((a, b) => a.order - b.order)
 }
 
 export function getOrderedCards(lesson: Lesson) {
@@ -17,9 +17,9 @@ export function getOrderedCards(lesson: Lesson) {
 }
 
 export function getAllLessons(program: Program) {
-  return getOrderedModules(program).flatMap((module) =>
-    getOrderedUnits(module).flatMap((unit) =>
-      getOrderedLessons(unit).map((lesson) => ({ module, unit, lesson })),
+  return getOrderedLevels(program).flatMap((level) =>
+    getOrderedSections(level).flatMap((section) =>
+      getOrderedLessons(section).map((lesson) => ({ level, section, lesson })),
     ),
   )
 }

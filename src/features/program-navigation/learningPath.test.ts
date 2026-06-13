@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { ProgressResponse } from '@/api/client'
-import type { Lesson, Module, Program, Unit } from '@/content/program'
+import type { Lesson, Level, Program, Section } from '@/content/program'
 
 import { buildProgramLearningPath } from './learningPath'
 
@@ -10,8 +10,8 @@ describe('buildProgramLearningPath', () => {
     const path = buildProgramLearningPath(createProgram(), null)
 
     expect(path.currentLesson?.lesson.slug).toBe('lesson-one')
-    expect(path.modules[0].state).toBe('current')
-    expect(path.modules[0].units[0].lessons.map((lesson) => lesson.state)).toEqual(['current', 'locked', 'locked'])
+    expect(path.levels[0].state).toBe('current')
+    expect(path.levels[0].sections[0].lessons.map((lesson) => lesson.state)).toEqual(['current', 'locked', 'locked'])
   })
 
   it('advances current lesson from completed progress markers', () => {
@@ -19,14 +19,14 @@ describe('buildProgramLearningPath', () => {
 
     expect(path.completedLessons).toBe(1)
     expect(path.currentLesson?.lesson.slug).toBe('lesson-two')
-    expect(path.modules[0].units[0].lessons.map((lesson) => lesson.state)).toEqual(['completed', 'current', 'locked'])
+    expect(path.levels[0].sections[0].lessons.map((lesson) => lesson.state)).toEqual(['completed', 'current', 'locked'])
   })
 
   it('treats non-contiguous completions as completed before current precedence', () => {
     const path = buildProgramLearningPath(createProgram(), createProgress(['lesson-two']))
 
     expect(path.currentLesson?.lesson.slug).toBe('lesson-one')
-    expect(path.modules[0].units[0].lessons.map((lesson) => lesson.state)).toEqual(['current', 'completed', 'locked'])
+    expect(path.levels[0].sections[0].lessons.map((lesson) => lesson.state)).toEqual(['current', 'completed', 'locked'])
   })
 
   it('marks the path complete when every lesson is complete', () => {
@@ -34,7 +34,7 @@ describe('buildProgramLearningPath', () => {
 
     expect(path.isComplete).toBe(true)
     expect(path.currentLesson).toBeNull()
-    expect(path.modules[0].state).toBe('completed')
+    expect(path.levels[0].state).toBe('completed')
   })
 })
 
@@ -53,22 +53,22 @@ function createProgram(): Program {
       },
     ],
   }))
-  const unit: Unit = {
+  const section: Section = {
     schemaVersion: 1,
-    id: 'unit-one',
-    slug: 'unit-one',
-    title: 'Unit One',
+    id: 'section-one',
+    slug: 'section-one',
+    title: 'Section One',
     order: 1,
     source: 'test',
     lessons,
   }
-  const module: Module = {
+  const level: Level = {
     schemaVersion: 1,
-    id: 'module-one',
-    slug: 'module-one',
-    title: 'Module One',
+    id: 'level-one',
+    slug: 'level-one',
+    title: 'Level One',
     order: 1,
-    units: [unit],
+    sections: [section],
   }
 
   return {
@@ -76,7 +76,7 @@ function createProgram(): Program {
     id: 'program',
     slug: 'program',
     title: 'Program',
-    modules: [module],
+    levels: [level],
   }
 }
 

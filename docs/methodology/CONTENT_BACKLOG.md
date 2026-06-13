@@ -11,31 +11,28 @@ this file tracks what is active now and what remains deferred.
 Displayed in the learner app:
 
 - Program: `FinPulse`
-- Module/tier: `t1-start` — `T1 Старт`
-- Unit: `money-and-operations` — `Юнит 1. Деньги и операции`
+- Level: `t1-start` — `T1 Старт`
+- Section: `money-and-operations` — `Раздел 1. Деньги и операции`
   - `where-money-goes` — `Куда уходят деньги`
   - `mandatory-and-desired` — `Обязательное и желаемое`
-- Unit: `planning-and-management` — `Юнит 2. Планирование и управление`
-  - `why-emergency-fund` — `Зачем нужна подушка`
-  - `reserve-amount` — `Сколько держать в резерве`
 
 Source package:
 
 - Central methodology: `docs/methodology/METHODOLOGY.md`
 - Scripted lesson sources:
-  - `docs/modules/t1-start/unit_01_money_operations/lesson_01_where-money-goes.md`
-  - `docs/modules/t1-start/unit_01_money_operations/lesson_02_mandatory-and-desired.md`
-  - `docs/modules/t1-start/unit_02_planning_management/lesson_01_why-emergency-fund.md`
-  - `docs/modules/t1-start/unit_02_planning_management/lesson_02_reserve-amount.md`
+  - `docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md`
+  - `docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md`
 
 ## Removed Active Sources
 
 The following are no longer active authoring/runtime sources:
 
-- previous Finzdorov Module 01 extracted lessons;
+- previous Finzdorov extracted lesson package;
 - previous `finpulse_methodology` split catalog;
 - previous AI/personal-experience lesson candidates;
-- previous runtime module `financial-goals` and its lessons.
+- previous runtime level `financial-goals` and its lessons.
+- previous `planning-and-management` section and its `why-emergency-fund` /
+  `reserve-amount` lessons, which were prepared from older methodology.
 
 Historical task files under `harness/tasks/review/**` remain as project history.
 
@@ -43,7 +40,6 @@ Historical task files under `harness/tasks/review/**` remain as project history.
 
 | Target feature | Current handling |
 |---|---|
-| Tier as first-class schema level | Mapped to runtime `module` until schema changes. |
 | Sorting into categories | Supported through objective `categorization` practice cards. |
 | Multiple correct choices | Supported through objective `multi_select` practice cards. |
 | Matching/calculators/diaries | Still adapted into existing cards or deferred. |

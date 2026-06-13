@@ -17,8 +17,8 @@ Finzdorov, AI-assisted, and personal-experience lesson sources are no longer
 active authoring sources for runtime content.
 
 When a methodologist provides a scripted lesson, preserve it as local Markdown
-under `docs/modules/<tier>/<unit>/` before adapting it to JSON. Runtime JSON
-must reference the local source path.
+under `docs/levels/<level>/sections/<section>/` before adapting it to JSON.
+Runtime JSON must reference the local source path.
 
 ## Current MVP Filter
 
@@ -43,28 +43,23 @@ Do not add without a separate decision:
   `categorization` practice cards, such as matching, calculators, hotspots,
   branching dialogues, scored tests, or expense-diary schemas.
 
-## Runtime Hierarchy
+## Educational Hierarchy
 
-The target methodology uses tiers. The current MVP content model still has:
-
-```text
-Program -> Module -> Unit -> Lesson -> Card
-```
-
-Until the schema changes, map the target hierarchy this way:
+The approved methodical hierarchy is:
 
 ```text
-Target tier -> runtime module
-Target unit / subject block -> runtime unit
-Target lesson -> runtime lesson
-Target screen -> runtime card
+Program -> Level -> Section -> Lesson -> Card
 ```
+
+Use these names in methodology, source briefs, lesson authoring, QA, and agent
+handoffs. Runtime JSON, validators, TypeScript types, API payloads, frontend
+routes, and persistence context use Level and Section directly.
 
 Example:
 
 ```text
-T1 Старт -> module `t1-start`
-Юнит 1. Деньги и операции -> unit `money-and-operations`
+Уровень 1 / T1 Старт -> level `t1-start`
+Раздел 1. Деньги и операции -> section `money-and-operations`
 У1.1 Куда уходят деньги -> lesson `where-money-goes`
 ```
 
@@ -151,7 +146,8 @@ A runtime lesson is ready when:
 
 Before calling a content task done:
 
-- module/unit/lesson/card IDs and slugs are stable and unique;
+- level/section/lesson/card IDs and slugs are stable and unique at the
+  educational level;
 - paths are normalized relative JSON paths;
 - arrays are sorted by `order`;
 - `correctOptionId` values match option IDs;
@@ -159,6 +155,8 @@ Before calling a content task done:
   titles/prompts/templates;
 - every source `Блок статистики` / `Статистика по теме` is represented as
   `card.statistics` with `items` and, when present in source, `sources`;
+- source table `Кнопка` microcopy is preserved as card `ctaLabel` when it is a
+  meaningful continue action; remove decorative arrows from the stored text;
 - content validates with `npm run check:content`;
 - app/backend tests are updated for new slugs and titles.
 

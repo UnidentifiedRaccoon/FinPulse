@@ -128,6 +128,11 @@ Return:
 - suggested next step
 ```
 
+For content or methodology tasks, context packets must state that the approved
+educational hierarchy is Program -> Level -> Section -> Lesson -> Card.
+Do not reintroduce `module`/`unit` content architecture or compatibility
+surfaces.
+
 ## Merge/conflict rules
 
 - If two agents touch the same file, stop and let the orchestrator decide ordering.

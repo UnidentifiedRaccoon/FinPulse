@@ -1,6 +1,6 @@
 import { ArrowRight, Target } from 'lucide-react'
 import type { Dispatch, SetStateAction } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import type { LessonDetails, ReflectionAnswerPayload } from '@/api/client'
@@ -73,11 +73,15 @@ export function LessonSession({
   const [reflectionStates, setReflectionStates] = useState<Record<string, ReflectionState>>({})
   const [artifactStates, setArtifactStates] = useState<Record<string, ArtifactState>>({})
   const viewedCardIdsRef = useRef(new Set<string>())
+  const lessonScreenRef = useRef<HTMLElement | null>(null)
+  const setLessonScreenElement = useCallback((element: HTMLElement | null) => {
+    lessonScreenRef.current = element
+  }, [])
 
   const activeCard = cards[activeIndex]
   const isLastCard = activeIndex === cards.length - 1
   const currentPosition = Math.min(activeIndex + 1, cards.length)
-  const context = `${details.module.title} · ${details.unit.title}`
+  const context = `${details.level.title} · ${details.section.title}`
   const lessonGoal = details.lesson.learningGoal
   const showLessonIntro = activeIndex === 0 && Boolean(lessonGoal)
 
@@ -87,9 +91,16 @@ export function LessonSession({
     void onCardViewed(activeCard.id)
   }, [activeCard, onCardViewed])
 
+  useLayoutEffect(() => {
+    resetLessonScreenScroll(lessonScreenRef.current)
+  }, [activeCard?.id, isComplete])
+
   if (!activeCard) {
     return (
-      <section className="rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5">
+      <section
+        className="rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5"
+        ref={setLessonScreenElement}
+      >
         <h1 className="text-xl font-bold text-[var(--fr-text-primary)]">В уроке пока нет карточек</h1>
         <p className="mt-1 text-sm leading-6 text-[var(--fr-text-secondary)]">
           Материалы появятся после обновления программы.
@@ -200,10 +211,13 @@ export function LessonSession({
       : 'Один небольшой шаг пройден. Можно вернуться к списку уроков и выбрать следующий шаг.'
 
     return (
-      <div className="-mx-4 -my-6 min-h-svh bg-[var(--fr-surface-canvas)] px-5 pb-8 sm:mx-0 sm:rounded-3xl">
+      <div
+        className="-mx-4 -my-6 min-h-svh bg-[var(--fr-surface-canvas)] px-5 pb-8 sm:mx-0 sm:rounded-3xl"
+        ref={setLessonScreenElement}
+      >
         <LessonProgressHeader
-          backLabel={`Вернуться к тиру ${details.module.title}`}
-          backTo={`/modules/${details.module.slug}`}
+          backLabel={`Вернуться к уровню ${details.level.title}`}
+          backTo={`/levels/${details.level.slug}`}
           context={context}
           current={cards.length}
           isComplete
@@ -243,12 +257,12 @@ export function LessonSession({
                   </Link>
                 </Button>
                 <Button asChild className="min-h-12 rounded-xl" variant="outline">
-                  <Link to={`/modules/${details.module.slug}`}>К списку уроков</Link>
+                  <Link to={`/levels/${details.level.slug}`}>К списку уроков</Link>
                 </Button>
               </div>
             ) : (
               <Button asChild className="min-h-12 rounded-xl">
-                <Link to={`/modules/${details.module.slug}`}>
+                <Link to={`/levels/${details.level.slug}`}>
                   К списку уроков
                   <ArrowRight data-icon="inline-end" />
                 </Link>
@@ -261,10 +275,13 @@ export function LessonSession({
   }
 
   return (
-    <article className="-mx-4 -my-6 flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] px-5 sm:mx-0 sm:rounded-3xl">
+    <article
+      className="-mx-4 -my-6 flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] px-5 sm:mx-0 sm:rounded-3xl"
+      ref={setLessonScreenElement}
+    >
       <LessonProgressHeader
-        backLabel={`Вернуться к тиру ${details.module.title}`}
-        backTo={`/modules/${details.module.slug}`}
+        backLabel={`Вернуться к уровню ${details.level.title}`}
+        backTo={`/levels/${details.level.slug}`}
         context={context}
         current={currentPosition}
         isComplete={false}
@@ -478,6 +495,8 @@ function getPrimaryAction(
   artifactState: ArtifactState | undefined,
   isLastCard: boolean,
 ) {
+  const advanceLabel = getAdvanceActionLabel(card, isLastCard)
+
   if (isInteractiveChoice(card)) {
     const hasSelectedOption = Boolean(choiceState.selectedOptionId)
     const hasObjectiveAnswer = Boolean(getCorrectOption(card))
@@ -492,7 +511,7 @@ function getPrimaryAction(
     }
 
     return {
-      label: isLastCard ? 'Завершить' : 'Далее',
+      label: advanceLabel,
       tone: isLastCard ? ('finish' as const) : ('continue' as const),
       mode: 'advance' as const,
       disabled: !hasSelectedOption,
@@ -510,7 +529,7 @@ function getPrimaryAction(
     }
 
     return {
-      label: isLastCard ? 'Завершить' : 'Далее',
+      label: advanceLabel,
       tone: isLastCard ? ('finish' as const) : ('continue' as const),
       mode: 'advance' as const,
       disabled: false,
@@ -528,7 +547,7 @@ function getPrimaryAction(
     }
 
     return {
-      label: isLastCard ? 'Завершить' : 'Далее',
+      label: advanceLabel,
       tone: isLastCard ? ('finish' as const) : ('continue' as const),
       mode: 'advance' as const,
       disabled: false,
@@ -537,7 +556,7 @@ function getPrimaryAction(
 
   if (card.type === 'reflection') {
     return {
-      label: isLastCard ? 'Завершить' : 'Далее',
+      label: advanceLabel,
       tone: isLastCard ? ('finish' as const) : ('continue' as const),
       mode: 'advance' as const,
       disabled: !isReflectionAnswerFilled(card, reflectionState),
@@ -546,7 +565,7 @@ function getPrimaryAction(
 
   if (card.type === 'artifact') {
     return {
-      label: isLastCard ? 'Завершить' : 'Далее',
+      label: advanceLabel,
       tone: isLastCard ? ('finish' as const) : ('continue' as const),
       mode: 'advance' as const,
       disabled: !isArtifactAnswerFilled(card, artifactState ?? createArtifactState(card)),
@@ -554,11 +573,16 @@ function getPrimaryAction(
   }
 
   return {
-    label: isLastCard ? 'Завершить' : 'Далее',
+    label: advanceLabel,
     tone: isLastCard ? ('finish' as const) : ('continue' as const),
     mode: 'advance' as const,
     disabled: false,
   }
+}
+
+function getAdvanceActionLabel(card: Card, isLastCard: boolean) {
+  if (isLastCard) return 'Завершить'
+  return card.ctaLabel ?? 'Далее'
 }
 
 function getPersistableAnswerPayload(
@@ -593,7 +617,7 @@ function getBottomFeedback(
     return getCategorizationBottomFeedback(card, categorizationState)
   }
 
-  if (!isInteractiveChoice(card) || !choiceState.isChecked || !choiceState.selectedOptionId) return null
+  if (!isInteractiveChoice(card) || !choiceState.selectedOptionId) return null
 
   const options = getChoiceOptions(card)
   const correctOption = getCorrectOption(card)
@@ -601,6 +625,8 @@ function getBottomFeedback(
   if (!selectedOption) return null
 
   const hasObjectiveAnswer = Boolean(correctOption)
+  if (hasObjectiveAnswer && !choiceState.isChecked) return null
+
   const isCorrect = Boolean(correctOption && selectedOption.id === correctOption.id)
   const feedbackId = `${card.id}-choice-feedback`
 
@@ -745,6 +771,15 @@ function scrollFeedbackIntoView(cardId: string) {
       }
     })
   }, 0)
+}
+
+function resetLessonScreenScroll(element: HTMLElement | null) {
+  if (!element || typeof element.scrollIntoView !== 'function') return
+
+  element.scrollIntoView({
+    block: 'start',
+    behavior: 'auto',
+  })
 }
 
 function getErrorMessage(error: unknown) {

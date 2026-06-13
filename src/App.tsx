@@ -5,9 +5,10 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate 
 import { api, ApiError, type ApiUser, type ProgressResponse, type ReflectionAnswerPayload, type ReflectionAnswersResponse } from '@/api/client'
 import { LessonPage } from '@/pages/LessonPage'
 import { EntryPage } from '@/pages/EntryPage'
-import { ModulePage } from '@/pages/ModulePage'
+import { LevelPage } from '@/pages/LevelPage'
+import { MobileLessonCardPaddingExperimentPage } from '@/pages/MobileLessonCardPaddingExperimentPage'
 import { ProgramOverviewPage } from '@/pages/ProgramOverviewPage'
-import { UnitPage } from '@/pages/UnitPage'
+import { SectionPage } from '@/pages/SectionPage'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -268,7 +269,9 @@ function AppShell({
   const location = useLocation()
   const navigate = useNavigate()
   const isLessonRoute = location.pathname.startsWith('/lessons/')
-  const showAuthenticatedShell = Boolean(user)
+  const isPathRoute = location.pathname.startsWith('/levels/')
+  const isStandaloneDesignRoute = location.pathname === '/design/lesson-card-full-width'
+  const showAuthenticatedShell = Boolean(user) && !isStandaloneDesignRoute
   const showMobileNavigation = showAuthenticatedShell && !isLessonRoute
   const handleLogoutAndRedirect = useCallback(async () => {
     const didLogout = await onLogout()
@@ -297,9 +300,13 @@ function AppShell({
       <main
         className={cn(
           'mx-auto w-full px-4',
-          showAuthenticatedShell && isLessonRoute
-            ? 'max-w-none py-6 lg:px-8'
-            : 'max-w-[560px] py-5 sm:py-6 lg:max-w-[720px]',
+          isStandaloneDesignRoute
+            ? 'max-w-none px-0 py-0'
+            : showAuthenticatedShell && isPathRoute
+              ? 'max-w-none px-0 py-0'
+              : showAuthenticatedShell && isLessonRoute
+                ? 'max-w-none py-6 lg:px-8'
+                : 'max-w-[560px] py-5 sm:py-6 lg:max-w-[720px]',
           showMobileNavigation ? 'pb-[calc(6.75rem+env(safe-area-inset-bottom))] lg:pb-8' : null,
         )}
       >
@@ -313,7 +320,11 @@ function AppShell({
               </p>
             ))
           : null}
-        {showAuthenticatedShell ? (
+        {isStandaloneDesignRoute ? (
+          <Routes>
+            <Route path="/design/lesson-card-full-width" element={<MobileLessonCardPaddingExperimentPage />} />
+          </Routes>
+        ) : showAuthenticatedShell ? (
           <Routes>
             <Route path="/" element={<Navigate to="/program" replace />} />
             <Route
@@ -333,8 +344,8 @@ function AppShell({
               }
             />
             <Route path="/program" element={<ProgramOverviewPage progress={progress} />} />
-            <Route path="/modules/:moduleSlug" element={<ModulePage progress={progress} />} />
-            <Route path="/modules/:moduleSlug/units/:unitSlug" element={<UnitPage progress={progress} />} />
+            <Route path="/levels/:levelSlug" element={<LevelPage progress={progress} />} />
+            <Route path="/levels/:levelSlug/sections/:sectionSlug" element={<SectionPage progress={progress} />} />
             <Route
               path="/lessons/:lessonSlug"
               element={
@@ -347,7 +358,7 @@ function AppShell({
                 />
               }
             />
-            <Route path="*" element={<Navigate to="/program" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         ) : (
           <EntryPage
@@ -386,7 +397,10 @@ const learningNavigationItem: NavigationItem = {
   label: 'Обучение',
   to: '/program',
   Icon: Map,
-  isActive: (pathname) => pathname === '/program' || pathname.startsWith('/modules/') || pathname.startsWith('/lessons/'),
+  isActive: (pathname) =>
+    pathname === '/program' ||
+    pathname.startsWith('/levels/') ||
+    pathname.startsWith('/lessons/'),
 }
 
 const accountNavigationItem: NavigationItem = {
@@ -394,6 +408,25 @@ const accountNavigationItem: NavigationItem = {
   to: '/profile',
   Icon: CircleUserRound,
   isActive: (pathname) => pathname === '/profile',
+}
+
+function NotFoundPage() {
+  return (
+    <section className="flex min-h-[55vh] flex-col justify-center gap-4" aria-labelledby="not-found-heading">
+      <div className="min-w-0">
+        <p className="text-xs font-black uppercase leading-4 tracking-normal text-[var(--fr-color-sky-600)]">404</p>
+        <h1 id="not-found-heading" className="mt-1 text-3xl font-black leading-10 tracking-normal text-[var(--fr-text-primary)]">
+          Страница не найдена
+        </h1>
+        <p className="mt-2 text-sm leading-6 text-[var(--fr-text-secondary)]">
+          Такого учебного маршрута в текущем MVP нет.
+        </p>
+      </div>
+      <Button asChild className="w-fit">
+        <Link to="/program">К обучению</Link>
+      </Button>
+    </section>
+  )
 }
 
 const desktopNavigationItems: NavigationItem[] = [learningNavigationItem, accountNavigationItem]

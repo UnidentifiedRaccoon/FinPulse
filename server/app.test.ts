@@ -532,8 +532,8 @@ describe('backend API', () => {
             cardId: 'card_t1u1l1_05_surprise_reflection',
             saveKey: 'unexpected_expense',
             lessonSlug: 'where-money-goes',
-            moduleSlug: 't1-start',
-            unitSlug: 'money-and-operations',
+            levelSlug: 't1-start',
+            sectionSlug: 'money-and-operations',
             cardType: 'reflection',
             prompt: expect.any(String),
             answer: {
@@ -551,10 +551,12 @@ describe('backend API', () => {
         card_id: string
         save_key: string
         lesson_slug: string
+        level_slug: string
+        section_slug: string
         answer_json: Record<string, unknown>
       }
       const storedResult = await db.query<StoredReflectionRow>(
-        'SELECT user_id, card_id, save_key, lesson_slug, answer_json FROM reflection_answers WHERE card_id = $1',
+        'SELECT user_id, card_id, save_key, lesson_slug, level_slug, section_slug, answer_json FROM reflection_answers WHERE card_id = $1',
         ['card_t1u1l1_05_surprise_reflection'],
       )
       const storedRow = storedResult.rows[0]
@@ -563,6 +565,8 @@ describe('backend API', () => {
         card_id: 'card_t1u1l1_05_surprise_reflection',
         save_key: 'unexpected_expense',
         lesson_slug: 'where-money-goes',
+        level_slug: 't1-start',
+        section_slug: 'money-and-operations',
       })
       expect(storedRow?.answer_json).toEqual({
         singleValue: 'Свобода выбора',
@@ -607,7 +611,11 @@ describe('backend API', () => {
             saveKey: null,
             lessonSlug: 'where-money-goes',
             cardType: 'artifact',
-            template: ['Трата 1: сумма и категория', 'Трата 2: сумма и категория', 'Трата 3: сумма и категория'],
+            template: [
+              'Трата 1: сумма и категория (еда / транспорт / развлечения / прочее)',
+              'Трата 2: сумма и категория (еда / транспорт / развлечения / прочее)',
+              'Трата 3: сумма и категория (еда / транспорт / развлечения / прочее)',
+            ],
             answer: {
               multiValues: ['Обучение', 'Рост'],
               checkedRows: ['0'],
@@ -744,54 +752,41 @@ describe('backend API', () => {
       expect(programResponse.statusCode).toBe(200)
       expect(programResponse.json()).toMatchObject({
         slug: 'finpulse-learning-mvp',
-        modules: [
+        levels: [
           expect.objectContaining({
             slug: 't1-start',
             title: 'T1 Старт',
-            units: [
+            sections: [
               expect.objectContaining({
                 slug: 'money-and-operations',
-                title: 'Юнит 1. Деньги и операции',
-              }),
-              expect.objectContaining({
-                slug: 'planning-and-management',
-                title: 'Юнит 2. Планирование и управление',
+                title: 'Раздел 1. Деньги и операции',
               }),
             ],
           }),
         ],
       })
 
-      const targetModuleResponse = await app.inject('/api/modules/t1-start')
-      const targetUnitResponse = await app.inject('/api/units/money-and-operations')
-      const planningUnitResponse = await app.inject('/api/units/planning-and-management')
+      const targetLevelResponse = await app.inject('/api/levels/t1-start')
+      const targetSectionResponse = await app.inject('/api/sections/money-and-operations')
       const lessonResponse = await app.inject('/api/lessons/where-money-goes')
       const mandatoryLessonResponse = await app.inject('/api/lessons/mandatory-and-desired')
-      const emergencyFundLessonResponse = await app.inject('/api/lessons/why-emergency-fund')
-      const reserveLessonResponse = await app.inject('/api/lessons/reserve-amount')
-      const targetUnitLessons = targetUnitResponse.json().unit.lessons.map((lesson: { slug: string }) => lesson.slug)
-      const planningUnitLessons = planningUnitResponse.json().unit.lessons.map((lesson: { slug: string }) => lesson.slug)
+      const targetSectionLessons = targetSectionResponse.json().section.lessons.map((lesson: { slug: string }) => lesson.slug)
 
-      expect(targetModuleResponse.statusCode).toBe(200)
-      expect(targetModuleResponse.json()).toMatchObject({
+      expect(targetLevelResponse.statusCode).toBe(200)
+      expect(targetLevelResponse.json()).toMatchObject({
         slug: 't1-start',
-        units: [
+        sections: [
           expect.objectContaining({
             slug: 'money-and-operations',
           }),
-          expect.objectContaining({
-            slug: 'planning-and-management',
-          }),
         ],
       })
-      expect(targetUnitResponse.statusCode).toBe(200)
-      expect(targetUnitLessons).toEqual(['where-money-goes', 'mandatory-and-desired'])
-      expect(planningUnitResponse.statusCode).toBe(200)
-      expect(planningUnitLessons).toEqual(['why-emergency-fund', 'reserve-amount'])
+      expect(targetSectionResponse.statusCode).toBe(200)
+      expect(targetSectionLessons).toEqual(['where-money-goes', 'mandatory-and-desired'])
       expect(lessonResponse.statusCode).toBe(200)
       expect(lessonResponse.json()).toMatchObject({
-        module: expect.objectContaining({ slug: 't1-start' }),
-        unit: expect.objectContaining({ slug: 'money-and-operations' }),
+        level: expect.objectContaining({ slug: 't1-start' }),
+        section: expect.objectContaining({ slug: 'money-and-operations' }),
         lesson: expect.objectContaining({
           slug: 'where-money-goes',
           title: 'Куда уходят деньги',
@@ -819,60 +814,24 @@ describe('backend API', () => {
             expect.objectContaining({ id: 'card_t1u1l2_03_sorting_choice', type: 'categorization' }),
           ]),
         }),
-        next: expect.objectContaining({
-          lesson: expect.objectContaining({ slug: 'why-emergency-fund' }),
-        }),
-      })
-      expect(emergencyFundLessonResponse.statusCode).toBe(200)
-      expect(emergencyFundLessonResponse.json()).toMatchObject({
-        previous: expect.objectContaining({
-          lesson: expect.objectContaining({ slug: 'mandatory-and-desired' }),
-        }),
-        unit: expect.objectContaining({
-          slug: 'planning-and-management',
-        }),
-        lesson: expect.objectContaining({
-          slug: 'why-emergency-fund',
-          title: 'Зачем нужна подушка',
-          cards: expect.arrayContaining([
-            expect.objectContaining({
-              id: 'card_t1u2l1_03_where_fund_helps',
-              type: 'categorization',
-              categories: expect.arrayContaining([
-                expect.objectContaining({ id: 'helps', label: 'Подушка помогает' }),
-                expect.objectContaining({ id: 'not-for-fund', label: 'Не для подушки' }),
-              ]),
-            }),
-          ]),
-        }),
-        next: expect.objectContaining({
-          lesson: expect.objectContaining({ slug: 'reserve-amount' }),
-        }),
-      })
-      expect(reserveLessonResponse.statusCode).toBe(200)
-      expect(reserveLessonResponse.json()).toMatchObject({
-        previous: expect.objectContaining({
-          lesson: expect.objectContaining({ slug: 'why-emergency-fund' }),
-        }),
-        unit: expect.objectContaining({
-          slug: 'planning-and-management',
-        }),
-        lesson: expect.objectContaining({
-          slug: 'reserve-amount',
-          title: 'Сколько держать в резерве',
-        }),
         next: null,
       })
 
-      const removedModuleResponse = await app.inject('/api/modules/financial-goals')
-      const removedUnitResponse = await app.inject('/api/units/values-and-goals')
-      const removedFutureUnitResponse = await app.inject('/api/units/future-vision')
+      const removedLevelResponse = await app.inject('/api/levels/financial-goals')
+      const removedPlanningSectionResponse = await app.inject('/api/sections/planning-and-management')
+      const removedSectionResponse = await app.inject('/api/sections/values-and-goals')
+      const removedFutureSectionResponse = await app.inject('/api/sections/future-vision')
+      const removedEmergencyFundLessonResponse = await app.inject('/api/lessons/why-emergency-fund')
+      const removedReserveLessonResponse = await app.inject('/api/lessons/reserve-amount')
       const removedLessonResponse = await app.inject('/api/lessons/why-values-matter')
       const removedFinalLessonResponse = await app.inject('/api/lessons/goal-levels')
 
-      expect(removedModuleResponse.statusCode).toBe(404)
-      expect(removedUnitResponse.statusCode).toBe(404)
-      expect(removedFutureUnitResponse.statusCode).toBe(404)
+      expect(removedLevelResponse.statusCode).toBe(404)
+      expect(removedPlanningSectionResponse.statusCode).toBe(404)
+      expect(removedSectionResponse.statusCode).toBe(404)
+      expect(removedFutureSectionResponse.statusCode).toBe(404)
+      expect(removedEmergencyFundLessonResponse.statusCode).toBe(404)
+      expect(removedReserveLessonResponse.statusCode).toBe(404)
       expect(removedLessonResponse.statusCode).toBe(404)
       expect(removedFinalLessonResponse.statusCode).toBe(404)
     } finally {

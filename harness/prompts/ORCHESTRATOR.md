@@ -24,6 +24,9 @@ Mission:
 
 Hard constraints:
 - MVP is educational content only;
+- approved educational hierarchy is Program -> Level -> Section -> Lesson ->
+  Card; do not reintroduce `module`/`unit` content architecture or
+  compatibility surfaces;
 - JSON data source;
 - React + TS SPA/Vite;
 - Zustand only for small client state;

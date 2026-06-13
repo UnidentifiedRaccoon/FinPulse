@@ -1,55 +1,55 @@
 {
   "version": 1,
-  "productPhase": "mvp-prebuild",
+  "productPhase": "stage-2-learning-mvp",
   "features": [
     {
       "id": "F-001",
       "name": "Vite React TypeScript scaffold",
-      "status": "planned",
+      "status": "done",
       "acceptance": [
         "Project starts in dev mode",
         "Production build succeeds",
         "TypeScript is configured"
       ],
       "evalStatus": "not_applicable_yet",
-      "notes": "No product eval until real routes exist."
+      "notes": "Vite React TypeScript SPA is scaffolded and verified through the shared verify script."
     },
     {
       "id": "F-002",
       "name": "JSON content model and validation",
-      "status": "planned",
+      "status": "done",
       "acceptance": [
         "Content schema is documented",
-        "Content validation script passes or skips cleanly before content exists",
+        "Content validation script passes",
         "Invalid slugs and duplicate ids are detected"
       ],
       "evalStatus": "not_applicable_yet",
-      "notes": "This is a structural feature, not an eval."
+      "notes": "Runtime content uses Program -> Level -> Section -> Lesson -> Card split JSON."
     },
     {
       "id": "F-003",
-      "name": "Program/module/lesson navigation",
-      "status": "planned",
+      "name": "Program/level/section/lesson navigation",
+      "status": "done",
       "acceptance": [
-        "Overview page lists modules",
-        "Module page lists lessons",
+        "Overview page lists levels",
+        "Level page lists sections and lessons",
         "Lesson page renders selected lesson",
         "Missing slugs show graceful error state"
       ],
       "evalStatus": "deferred",
-      "notes": "Add eval only after routes exist."
+      "notes": "Primary routes use /program, /levels/:levelSlug, /levels/:levelSlug/sections/:sectionSlug, and /lessons/:lessonSlug."
     },
     {
       "id": "F-004",
       "name": "Mobile-first lesson reader UI",
-      "status": "planned",
+      "status": "done",
       "acceptance": [
         "Readable on narrow mobile viewport",
         "Touch-friendly navigation",
         "Semantic headings and accessible controls"
       ],
       "evalStatus": "deferred",
-      "notes": "Start with manual smoke checks; add component tests later."
+      "notes": "Lesson reader has component coverage and is included in full verification."
     }
   ]
 }

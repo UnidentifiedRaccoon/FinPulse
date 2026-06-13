@@ -4,14 +4,14 @@
   "slug": "finpulse-learning-mvp",
   "title": "ФинПульс",
   "description": "Мобильный тренажёр финансовой грамотности, культуры и привычек.",
-  "modules": [
+  "levels": [
     {
-      "id": "module_t1_start",
+      "id": "level_t1_start",
       "slug": "t1-start",
       "title": "T1 Старт",
-      "description": "Первый тир помогает увидеть реальные денежные привычки, начать фиксировать траты и сделать первые безопасные шаги.",
+      "description": "Первый уровень помогает увидеть реальные денежные привычки, начать фиксировать траты и сделать первые безопасные шаги.",
       "order": 1,
-      "path": "modules/t1_start/module.json"
+      "path": "levels/t1_start/level.json"
     }
   ]
 }

@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-import { getProgressPercent, type ModulePathItem, type PathItemState } from './learningPath'
+import { getProgressPercent, type LevelPathItem, type PathItemState } from './learningPath'
 
 const stateCopy = {
   completed: 'Пройдено',
@@ -11,9 +11,10 @@ const stateCopy = {
   locked: 'Доступен позже',
 } satisfies Record<PathItemState, string>
 
-export function ModulePathNode({ item, index }: { item: ModulePathItem; index: number }) {
+export function LevelPathNode({ item, index }: { item: LevelPathItem; index: number }) {
   const percent = getProgressPercent(item.completedLessons, item.totalLessons)
-  const actionLabel = item.state === 'completed' ? 'Повторение' : item.state === 'current' ? 'Далее' : 'К тиру'
+  const actionLabel = item.state === 'completed' ? 'Повторение' : item.state === 'current' ? 'Далее' : 'К уровню'
+  const title = getDisplayLevelTitle(item.level.title)
 
   return (
     <article
@@ -26,15 +27,17 @@ export function ModulePathNode({ item, index }: { item: ModulePathItem; index: n
       )}
     >
       <div className="relative flex min-h-[132px] flex-col justify-between gap-5">
-        <div className="min-w-0">
-          <p className="text-sm font-bold leading-5 tracking-normal text-[var(--fr-text-tertiary)]">Тир {index}</p>
-          <h2 className="mt-1 text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">
-            {item.module.title}
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="min-w-0 text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">
+            {title}
           </h2>
+          <span className="shrink-0 rounded-full border border-[var(--fr-border-default)] bg-white/85 px-3 py-1 text-xs font-bold leading-5 tracking-normal text-[var(--fr-text-tertiary)] shadow-[var(--fr-shadow-xs)]">
+            Уровень {index}
+          </span>
         </div>
 
-        {item.module.description ? (
-          <p className="line-clamp-2 text-sm leading-5 text-[var(--fr-text-secondary)]">{item.module.description}</p>
+        {item.level.description ? (
+          <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">{item.level.description}</p>
         ) : null}
 
         <div className="flex flex-col gap-3">
@@ -53,7 +56,7 @@ export function ModulePathNode({ item, index }: { item: ModulePathItem; index: n
             </span>
           </div>
           <div
-            aria-label={`${percent}% тира завершено`}
+            aria-label={`${percent}% уровня завершено`}
             aria-valuemax={100}
             aria-valuemin={0}
             aria-valuenow={percent}
@@ -80,11 +83,17 @@ export function ModulePathNode({ item, index }: { item: ModulePathItem; index: n
           )}
           variant={item.state === 'completed' ? 'outline' : 'default'}
         >
-          <Link to={`/modules/${item.module.slug}`}>
+          <Link to={`/levels/${item.level.slug}`}>
             {actionLabel}
           </Link>
         </Button>
       </div>
     </article>
   )
+}
+
+function getDisplayLevelTitle(title: string) {
+  const normalizedTitle = title.trim()
+
+  return normalizedTitle.replace(/^T\d+\s+/i, '') || normalizedTitle
 }

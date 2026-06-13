@@ -88,7 +88,7 @@ describe('App logout flow', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
 
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
 

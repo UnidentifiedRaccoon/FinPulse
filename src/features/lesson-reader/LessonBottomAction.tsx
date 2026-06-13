@@ -1,4 +1,4 @@
-import { ArrowLeft, RotateCcw } from 'lucide-react'
+import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,7 @@ type PrimaryActionTone = 'continue' | 'check' | 'finish'
 
 export function LessonBottomAction({
   primaryLabel,
+  primaryTone,
   primaryDisabled,
   isBusy,
   secondaryLabel,
@@ -29,7 +30,14 @@ export function LessonBottomAction({
       data-lesson-bottom-action
     >
       <div className="mx-auto flex w-full max-w-[480px] flex-col gap-3">
-        {feedback}
+        {feedback ? (
+          <div
+            className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300 ease-out motion-reduce:animate-none"
+            data-lesson-bottom-feedback
+          >
+            {feedback}
+          </div>
+        ) : null}
         <div className="flex items-center gap-3">
           {secondaryLabel && onSecondary ? (
             <Button
@@ -44,12 +52,13 @@ export function LessonBottomAction({
             </Button>
           ) : null}
           <Button
-            className="min-h-12 flex-1 rounded-xl bg-[var(--fr-color-sky-500)] px-4 text-[15px] font-semibold text-white shadow-[var(--fr-shadow-sm)] hover:bg-[var(--fr-color-sky-600)] disabled:bg-[var(--fr-color-brand-100)] disabled:text-[var(--fr-text-tertiary)]"
+            className="min-h-12 flex-1 gap-2 rounded-xl bg-[var(--fr-color-sky-500)] px-4 text-center text-[15px] leading-tight font-semibold text-white shadow-[var(--fr-shadow-sm)] [white-space:normal] hover:bg-[var(--fr-color-sky-600)] disabled:bg-[var(--fr-color-brand-100)] disabled:text-[var(--fr-text-tertiary)]"
             disabled={primaryDisabled || isBusy}
             onClick={onPrimary}
             type="button"
           >
-            {primaryLabel}
+            <span className="min-w-0 [overflow-wrap:anywhere]">{primaryLabel}</span>
+            {primaryTone === 'continue' ? <ArrowRight aria-hidden="true" data-icon="inline-end" /> : null}
           </Button>
         </div>
       </div>

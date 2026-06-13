@@ -5,7 +5,14 @@ import { cn } from '@/lib/utils'
 
 type FeedbackTone = 'correct' | 'almost' | 'retry' | 'info'
 
-const feedbackConfig = {
+type FeedbackConfig = {
+  icon: typeof CheckCircle2
+  title?: string
+  className: string
+  iconClassName: string
+}
+
+const feedbackConfig: Record<FeedbackTone, FeedbackConfig> = {
   correct: {
     icon: CheckCircle2,
     title: 'Верно',
@@ -14,7 +21,6 @@ const feedbackConfig = {
   },
   almost: {
     icon: Lightbulb,
-    title: 'Есть нюанс',
     className: 'border-[var(--fr-color-learn-almost-500)]/30 bg-[var(--fr-color-learn-almost-50)]',
     iconClassName: 'text-[var(--fr-color-learn-almost-500)]',
   },
@@ -30,7 +36,7 @@ const feedbackConfig = {
     className: 'border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)]',
     iconClassName: 'text-[var(--fr-color-brand-500)]',
   },
-} satisfies Record<FeedbackTone, { icon: typeof CheckCircle2; title: string; className: string; iconClassName: string }>
+}
 
 export function LessonFeedback({
   id,
@@ -45,6 +51,7 @@ export function LessonFeedback({
 }) {
   const config = feedbackConfig[tone]
   const Icon = config.icon
+  const renderedTitle = title ?? config.title
 
   return (
     <div
@@ -58,7 +65,7 @@ export function LessonFeedback({
     >
       <Icon aria-hidden="true" className={cn('mt-0.5 shrink-0', config.iconClassName)} />
       <div className="flex min-w-0 flex-col gap-1">
-        <p className="font-semibold text-[var(--fr-text-primary)]">{title ?? config.title}</p>
+        {renderedTitle ? <p className="font-semibold text-[var(--fr-text-primary)]">{renderedTitle}</p> : null}
         <div className="flex flex-col gap-1 [overflow-wrap:anywhere]">{children}</div>
       </div>
     </div>

@@ -1,5 +1,5 @@
-import type { Card, Lesson, Module, Unit } from '@/content/program'
-import type { ModulePathItem } from '@/features/program-navigation/learningPath'
+import type { Card, Lesson, Level, Section } from '@/content/program'
+import type { LevelPathItem } from '@/features/program-navigation/learningPath'
 
 export const theoryCard = {
   id: 'story-theory-card',
@@ -232,53 +232,53 @@ export const lockedLessonFixture = {
   title: 'Следующий шаг маршрута',
 } satisfies Lesson
 
-export const unitFixture = {
+export const sectionFixture = {
   schemaVersion: 1,
-  id: 'story-unit',
+  id: 'story-section',
   slug: 'first-money-route',
   title: 'Маршрут спокойного старта',
   description: 'Первые уроки без перегруза и жесткой мотивации.',
   order: 1,
   source: 'storybook-fixture',
   lessons: [completedLessonFixture, lessonFixture, lockedLessonFixture],
-} satisfies Unit
+} satisfies Section
 
-export const moduleFixture = {
+export const levelFixture = {
   schemaVersion: 1,
-  id: 'story-module',
+  id: 'story-level',
   slug: 'personal-finance-start',
   title: 'Личные финансы без давления',
-  description: 'Базовый модуль про цели, резерв и первые финансовые привычки.',
+  description: 'Базовый уровень про цели, резерв и первые финансовые привычки.',
   order: 1,
   source: 'storybook-fixture',
-  units: [unitFixture],
-} satisfies Module
+  sections: [sectionFixture],
+} satisfies Level
 
-export const modulePathItems = {
+export const levelPathItems = {
   completed: {
-    module: moduleFixture,
-    units: [],
+    level: levelFixture,
+    sections: [],
     state: 'completed',
     completedLessons: 3,
     totalLessons: 3,
   },
   current: {
-    module: moduleFixture,
-    units: [],
+    level: levelFixture,
+    sections: [],
     state: 'current',
     completedLessons: 1,
     totalLessons: 3,
   },
   locked: {
-    module: {
-      ...moduleFixture,
-      id: 'story-module-locked',
+    level: {
+      ...levelFixture,
+      id: 'story-level-locked',
       slug: 'future-money-habits',
       title: 'Будущие денежные привычки',
     },
-    units: [],
+    sections: [],
     state: 'locked',
     completedLessons: 0,
     totalLessons: 3,
   },
-} satisfies Record<'completed' | 'current' | 'locked', ModulePathItem>
+} satisfies Record<'completed' | 'current' | 'locked', LevelPathItem>

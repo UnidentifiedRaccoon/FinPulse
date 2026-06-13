@@ -5,85 +5,86 @@ import { Link, Navigate, useParams } from 'react-router'
 import { api, type ProgressResponse } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
 import { Button } from '@/components/ui/button'
-import { getOrderedModules } from '@/content/order'
-import { LessonPathMap, ModuleTransitionCard } from '@/features/program-navigation/LessonPathMap'
-import { buildModuleLearningPath } from '@/features/program-navigation/learningPath'
+import { getOrderedLevels } from '@/content/order'
+import { LessonPathMap, LevelTransitionCard } from '@/features/program-navigation/LessonPathMap'
+import { buildLevelLearningPath } from '@/features/program-navigation/learningPath'
 import { buildLessonPathSections, type LessonPathSection } from '@/features/program-navigation/lessonPathSections'
 
 const EMPTY_SECTIONS: LessonPathSection[] = []
 const SECTION_ACTIVATION_RATIO = 0.35
 const SECTION_ACTIVATION_MAX_PX = 260
 
-export function ModulePage({ progress }: { progress: ProgressResponse | null }) {
-  const { moduleSlug } = useParams()
-  const moduleQuery = useApiQuery(() => api.getModule(moduleSlug ?? ''), [moduleSlug])
+export function LevelPage({ progress }: { progress: ProgressResponse | null }) {
+  const { levelSlug } = useParams()
+  const levelQuery = useApiQuery(() => api.getLevel(levelSlug ?? ''), [levelSlug])
   const programQuery = useApiQuery(api.getProgram, [])
-  const modulePathState = useMemo(() => {
-    if (moduleQuery.status !== 'success') return null
+  const levelPathState = useMemo(() => {
+    if (levelQuery.status !== 'success') return null
 
-    const path = buildModuleLearningPath(moduleQuery.data, progress)
-    const modulePath = path.modules[0]
+    const path = buildLevelLearningPath(levelQuery.data, progress)
+    const levelPath = path.levels[0]
 
     return {
       path,
-      sections: buildLessonPathSections(modulePath?.units ?? []),
+      sections: buildLessonPathSections(levelPath?.sections ?? []),
     }
-  }, [moduleQuery.data, moduleQuery.status, progress])
-  const sections = modulePathState?.sections ?? EMPTY_SECTIONS
+  }, [levelQuery.data, levelQuery.status, progress])
+  const sections = levelPathState?.sections ?? EMPTY_SECTIONS
   const sectionIds = useMemo(() => sections.map((section) => section.id), [sections])
   const scrollActiveSectionId = useScrollActiveSectionId(sectionIds)
 
-  if (!moduleSlug) {
+  if (!levelSlug) {
     return <Navigate to="/" replace />
   }
 
-  if (moduleQuery.status === 'loading') {
-    return <PageState title="Загружаем тир" />
+  if (levelQuery.status === 'loading') {
+    return <PageState title="Загружаем уровень" />
   }
 
-  if (moduleQuery.status === 'error') {
-    return <PageState title="Не удалось загрузить тир" description={moduleQuery.error.message} />
+  if (levelQuery.status === 'error') {
+    return <PageState title="Не удалось загрузить уровень" description={levelQuery.error.message} />
   }
 
-  const module = moduleQuery.data
-  const path = modulePathState?.path ?? buildModuleLearningPath(module, progress)
+  const level = levelQuery.data
+  const path = levelPathState?.path ?? buildLevelLearningPath(level, progress)
   const progressActiveSection =
     sections.find((section) => section.state === 'current') ?? sections.find((section) => section.state === 'locked') ?? sections[0]
   const activeSection = sections.find((section) => section.id === scrollActiveSectionId) ?? progressActiveSection
-  const moduleContext = activeSection ? `Тир ${module.order} раздел ${activeSection.number}` : `Тир ${module.order}`
-  const nextModule =
+  const levelContext = activeSection ? `Уровень ${level.order} раздел ${activeSection.number}` : `Уровень ${level.order}`
+  const nextLevel =
     programQuery.status === 'success'
-      ? (getOrderedModules(programQuery.data).find((candidate) => candidate.order > module.order) ?? null)
+      ? (getOrderedLevels(programQuery.data).find((candidate) => candidate.order > level.order) ?? null)
       : null
 
   return (
-    <div className="flex flex-col gap-8 pb-10" id="module-top">
-      <section className="sticky top-3 z-20 overflow-hidden rounded-[28px] bg-[var(--fr-color-sky-500)] p-4 text-white shadow-[0_18px_40px_rgba(20,121,184,0.22)]">
-        <div className="flex items-start">
-          <Button
-            asChild
-            className="min-h-11 gap-2 rounded-2xl px-4 py-2 text-sm font-bold uppercase leading-5 tracking-normal text-white hover:bg-white/10 hover:text-white has-data-[icon=inline-start]:pl-4"
-            variant="ghost"
-          >
-            <Link to="/program">
-              <ChevronLeft data-icon="inline-start" />
-              {moduleContext}
-            </Link>
-          </Button>
-        </div>
+    <div className="min-h-svh bg-[var(--fr-surface-canvas)] pb-10" id="level-top">
+      <header
+        className="sticky top-0 z-30 rounded-b-[22px] bg-[var(--fr-color-sky-500)] px-3 pb-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] text-white"
+        data-testid="compact-path-header"
+      >
+        <Button
+          asChild
+          className="min-h-8 gap-1 rounded-none px-0 py-0 text-[11px] font-bold uppercase leading-4 tracking-normal text-white hover:bg-transparent hover:text-white has-data-[icon=inline-start]:pl-0"
+          variant="ghost"
+        >
+          <Link to="/program">
+            <ChevronLeft data-icon="inline-start" />
+            {levelContext}
+          </Link>
+        </Button>
 
-        <div className="flex flex-col gap-3">
-          <h1 className="min-w-0 text-2xl font-bold leading-tight tracking-normal [overflow-wrap:anywhere]">
-            {activeSection?.title ?? module.title}
-          </h1>
-        </div>
-      </section>
+        <h1 className="max-w-[18rem] text-[20px] font-bold leading-6 tracking-normal text-white [overflow-wrap:anywhere]">
+          {activeSection?.title ?? level.title}
+        </h1>
+      </header>
 
-      <LessonPathMap moduleOrder={module.order} sections={sections} />
+      <div className="flex flex-col gap-8 px-4 pb-6 pt-7">
+        <LessonPathMap levelOrder={level.order} sections={sections} />
 
-      {programQuery.status !== 'loading' && (nextModule || path.isComplete) ? (
-        <ModuleTransitionCard isComplete={path.isComplete} nextModule={nextModule} />
-      ) : null}
+        {programQuery.status !== 'loading' && (nextLevel || path.isComplete) ? (
+          <LevelTransitionCard isComplete={path.isComplete} nextLevel={nextLevel} />
+        ) : null}
+      </div>
     </div>
   )
 }

@@ -12,7 +12,7 @@ Program -> Level -> Section -> Lesson -> Card
 
 ## Intended write set
 
-- `docs/methodology/METHODOLOGY.09-06.2026.docx`
+- `docs/methodology/METHODOLOGY.10-06.2026.docx`
 - `docs/methodology/METHODOLOGY.md`
 - `harness/WORKBOARD.md`
 - `harness/PROJECT_STATE.md`
@@ -31,7 +31,7 @@ Program -> Level -> Section -> Lesson -> Card
 - Confirmed old placeholders are absent from DOCX `word/document.xml`.
 - Confirmed new `docs/levels/level_1/sections/section_x/lesson_x.md` appears 8 times in DOCX.
 - Confirmed `sample/level_x/section_x/lesson_x` appears once in DOCX.
-- `unzip -t docs/methodology/METHODOLOGY.09-06.2026.docx`
+- `unzip -t docs/methodology/METHODOLOGY.10-06.2026.docx`
 - `python-docx` opens the corrected DOCX.
 - Rendered DOCX to 47 PNG pages and PDF with `render_docx.py`.
 - Visually inspected pages 40-44 containing JSON examples.

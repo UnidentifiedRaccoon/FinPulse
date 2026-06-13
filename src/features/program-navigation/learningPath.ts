@@ -1,40 +1,40 @@
 import type { ProgressResponse } from '@/api/client'
-import { getOrderedLessons, getOrderedModules, getOrderedUnits } from '@/content/order'
+import { getOrderedLessons, getOrderedLevels, getOrderedSections } from '@/content/order'
 import {
+  type Level,
   type Lesson,
-  type Module,
   type Program,
-  type Unit,
+  type Section,
 } from '@/content/program'
 
 export type PathItemState = 'completed' | 'current' | 'locked'
 
 export type LessonPathItem = {
-  module: Module
-  unit: Unit
+  level: Level
+  section: Section
   lesson: Lesson
   state: PathItemState
 }
 
-export type UnitPathItem = {
-  module: Module
-  unit: Unit
+export type SectionPathItem = {
+  level: Level
+  section: Section
   lessons: LessonPathItem[]
   state: PathItemState
   completedLessons: number
   totalLessons: number
 }
 
-export type ModulePathItem = {
-  module: Module
-  units: UnitPathItem[]
+export type LevelPathItem = {
+  level: Level
+  sections: SectionPathItem[]
   state: PathItemState
   completedLessons: number
   totalLessons: number
 }
 
 export type LearningPath = {
-  modules: ModulePathItem[]
+  levels: LevelPathItem[]
   currentLesson: LessonPathItem | null
   completedLessons: number
   totalLessons: number
@@ -42,16 +42,16 @@ export type LearningPath = {
 }
 
 export function buildProgramLearningPath(program: Program, progress: ProgressResponse | null): LearningPath {
-  const modules = getOrderedModules(program)
-  return buildLearningPath(modules, progress)
+  const levels = getOrderedLevels(program)
+  return buildLearningPath(levels, progress)
 }
 
-export function buildModuleLearningPath(module: Module, progress: ProgressResponse | null): LearningPath {
-  return buildLearningPath([module], progress)
+export function buildLevelLearningPath(level: Level, progress: ProgressResponse | null): LearningPath {
+  return buildLearningPath([level], progress)
 }
 
-export function buildUnitLearningPath(module: Module, unit: Unit, progress: ProgressResponse | null): LearningPath {
-  return buildLearningPath([{ ...module, units: [unit] }], progress)
+export function buildSectionLearningPath(level: Level, section: Section, progress: ProgressResponse | null): LearningPath {
+  return buildLearningPath([{ ...level, sections: [section] }], progress)
 }
 
 export function getProgressPercent(completedLessons: number, totalLessons: number) {
@@ -59,17 +59,17 @@ export function getProgressPercent(completedLessons: number, totalLessons: numbe
   return Math.round((completedLessons / totalLessons) * 100)
 }
 
-function buildLearningPath(modules: Module[], progress: ProgressResponse | null): LearningPath {
+function buildLearningPath(levels: Level[], progress: ProgressResponse | null): LearningPath {
   const completedSlugs = new Set(
     progress?.lessons
       .filter((lessonProgress) => lessonProgress.completed)
       .map((lessonProgress) => lessonProgress.lessonSlug) ?? [],
   )
-  const orderedLessons = modules.flatMap((module) =>
-    getOrderedUnits(module).flatMap((unit) =>
-      getOrderedLessons(unit).map((lesson) => ({
-        module,
-        unit,
+  const orderedLessons = levels.flatMap((level) =>
+    getOrderedSections(level).flatMap((section) =>
+      getOrderedLessons(section).map((lesson) => ({
+        level,
+        section,
         lesson,
       })),
     ),
@@ -81,41 +81,41 @@ function buildLearningPath(modules: Module[], progress: ProgressResponse | null)
     lessonStateBySlug.set(lesson.slug, getLessonState(lesson, currentLessonSlug, completedSlugs))
   }
 
-  const pathModules = modules.map((module) => {
-    const units = getOrderedUnits(module).map((unit) => {
-      const lessons = getOrderedLessons(unit).map((lesson) => ({
-        module,
-        unit,
+  const pathLevels = levels.map((level) => {
+    const sections = getOrderedSections(level).map((section) => {
+      const lessons = getOrderedLessons(section).map((lesson) => ({
+        level,
+        section,
         lesson,
         state: lessonStateBySlug.get(lesson.slug) ?? 'locked',
       }))
       const completedLessons = lessons.filter((item) => item.state === 'completed').length
 
       return {
-        module,
-        unit,
+        level,
+        section,
         lessons,
         state: getParentState(lessons),
         completedLessons,
         totalLessons: lessons.length,
       }
     })
-    const completedLessons = units.reduce((sum, unit) => sum + unit.completedLessons, 0)
-    const totalLessons = units.reduce((sum, unit) => sum + unit.totalLessons, 0)
+    const completedLessons = sections.reduce((sum, section) => sum + section.completedLessons, 0)
+    const totalLessons = sections.reduce((sum, section) => sum + section.totalLessons, 0)
 
     return {
-      module,
-      units,
-      state: getParentState(units),
+      level,
+      sections,
+      state: getParentState(sections),
       completedLessons,
       totalLessons,
     }
   })
-  const currentLesson = findCurrentLesson(pathModules)
+  const currentLesson = findCurrentLesson(pathLevels)
   const completedLessons = orderedLessons.filter(({ lesson }) => completedSlugs.has(lesson.slug)).length
 
   return {
-    modules: pathModules,
+    levels: pathLevels,
     currentLesson,
     completedLessons,
     totalLessons: orderedLessons.length,
@@ -140,10 +140,10 @@ function getParentState(items: Array<{ state: PathItemState }>): PathItemState {
   return 'locked'
 }
 
-function findCurrentLesson(modules: ModulePathItem[]) {
-  for (const module of modules) {
-    for (const unit of module.units) {
-      const currentLesson = unit.lessons.find((lesson) => lesson.state === 'current')
+function findCurrentLesson(levels: LevelPathItem[]) {
+  for (const level of levels) {
+    for (const section of level.sections) {
+      const currentLesson = section.lessons.find((lesson) => lesson.state === 'current')
       if (currentLesson) return currentLesson
     }
   }

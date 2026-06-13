@@ -3,13 +3,13 @@ import programJson from '@/content/program.json'
 import { parseProgram } from '@/content/program'
 
 const contentFilesByPath = Object.fromEntries(
-  Object.entries(import.meta.glob<unknown>('../content/modules/**/*.json', { eager: true, import: 'default' })).map(
+  Object.entries(import.meta.glob<unknown>('../content/levels/**/*.json', { eager: true, import: 'default' })).map(
     ([filePath, file]) => [filePath.replace(/^\.\.\/content\//, ''), file],
   ),
 )
 
-type LoadedModuleFile = {
-  units: Array<{ path: string }>
+type LoadedLevelFile = {
+  sections: Array<{ path: string }>
 }
 
 function normalizeContentPath(refPath: string) {
@@ -25,8 +25,8 @@ function normalizeContentPath(refPath: string) {
   return parts.join('/')
 }
 
-function moduleBasePath(modulePath: string) {
-  return modulePath.split('/').slice(0, -1).join('/')
+function levelBasePath(levelPath: string) {
+  return levelPath.split('/').slice(0, -1).join('/')
 }
 
 function joinContentPath(basePath: string, refPath: string) {
@@ -38,20 +38,20 @@ function joinContentPath(basePath: string, refPath: string) {
 function hydrateProgramContent() {
   return {
     ...programJson,
-    modules: programJson.modules.map((moduleRef) => {
-      const modulePath = normalizeContentPath(moduleRef.path)
-      const moduleFile = modulePath ? contentFilesByPath[modulePath] : null
-      if (!modulePath || !moduleFile || typeof moduleFile !== 'object' || Array.isArray(moduleFile)) {
-        return moduleRef
+    levels: programJson.levels.map((levelRef) => {
+      const levelPath = normalizeContentPath(levelRef.path)
+      const levelFile = levelPath ? contentFilesByPath[levelPath] : null
+      if (!levelPath || !levelFile || typeof levelFile !== 'object' || Array.isArray(levelFile)) {
+        return levelRef
       }
 
-      const loadedModule = moduleFile as LoadedModuleFile
-      const moduleBase = moduleBasePath(modulePath)
+      const loadedLevel = levelFile as LoadedLevelFile
+      const levelBase = levelBasePath(levelPath)
       return {
-        ...moduleFile,
-        units: loadedModule.units.map((unitRef) => {
-          const unitPath = joinContentPath(moduleBase, unitRef.path)
-          return unitPath ? (contentFilesByPath[unitPath] ?? unitRef) : unitRef
+        ...levelFile,
+        sections: loadedLevel.sections.map((sectionRef) => {
+          const sectionPath = joinContentPath(levelBase, sectionRef.path)
+          return sectionPath ? (contentFilesByPath[sectionPath] ?? sectionRef) : sectionRef
         }),
       }
     }),

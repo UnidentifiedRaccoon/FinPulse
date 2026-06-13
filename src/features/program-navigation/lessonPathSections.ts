@@ -1,4 +1,4 @@
-import type { LessonPathItem, PathItemState, UnitPathItem } from './learningPath'
+import type { LessonPathItem, PathItemState, SectionPathItem } from './learningPath'
 
 export type LessonPathSection = {
   id: string
@@ -12,26 +12,26 @@ export type LessonPathSection = {
   lessons: LessonPathItem[]
 }
 
-export function buildLessonPathSections(units: UnitPathItem[]): LessonPathSection[] {
+export function buildLessonPathSections(sections: SectionPathItem[]): LessonPathSection[] {
   let firstLessonNumber = 1
 
-  return units.map((unitItem) => {
-    const completedLessons = unitItem.lessons.filter((item) => item.state === 'completed').length
-    const state = getSectionState(unitItem.lessons)
+  return sections.map((sectionItem) => {
+    const completedLessons = sectionItem.lessons.filter((item) => item.state === 'completed').length
+    const state = getSectionState(sectionItem.lessons)
     const sectionFirstLessonNumber = firstLessonNumber
 
-    firstLessonNumber += unitItem.lessons.length
+    firstLessonNumber += sectionItem.lessons.length
 
     return {
-      id: unitItem.unit.id,
-      number: unitItem.unit.order,
-      title: getSectionDisplayTitle(unitItem.unit.title),
-      description: unitItem.unit.description,
+      id: sectionItem.section.id,
+      number: sectionItem.section.order,
+      title: getSectionDisplayTitle(sectionItem.section.title),
+      description: sectionItem.section.description,
       state,
       firstLessonNumber: sectionFirstLessonNumber,
       completedLessons,
-      totalLessons: unitItem.lessons.length,
-      lessons: unitItem.lessons,
+      totalLessons: sectionItem.lessons.length,
+      lessons: sectionItem.lessons,
     }
   })
 }

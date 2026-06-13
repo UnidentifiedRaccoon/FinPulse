@@ -47,7 +47,7 @@
     },
     "programManifest": {
       "type": "object",
-      "required": ["schemaVersion", "id", "slug", "title", "modules"],
+      "required": ["schemaVersion", "id", "slug", "title", "levels"],
       "additionalProperties": false,
       "properties": {
         "schemaVersion": {
@@ -67,16 +67,16 @@
         "description": {
           "type": "string"
         },
-        "modules": {
+        "levels": {
           "type": "array",
           "minItems": 1,
           "items": {
-            "$ref": "#/$defs/moduleRef"
+            "$ref": "#/$defs/levelRef"
           }
         }
       }
     },
-    "moduleRef": {
+    "levelRef": {
       "type": "object",
       "required": ["id", "slug", "title", "order", "path"],
       "additionalProperties": false,
@@ -105,9 +105,9 @@
         }
       }
     },
-    "moduleFile": {
+    "levelFile": {
       "type": "object",
-      "required": ["schemaVersion", "id", "slug", "title", "order", "units"],
+      "required": ["schemaVersion", "id", "slug", "title", "order", "sections"],
       "additionalProperties": false,
       "properties": {
         "schemaVersion": {
@@ -134,16 +134,16 @@
         "source": {
           "type": "string"
         },
-        "units": {
+        "sections": {
           "type": "array",
           "minItems": 1,
           "items": {
-            "$ref": "#/$defs/unitRef"
+            "$ref": "#/$defs/sectionRef"
           }
         }
       }
     },
-    "unitRef": {
+    "sectionRef": {
       "type": "object",
       "required": ["id", "slug", "title", "order", "path"],
       "additionalProperties": false,
@@ -172,7 +172,7 @@
         }
       }
     },
-    "unitFile": {
+    "sectionFile": {
       "type": "object",
       "required": ["schemaVersion", "id", "slug", "title", "order", "source", "lessons"],
       "additionalProperties": false,
@@ -302,6 +302,10 @@
         "sourceSection": {
           "type": "string"
         },
+        "ctaLabel": {
+          "type": "string",
+          "minLength": 1
+        },
         "thinkingType": {
           "type": "string"
         },
@@ -352,6 +356,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -378,6 +383,7 @@
                 "order": true,
                 "title": { "type": "string", "minLength": 1 },
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -414,6 +420,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -437,6 +444,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -467,6 +475,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -496,6 +505,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -548,6 +558,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -588,6 +599,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -621,6 +633,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -665,6 +678,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
@@ -692,6 +706,7 @@
                 "order": true,
                 "title": true,
                 "sourceSection": true,
+                "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,

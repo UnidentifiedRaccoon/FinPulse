@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 
 import type { LessonDetails } from '@/api/client'
-import type { Card, Lesson, Module, Unit } from '@/content/program'
+import type { Card, Lesson, Level, Section } from '@/content/program'
 
 import { LessonSession } from './LessonSession'
 
@@ -200,6 +200,41 @@ describe('LessonSession', () => {
     expect(screen.getByText('2 из 2')).toBeInTheDocument()
   })
 
+  it('resets the lesson screen scroll when moving between cards', async () => {
+    const user = userEvent.setup()
+    const { restore, scrollIntoView } = mockElementScrollIntoView()
+
+    try {
+      renderSession([
+        {
+          id: 'card-theory',
+          type: 'theory',
+          order: 1,
+          title: 'Первый шаг',
+          body: 'Короткое объяснение.',
+        },
+        {
+          id: 'card-summary',
+          type: 'summary',
+          order: 2,
+          title: 'Итог',
+          points: ['Пункт'],
+        },
+      ])
+
+      scrollIntoView.mockClear()
+      await user.click(screen.getByRole('button', { name: 'Далее' }))
+
+      expect(screen.getByRole('heading', { name: 'Итог' })).toBeInTheDocument()
+      expect(scrollIntoView).toHaveBeenCalledWith({
+        block: 'start',
+        behavior: 'auto',
+      })
+    } finally {
+      restore()
+    }
+  })
+
   it('embeds supported video cards inside the lesson', async () => {
     const user = userEvent.setup()
 
@@ -257,9 +292,11 @@ describe('LessonSession', () => {
     await user.click(checkButton)
 
     const feedback = screen.getByRole('status')
+    const animatedFeedback = feedback.closest('[data-lesson-bottom-feedback]')
     expect(feedback).toHaveTextContent('Можно уточнить')
     expect(feedback).toHaveTextContent('Лучше подходит: Подходит.')
     expect(feedback).toHaveTextContent('Общий фидбек')
+    expect(animatedFeedback).toHaveClass('animate-in', 'fade-in-0', 'slide-in-from-bottom-4')
     expect(screen.getByRole('button', { name: 'Завершить' })).toBeEnabled()
   })
 
@@ -807,7 +844,7 @@ describe('LessonSession', () => {
     expect(onLessonCompleted).toHaveBeenCalledWith('test-lesson')
     expect(screen.getByRole('heading', { name: 'Урок пройден' })).toBeInTheDocument()
     expect(screen.getByText('2 из 2 карточек')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'К списку уроков' })).toHaveAttribute('href', '/modules/module-1')
+    expect(screen.getByRole('link', { name: 'К списку уроков' })).toHaveAttribute('href', '/levels/level-1')
   })
 
   it('renders next lesson and lesson-list actions on completion when another lesson exists', async () => {
@@ -831,7 +868,7 @@ describe('LessonSession', () => {
     expect(screen.getByRole('heading', { name: 'Урок пройден' })).toBeInTheDocument()
     expect(screen.getByText('Один небольшой шаг пройден. Можно перейти к следующему уроку или вернуться к списку уроков.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'К следующему уроку' })).toHaveAttribute('href', '/lessons/next-lesson')
-    expect(screen.getByRole('link', { name: 'К списку уроков' })).toHaveAttribute('href', '/modules/module-1')
+    expect(screen.getByRole('link', { name: 'К списку уроков' })).toHaveAttribute('href', '/levels/level-1')
   })
 })
 
@@ -863,6 +900,25 @@ function renderSession(
   )
 }
 
+function mockElementScrollIntoView() {
+  const scrollIntoView = vi.fn()
+  const originalScrollIntoView = Element.prototype.scrollIntoView
+
+  Element.prototype.scrollIntoView = scrollIntoView as Element['scrollIntoView']
+
+  return {
+    scrollIntoView,
+    restore: () => {
+      if (originalScrollIntoView) {
+        Element.prototype.scrollIntoView = originalScrollIntoView
+        return
+      }
+
+      delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>).scrollIntoView
+    },
+  }
+}
+
 function createLessonDetails(cards: Card[], nextLessonSlug?: string): LessonDetails {
   const lesson: Lesson = {
     id: 'lesson-1',
@@ -885,30 +941,30 @@ function createLessonDetails(cards: Card[], nextLessonSlug?: string): LessonDeta
       }
     : null
 
-  const unit: Unit = {
+  const section: Section = {
     schemaVersion: 1,
-    id: 'unit-1',
-    slug: 'unit-1',
-    title: 'Тестовый юнит',
+    id: 'section-1',
+    slug: 'section-1',
+    title: 'Тестовый раздел',
     order: 1,
     source: 'test',
     lessons: nextLesson ? [lesson, nextLesson] : [lesson],
   }
 
-  const module: Module = {
+  const level: Level = {
     schemaVersion: 1,
-    id: 'module-1',
-    slug: 'module-1',
-    title: 'Тестовый модуль',
+    id: 'level-1',
+    slug: 'level-1',
+    title: 'Тестовый уровень',
     order: 1,
-    units: [unit],
+    sections: [section],
   }
 
   return {
-    module,
-    unit,
+    level,
+    section,
     lesson,
     previous: null,
-    next: nextLesson ? { module, unit, lesson: nextLesson } : null,
+    next: nextLesson ? { level, section, lesson: nextLesson } : null,
   }
 }

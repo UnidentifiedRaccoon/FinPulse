@@ -4,7 +4,7 @@ import { StrictMode } from 'react'
 import { afterEach, beforeEach, vi } from 'vitest'
 
 import type { ApiUser, ProgressResponse, ReflectionAnswersResponse } from '@/api/client'
-import { getAllLessons, getOrderedModules, getOrderedUnits } from '@/content/order'
+import { getAllLessons, getOrderedLevels, getOrderedSections } from '@/content/order'
 import { parsedProgram } from '@/test/loadProgram'
 
 import App from './App'
@@ -22,13 +22,16 @@ const learnerUser: ApiUser = {
   login: 'learner@example.com',
   createdAt: '2026-05-30T08:15:00.000Z',
 }
+const whereMoneyGoesFirstCta = 'Разобраться, куда уходят мои деньги'
+const mandatoryDesiredFirstCta = 'Научиться различать'
+const theoryContinueCta = 'Понятно, дальше'
 
 type ApiResponseOptions = {
   currentUser?: ApiUser | null
   progress?: ProgressResponse
   reflectionAnswers?: ReflectionAnswersResponse
   loginNonJsonError?: boolean
-  programHasNoModules?: boolean
+  programHasNoLevels?: boolean
   progressCompletedFailure?: { status: number; message: string }
   progressCompletedTransientFailures?: { remaining: number; status: number; message: string }
 }
@@ -134,26 +137,30 @@ function apiResponse(url: string, options: ApiResponseOptions, init: RequestInit
   }
 
   if (path === '/api/program') {
-    if (options.programHasNoModules) {
-      return jsonResponse({ ...program, modules: [] })
+    if (options.programHasNoLevels) {
+      return jsonResponse({ ...program, levels: [] })
     }
 
     return jsonResponse(program)
   }
 
-  if (path.startsWith('/api/modules/')) {
-    const moduleSlug = decodeURIComponent(path.replace('/api/modules/', ''))
-    const module = getOrderedModules(program).find((candidate) => candidate.slug === moduleSlug)
-    return module ? jsonResponse(module) : jsonResponse({ error: { code: 'not_found', message: 'Module not found' } }, 404)
+  if (path === '/api/levels') {
+    return jsonResponse(getOrderedLevels(program))
   }
 
-  if (path.startsWith('/api/units/')) {
-    const unitSlug = decodeURIComponent(path.replace('/api/units/', ''))
-    for (const module of getOrderedModules(program)) {
-      const unit = getOrderedUnits(module).find((candidate) => candidate.slug === unitSlug)
-      if (unit) return jsonResponse({ module, unit })
+  if (path.startsWith('/api/levels/')) {
+    const levelSlug = decodeURIComponent(path.replace('/api/levels/', ''))
+    const level = getOrderedLevels(program).find((candidate) => candidate.slug === levelSlug)
+    return level ? jsonResponse(level) : jsonResponse({ error: { code: 'not_found', message: 'Level not found' } }, 404)
+  }
+
+  if (path.startsWith('/api/sections/')) {
+    const sectionSlug = decodeURIComponent(path.replace('/api/sections/', ''))
+    for (const level of getOrderedLevels(program)) {
+      const section = getOrderedSections(level).find((candidate) => candidate.slug === sectionSlug)
+      if (section) return jsonResponse({ level, section })
     }
-    return jsonResponse({ error: { code: 'not_found', message: 'Unit not found' } }, 404)
+    return jsonResponse({ error: { code: 'not_found', message: 'Section not found' } }, 404)
   }
 
   if (path.startsWith('/api/lessons/')) {
@@ -213,7 +220,7 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Тиры' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Уровни' })).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
   })
@@ -228,7 +235,7 @@ describe('App', () => {
       </StrictMode>,
     )
 
-    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
     await waitFor(() => {
       expect(window.location.pathname).toBe('/program')
     })
@@ -245,15 +252,15 @@ describe('App', () => {
           saveKey: 'unexpected_expense',
           lessonSlug: 'where-money-goes',
           lessonTitle: 'Куда уходят деньги',
-          unitSlug: 'money-and-operations',
-          unitTitle: 'Юнит 1. Деньги и операции',
-          moduleSlug: 't1-start',
-          moduleTitle: 'T1 Старт',
+          sectionSlug: 'money-and-operations',
+          sectionTitle: 'Раздел 1. Деньги и операции',
+          levelSlug: 't1-start',
+          levelTitle: 'T1 Старт',
           cardTitle: 'Что удивило?',
-          prompt: 'Посмотри на свои три траты. Какая из них удивила тебя: оказалась больше, чем казалось, или просто была лишней?',
+          prompt: 'Посмотри на свои три траты. Какая из них удивила тебя — оказалась больше или меньше, чем казалось?',
           template: null,
           answer: {
-            singleValue: 'Кофе или перекусы — их оказалось больше, чем казалось',
+            singleValue: 'Кофе/перекусы — их больше, чем думал(а)',
           },
           createdAt: '2026-05-30T08:45:00.000Z',
           updatedAt: '2026-05-30T08:45:00.000Z',
@@ -293,11 +300,11 @@ describe('App', () => {
     const answersSection = screen.getByRole('region', { name: 'Персональный финансовый навигатор' })
     expect(within(answersSection).queryByText('Мои ответы')).toBeNull()
     expect(within(answersSection).getByRole('heading', { name: 'Что удивило?' })).toBeTruthy()
-    expect(within(answersSection).getByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeTruthy()
+    expect(within(answersSection).getByText('Кофе/перекусы — их больше, чем думал(а)')).toBeTruthy()
     const progressSection = screen.getByRole('region', { name: 'Учебный прогресс' })
     expect(within(progressSection).getByRole('heading', { name: 'Учебный прогресс' })).toBeTruthy()
     expect(within(progressSection).getByText('Пройдено уроков')).toBeTruthy()
-    expect(await within(progressSection).findByText('1/4')).toBeTruthy()
+    expect(await within(progressSection).findByText(`1/${program ? getAllLessons(program).length : 0}`)).toBeTruthy()
     expect(within(progressSection).getByText('Просмотрено уроков')).toBeTruthy()
     expect(within(progressSection).getAllByText('1').length).toBeGreaterThan(0)
     expect(within(progressSection).getByText('Карточек завершено')).toBeTruthy()
@@ -310,21 +317,106 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'T1 Старт' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Старт' })).toBeTruthy()
+    expect(screen.getByText('Уровень 1')).toBeTruthy()
+    expect(
+      screen.getByText('Первый уровень новой методической рамки ФинПульс: навести порядок, увидеть базовые траты и начать маленькие финансовые привычки.'),
+    ).toBeTruthy()
     expect(screen.queryByText('Ваш прогресс')).toBeNull()
-    expect(screen.getByRole('progressbar', { name: /тира завершено/ })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/modules/t1-start')
+    expect(screen.getByRole('progressbar', { name: /уровня завершено/ })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/levels/t1-start')
   })
 
-  it('redirects the removed lesson completion experiment page to the program', async () => {
+  it('shows not found for removed routes', async () => {
+    const removedRoutes = [
+      {
+        path: '/design/lesson-completion-variants',
+        removedHeading: 'Завершение урока',
+      },
+      {
+        path: '/design/mobile-section-compact',
+        removedHeading: 'Раздел 1. Деньги и операции',
+      },
+    ]
+
+    for (const route of removedRoutes) {
+      setAuthenticatedLearner(apiOptions)
+      window.history.pushState({}, '', route.path)
+
+      const { unmount } = render(<App />)
+
+      expect(await screen.findByRole('heading', { name: 'Страница не найдена' })).toBeTruthy()
+      expect(screen.queryByRole('heading', { name: route.removedHeading })).toBeNull()
+      expect(window.location.pathname).toBe(route.path)
+
+      unmount()
+    }
+  })
+
+  it('renders the compact production level path header', async () => {
+    const user = userEvent.setup()
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/design/lesson-completion-variants')
+    window.history.pushState({}, '', '/levels/t1-start')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Завершение урока' })).toBeNull()
+    const compactHeader = await screen.findByTestId('compact-path-header')
+    const main = screen.getByRole('main')
+
+    expect(main.className).toContain('max-w-none')
+    expect(main.className).toContain('px-0')
+    expect(main.className).toContain('py-0')
+    expect(compactHeader.className).toContain('top-0')
+    expect(compactHeader.className).toContain('rounded-b-[22px]')
+    expect(compactHeader.className).not.toContain('rounded-t')
+    expect(within(compactHeader).getByRole('link', { name: 'Уровень 1 раздел 1' }).getAttribute('href')).toBe('/program')
+    expect(within(compactHeader).getByRole('heading', { level: 1, name: 'Раздел 1. Деньги и операции' }).className).toContain('text-[20px]')
+    expect(screen.queryByRole('heading', { name: 'Войдите в ФинПульс' })).toBeNull()
+
+    const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
+    const firstLessonButton = within(lessonPath).getByRole('button', { name: /Куда уходят деньги/i })
+    expect(firstLessonButton).toBeTruthy()
+
+    await user.click(firstLessonButton)
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+  })
+
+  it('renders the full-width lesson card padding experiment', async () => {
+    window.history.pushState({}, '', '/design/lesson-card-full-width')
+
+    render(<App />)
+
+    const fullWidthCard = await screen.findByTestId('full-width-lesson-card')
+    const main = screen.getByRole('main')
+
+    expect(main.className).toContain('max-w-none')
+    expect(main.className).toContain('px-0')
+    expect(main.className).toContain('py-0')
+    expect(fullWidthCard.className).toContain('w-full')
+    expect(fullWidthCard.className).toContain('p-4')
+    expect(screen.getByRole('heading', { level: 1, name: 'Куда уходят деньги' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 2, name: 'Распредели траты на две группы' })).toBeTruthy()
+    expect(screen.getByText('Распредели траты на две группы: «замечаю сразу» и «проходит мимо внимания».')).toBeTruthy()
+    expect(screen.getByTestId('full-width-categorization-table')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Покупка телефона: Замечаю сразу' }).getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByRole('button', { name: 'Кофе навынос: Проходит мимо внимания' }).getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByRole('button', { name: 'Проверить' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Войдите в ФинПульс' })).toBeNull()
+    expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
+  })
+
+  it('does not redirect removed module routes to levels', async () => {
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/modules/t1-start')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Страница не найдена' })).toBeTruthy()
+    expect(window.location.pathname).toBe('/modules/t1-start')
+    expect(screen.queryByRole('heading', { name: 'Старт' })).toBeNull()
   })
 
   it('does not restore private profile state when navigating back after logout', async () => {
@@ -338,15 +430,15 @@ describe('App', () => {
           saveKey: 'unexpected_expense',
           lessonSlug: 'where-money-goes',
           lessonTitle: 'Куда уходят деньги',
-          unitSlug: 'money-and-operations',
-          unitTitle: 'Юнит 1. Деньги и операции',
-          moduleSlug: 't1-start',
-          moduleTitle: 'T1 Старт',
+          sectionSlug: 'money-and-operations',
+          sectionTitle: 'Раздел 1. Деньги и операции',
+          levelSlug: 't1-start',
+          levelTitle: 'T1 Старт',
           cardTitle: 'Что удивило?',
-          prompt: 'Посмотри на свои три траты. Какая из них удивила тебя: оказалась больше, чем казалось, или просто была лишней?',
+          prompt: 'Посмотри на свои три траты. Какая из них удивила тебя — оказалась больше или меньше, чем казалось?',
           template: null,
           answer: {
-            singleValue: 'Кофе или перекусы — их оказалось больше, чем казалось',
+            singleValue: 'Кофе/перекусы — их больше, чем думал(а)',
           },
           createdAt: '2026-05-30T08:45:00.000Z',
           updatedAt: '2026-05-30T08:45:00.000Z',
@@ -358,15 +450,15 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Профиль' })).toBeTruthy()
-    expect(screen.getByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeTruthy()
+    expect(screen.getByText('Кофе/перекусы — их больше, чем думал(а)')).toBeTruthy()
 
     const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
     await user.click(within(sidebar).getByRole('link', { name: 'Обучение' }))
-    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
     await user.click(screen.getByRole('button', { name: 'Выйти' }))
 
     expect(await screen.findByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
-    expect(screen.queryByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeNull()
+    expect(screen.queryByText('Кофе/перекусы — их больше, чем думал(а)')).toBeNull()
 
     window.history.pushState({}, '', '/profile')
     fireEvent.popState(window)
@@ -374,18 +466,18 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
     })
-    expect(screen.queryByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeNull()
+    expect(screen.queryByText('Кофе/перекусы — их больше, чем думал(а)')).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
   })
 
-  it('shows a program empty state when no modules are available', async () => {
+  it('shows a program empty state when no levels are available', async () => {
     setAuthenticatedLearner(apiOptions)
-    apiOptions.programHasNoModules = true
+    apiOptions.programHasNoLevels = true
     window.history.pushState({}, '', '/program')
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
     expect(screen.getByText('Материалы программы пока не добавлены.')).toBeTruthy()
     expect(screen.queryByRole('link', { name: 'Далее' })).toBeNull()
   })
@@ -402,7 +494,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Войти' }))
 
     expect(await screen.findByText('Не удалось выполнить запрос.')).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Тиры' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Уровни' })).toBeNull()
   })
 
   it('renders the desktop sidebar and mobile bottom navigation', async () => {
@@ -411,7 +503,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
 
     const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
     const bottomNavigation = screen.getByRole('navigation', { name: 'Нижнее меню приложения' })
@@ -431,7 +523,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Тиры' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
 
     const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
     const bottomNavigation = screen.getByRole('navigation', { name: 'Нижнее меню приложения' })
@@ -442,37 +534,36 @@ describe('App', () => {
     expect(screen.getAllByRole('button', { name: 'Выйти' }).length).toBe(1)
   })
 
-  it('opens lesson details from the module lesson path before navigation', async () => {
+  it('opens lesson details from the level lesson path before navigation', async () => {
     const user = userEvent.setup()
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/modules/t1-start')
+    window.history.pushState({}, '', '/levels/t1-start')
 
     render(<App />)
 
-    expect((await screen.findAllByRole('heading', { name: 'Юнит 1. Деньги и операции' })).length).toBeGreaterThan(0)
+    expect((await screen.findAllByRole('heading', { name: 'Раздел 1. Деньги и операции' })).length).toBeGreaterThan(0)
     await user.click(await screen.findByRole('button', { name: /Куда уходят деньги/i }))
 
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
-    expect(within(dialog).getByText('5 мин')).toBeTruthy()
     expect(within(dialog).queryByText(/увидеть свои реальные траты/i)).toBeNull()
-    expect(within(dialog).getByRole('link', { name: /Продолжить урок/i }).getAttribute('href')).toBe('/lessons/where-money-goes')
+    expect(within(dialog).getByRole('link', { name: 'Продолжить урок · 5 мин' }).getAttribute('href')).toBe('/lessons/where-money-goes')
   })
 
-  it('renders the added lesson nodes in source order', async () => {
+  it('renders only the current active lesson nodes in source order', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/modules/t1-start')
+    window.history.pushState({}, '', '/levels/t1-start')
 
     render(<App />)
 
-    const lessonPath = await screen.findByRole('region', { name: 'Разделы тира' })
+    const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     expect(within(lessonPath).getByRole('button', { name: /Куда уходят деньги/i })).toBeTruthy()
     expect(within(lessonPath).getByRole('button', { name: /Обязательное и желаемое/i })).toBeTruthy()
-    expect(within(lessonPath).getByRole('button', { name: /Зачем нужна подушка/i })).toBeTruthy()
-    expect(within(lessonPath).getByRole('button', { name: /Сколько держать в резерве/i })).toBeTruthy()
+    expect(within(lessonPath).queryByRole('button', { name: /Зачем нужна подушка/i })).toBeNull()
+    expect(within(lessonPath).queryByRole('button', { name: /Сколько держать в резерве/i })).toBeNull()
   })
 
-  it('renders the target units as separate sections in the tier path', async () => {
+  it('renders the active target section in the level path', async () => {
     setAuthenticatedLearner(apiOptions)
     apiOptions.progress = {
       lessons: [
@@ -487,19 +578,19 @@ describe('App', () => {
       ],
       cards: [],
     }
-    window.history.pushState({}, '', '/modules/t1-start')
+    window.history.pushState({}, '', '/levels/t1-start')
 
     render(<App />)
 
-    const lessonPath = await screen.findByRole('region', { name: 'Разделы тира' })
+    const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     const sectionHeadings = within(lessonPath).getAllByRole('heading').map((heading) => heading.textContent)
 
-    expect(sectionHeadings).toEqual(['Юнит 1. Деньги и операции', 'Юнит 2. Планирование и управление'])
+    expect(sectionHeadings).toEqual(['Раздел 1. Деньги и операции'])
     expect(within(lessonPath).queryByText(/^Раздел$/)).toBeNull()
-    expect(within(lessonPath).queryByText(/Раздел \d/)).toBeNull()
+    expect(within(lessonPath).queryByText(/Юнит/)).toBeNull()
     expect(within(lessonPath).queryByText('Пройден')).toBeNull()
     expect(within(lessonPath).queryByText('Сейчас')).toBeNull()
-    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(2)
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(0)
     const completedLessonButton = within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Пройден/ })
     const completedLessonCircle = completedLessonButton.querySelector('span.relative.flex')
     expect(completedLessonCircle?.className).toContain('group-hover:translate-y-[4px]')
@@ -508,25 +599,25 @@ describe('App', () => {
 
   it('renders the current target lesson node with locked future lessons', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/modules/t1-start')
+    window.history.pushState({}, '', '/levels/t1-start')
 
     render(<App />)
 
-    const lessonPath = await screen.findByRole('region', { name: 'Разделы тира' })
+    const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     expect(within(lessonPath).getByText('Начать')).toBeTruthy()
     expect(within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Текущий урок/ })).toBeTruthy()
-    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(3)
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(1)
   })
 
-  it('renders the tier sticky header for the target unit', async () => {
+  it('renders the level sticky header for the target section', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/modules/t1-start')
+    window.history.pushState({}, '', '/levels/t1-start')
 
     render(<App />)
 
-    await screen.findByRole('region', { name: 'Разделы тира' })
-    expect(await screen.findByRole('link', { name: 'Тир 1 раздел 1' })).toBeTruthy()
-    expect(screen.getByRole('heading', { level: 1, name: 'Юнит 1. Деньги и операции' })).toBeTruthy()
+    const compactHeader = await screen.findByTestId('compact-path-header')
+    expect(within(compactHeader).getByRole('link', { name: 'Уровень 1 раздел 1' })).toBeTruthy()
+    expect(within(compactHeader).getByRole('heading', { level: 1, name: 'Раздел 1. Деньги и операции' })).toBeTruthy()
   })
 
   it('renders a lesson with cards', async () => {
@@ -537,6 +628,53 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
     expect(screen.getAllByText(/Конец месяца/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows selected option feedback immediately after selecting a subjective choice', async () => {
+    const user = userEvent.setup()
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/lessons/where-money-goes')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Деньги были... или нет?' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+
+    await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Знакомо. Сейчас увидим, куда уходят деньги.')
+    expect(screen.getByRole('status')).not.toHaveTextContent('Есть нюанс')
+    expect(screen.getByRole('button', { name: whereMoneyGoesFirstCta })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Проверить' })).toBeNull()
+
+    await user.click(screen.getByRole('radio', { name: 'Нет, я знаю, куда уходят деньги' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Отлично — проверим это на практике.')
+    expect(screen.queryByText('Знакомо. Сейчас увидим, куда уходят деньги.')).toBeNull()
+  })
+
+  it('uses lesson-specific CTA labels from card content', async () => {
+    const user = userEvent.setup()
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/lessons/mandatory-and-desired')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Обязательное и желаемое' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Это мне точно нужно?' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: mandatoryDesiredFirstCta })).toBeDisabled()
+
+    await user.click(screen.getByRole('radio', { name: 'Иногда' }))
+
+    expect(screen.getByRole('button', { name: mandatoryDesiredFirstCta })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Далее' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: mandatoryDesiredFirstCta }))
+
+    expect(await screen.findByRole('heading', { name: 'Две группы трат' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: theoryContinueCta })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Далее' })).toBeNull()
   })
 
   it('does not write viewed progress for an invalid lesson slug', async () => {
@@ -551,27 +689,35 @@ describe('App', () => {
     expect(getProgressWriteCount('/api/progress/lessons/not-a-real-lesson')).toBe(0)
   })
 
-  it('renders canonical target unit routes and rejects removed content routes', async () => {
+  it('renders canonical target section routes and rejects removed content routes', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/modules/t1-start/units/money-and-operations')
+    window.history.pushState({}, '', '/levels/t1-start/sections/money-and-operations')
 
     const { unmount } = render(<App />)
 
-    expect((await screen.findAllByRole('heading', { name: 'Юнит 1. Деньги и операции' })).length).toBeGreaterThan(0)
+    const sectionHeader = await screen.findByTestId('compact-path-header')
+    expect(within(sectionHeader).getByRole('link', { name: 'Уровень 1' }).getAttribute('href')).toBe('/levels/t1-start')
+    expect(within(sectionHeader).getByRole('heading', { level: 1, name: 'Раздел 1. Деньги и операции' }).className).toContain('text-[20px]')
+    expect((await screen.findAllByRole('heading', { name: 'Раздел 1. Деньги и операции' })).length).toBeGreaterThan(0)
     expect(await screen.findByRole('button', { name: /Куда уходят деньги/i })).toBeTruthy()
     expect(await screen.findByRole('button', { name: /Обязательное и желаемое/i })).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Сколько держать в резерве/i })).toBeNull()
 
     unmount()
-    window.history.pushState({}, '', '/modules/t1-start/units/planning-and-management')
+    window.history.pushState({}, '', '/levels/t1-start/sections/planning-and-management')
 
-    const planningRoute = render(<App />)
+    const removedSectionRoute = render(<App />)
 
-    expect((await screen.findAllByRole('heading', { name: 'Юнит 2. Планирование и управление' })).length).toBeGreaterThan(0)
-    expect(await screen.findByRole('button', { name: /Зачем нужна подушка/i })).toBeTruthy()
-    expect(await screen.findByRole('button', { name: /Сколько держать в резерве/i })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Не удалось загрузить раздел' })).toBeTruthy()
 
-    planningRoute.unmount()
+    removedSectionRoute.unmount()
+    window.history.pushState({}, '', '/lessons/why-emergency-fund')
+
+    const removedLessonRoute = render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Не удалось загрузить урок' })).toBeTruthy()
+
+    removedLessonRoute.unmount()
     window.history.pushState({}, '', '/lessons/why-values-matter')
 
     render(<App />)
@@ -610,8 +756,8 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
 
     await user.click(screen.getByRole('radio', { name: 'Иногда бывает' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: whereMoneyGoesFirstCta }))
+    await user.click(screen.getByRole('button', { name: theoryContinueCta }))
     await completeWhereMoneyGoesPractice(user)
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
@@ -622,7 +768,7 @@ describe('App', () => {
     const continueButton = screen.getByRole('button', { name: 'Далее' })
     expect(continueButton).toBeDisabled()
 
-    await user.click(screen.getByRole('radio', { name: 'Кофе или перекусы — их оказалось больше, чем казалось' }))
+    await user.click(screen.getByRole('radio', { name: 'Кофе/перекусы — их больше, чем думал(а)' }))
     await user.click(continueButton)
 
     await waitFor(() => {
@@ -630,7 +776,7 @@ describe('App', () => {
       expect(getProgressCompletedWriteCount('/api/progress/cards/card_t1u1l1_05_surprise_reflection')).toBe(1)
     })
     expect(getJsonRequestBody('/api/reflections/card_t1u1l1_05_surprise_reflection', 'PUT')).toEqual({
-      singleValue: 'Кофе или перекусы — их оказалось больше, чем казалось',
+      singleValue: 'Кофе/перекусы — их больше, чем думал(а)',
     })
     expect(getRequestOrder('/api/reflections/card_t1u1l1_05_surprise_reflection', 'PUT')).toBeLessThan(
       getRequestOrder('/api/progress/cards/card_t1u1l1_05_surprise_reflection', 'PUT', (body) => body.completed === true),
@@ -648,10 +794,10 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Деньги были... и нет?' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Деньги были... или нет?' })).toBeTruthy()
 
     await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: whereMoneyGoesFirstCta }))
 
     await waitFor(
       () => {
@@ -659,8 +805,8 @@ describe('App', () => {
       },
       { timeout: 3_500 },
     )
-    expect(screen.getByRole('heading', { name: 'Деньги были... и нет?' })).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Деньги утекают по капле' })).toBeNull()
+    expect(screen.getByRole('heading', { name: 'Деньги были... или нет?' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Куда «утекают» деньги' })).toBeNull()
     expect(getProgressCompletedWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(3)
   })
 
@@ -675,12 +821,12 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Деньги были... и нет?' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Деньги были... или нет?' })).toBeTruthy()
 
     await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: whereMoneyGoesFirstCta }))
 
-    expect(await screen.findByRole('heading', { name: 'Деньги утекают по капле' })).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Куда «утекают» деньги' })).toBeTruthy()
     expect(screen.queryByText('Internal server error')).toBeNull()
     expect(getProgressCompletedWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(2)
   })
@@ -697,15 +843,15 @@ describe('App', () => {
           saveKey: 'unexpected_expense',
           lessonSlug: 'where-money-goes',
           lessonTitle: 'Куда уходят деньги',
-          unitSlug: 'money-and-operations',
-          unitTitle: 'Юнит 1. Деньги и операции',
-          moduleSlug: 't1-start',
-          moduleTitle: 'T1 Старт',
+          sectionSlug: 'money-and-operations',
+          sectionTitle: 'Раздел 1. Деньги и операции',
+          levelSlug: 't1-start',
+          levelTitle: 'T1 Старт',
           cardTitle: 'Что удивило?',
-          prompt: 'Посмотри на свои три траты. Какая из них удивила тебя: оказалась больше, чем казалось, или просто была лишней?',
+          prompt: 'Посмотри на свои три траты. Какая из них удивила тебя — оказалась больше или меньше, чем казалось?',
           template: null,
           answer: {
-            singleValue: 'Кофе или перекусы — их оказалось больше, чем казалось',
+            singleValue: 'Кофе/перекусы — их больше, чем думал(а)',
           },
           createdAt: '2026-05-30T08:45:00.000Z',
           updatedAt: '2026-05-30T08:45:00.000Z',
@@ -720,10 +866,10 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
 
     await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: whereMoneyGoesFirstCta }))
 
     expect(await screen.findByRole('heading', { name: 'Войдите в ФинПульс' })).toBeTruthy()
-    expect(screen.queryByText('Кофе или перекусы — их оказалось больше, чем казалось')).toBeNull()
+    expect(screen.queryByText('Кофе/перекусы — их больше, чем думал(а)')).toBeNull()
     expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
   })
 
@@ -736,8 +882,8 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
     await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: whereMoneyGoesFirstCta }))
+    await user.click(screen.getByRole('button', { name: theoryContinueCta }))
     await completeWhereMoneyGoesPractice(user)
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
@@ -745,15 +891,15 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Твои 3 траты за сегодня' })).toBeTruthy()
     await user.type(screen.getAllByRole('textbox')[0], 'Кофе 250')
     await user.click(screen.getByRole('button', { name: 'Далее' }))
-    await user.click(screen.getByRole('radio', { name: 'Кофе или перекусы — их оказалось больше, чем казалось' }))
+    await user.click(screen.getByRole('radio', { name: 'Кофе/перекусы — их больше, чем думал(а)' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
     expect(screen.getByRole('heading', { name: 'Твоё правило на 3 дня' })).toBeTruthy()
-    await user.click(screen.getByRole('radio', { name: 'Замечаю хотя бы 1 трату в день' }))
+    await user.click(screen.getByRole('radio', { name: 'Если совершаю любую трату, то сразу отмечаю её в заметках' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
     expect(screen.getByRole('heading', { name: 'Сохранили в Навигатор' })).toBeTruthy()
-    expect(screen.getByText(/В следующем уроке У1\.2/i)).toBeTruthy()
+    expect(screen.getByText(/Дальше — Уровень 1 · Раздел 1 · Урок 2/i)).toBeTruthy()
   })
 })
 
@@ -788,10 +934,10 @@ async function completeWhereMoneyGoesPractice(user: ReturnType<typeof userEvent.
 }
 
 async function completeWhereMoneyGoesExternalExample(user: ReturnType<typeof userEvent.setup>) {
-  expect(await screen.findByRole('heading', { name: 'Подписка, которая проходит мимо' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Куда уходят деньги Кирилла?' })).toBeTruthy()
   expect(screen.getByText('56%')).toBeTruthy()
 
-  await user.click(screen.getByRole('radio', { name: 'Мелкая автоматическая трата может долго проходить мимо внимания' }))
+  await user.click(screen.getByRole('radio', { name: 'Он просто записал все траты и увидел картину' }))
   await user.click(screen.getByRole('button', { name: 'Проверить' }))
 
   expect(await screen.findByRole('status')).toHaveTextContent('Верно')

@@ -1,4 +1,4 @@
-import type { Lesson, Module, Program, Unit } from '@/content/program'
+import type { Lesson, Level, Program, Section } from '@/content/program'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 const RETRYABLE_METHODS = new Set(['GET', 'PUT'])
@@ -48,10 +48,10 @@ export type ReflectionAnswer = {
   saveKey: string | null
   lessonSlug: string
   lessonTitle: string
-  unitSlug: string
-  unitTitle: string
-  moduleSlug: string
-  moduleTitle: string
+  sectionSlug: string
+  sectionTitle: string
+  levelSlug: string
+  levelTitle: string
   cardTitle: string | null
   prompt: string
   template: string[] | null
@@ -64,17 +64,17 @@ export type ReflectionAnswersResponse = {
   answers: ReflectionAnswer[]
 }
 
-export type UnitDetails = {
-  module: Module
-  unit: Unit
+export type SectionDetails = {
+  level: Level
+  section: Section
 }
 
 export type LessonDetails = {
-  module: Module
-  unit: Unit
+  level: Level
+  section: Section
   lesson: Lesson
-  previous: { module: Module; unit: Unit; lesson: Lesson } | null
-  next: { module: Module; unit: Unit; lesson: Lesson } | null
+  previous: { level: Level; section: Section; lesson: Lesson } | null
+  next: { level: Level; section: Section; lesson: Lesson } | null
 }
 
 export class ApiError extends Error {
@@ -95,9 +95,9 @@ type ProgressPayload = {
 
 export const api = {
   getProgram: () => request<Program>('/api/program'),
-  getModules: () => request<Module[]>('/api/modules'),
-  getModule: (moduleSlug: string) => request<Module>(`/api/modules/${encodeURIComponent(moduleSlug)}`),
-  getUnit: (unitSlug: string) => request<UnitDetails>(`/api/units/${encodeURIComponent(unitSlug)}`),
+  getLevels: () => request<Level[]>('/api/levels'),
+  getLevel: (levelSlug: string) => request<Level>(`/api/levels/${encodeURIComponent(levelSlug)}`),
+  getSection: (sectionSlug: string) => request<SectionDetails>(`/api/sections/${encodeURIComponent(sectionSlug)}`),
   getLesson: (lessonSlug: string) => request<LessonDetails>(`/api/lessons/${encodeURIComponent(lessonSlug)}`),
   getCurrentUser: () => request<{ user: ApiUser }>('/api/auth/me'),
   register: (login: string, password: string) =>

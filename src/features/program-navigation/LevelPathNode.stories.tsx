@@ -1,13 +1,13 @@
 import { MemoryRouter } from 'react-router'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { modulePathItems } from '@/features/storybook/fixtures'
+import { levelPathItems } from '@/features/storybook/fixtures'
 
-import { ModulePathNode } from './ModulePathNode'
+import { LevelPathNode } from './LevelPathNode'
 
 const meta = {
-  title: 'Learning/ModulePathNode',
-  component: ModulePathNode,
+  title: 'Learning/LevelPathNode',
+  component: LevelPathNode,
   parameters: {
     layout: 'centered',
   },
@@ -21,28 +21,28 @@ const meta = {
     ),
   ],
   tags: ['autodocs'],
-} satisfies Meta<typeof ModulePathNode>
+} satisfies Meta<typeof LevelPathNode>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
 export const Current: Story = {
   args: {
-    item: modulePathItems.current,
+    item: levelPathItems.current,
     index: 1,
   },
 }
 
 export const Completed: Story = {
   args: {
-    item: modulePathItems.completed,
+    item: levelPathItems.completed,
     index: 1,
   },
 }
 
 export const Locked: Story = {
   args: {
-    item: modulePathItems.locked,
+    item: levelPathItems.locked,
     index: 2,
   },
 }

@@ -8,11 +8,16 @@ FinPulse MVP is a mobile-first educational web app.
 
 Current MVP scope:
 - educational program material only;
+- approved educational content architecture: Program -> Level -> Section -> Lesson -> Card;
 - JSON files as the data/source-of-truth;
 - React + TypeScript;
 - SPA, preferably Vite, not Next/SSR unless an ADR changes this;
 - Zustand for small client-side state only;
 - Tailwind CSS + shadcn/ui for design system and UI primitives.
+
+Runtime code, JSON, API payloads, routes, and persistence use Level and Section
+directly. Do not reintroduce Program -> Module -> Unit as the project
+architecture.
 
 Explicitly out of scope for MVP:
 - user cabinets/accounts;

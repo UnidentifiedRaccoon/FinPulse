@@ -1,4 +1,4 @@
-import { Check, Clock, Play } from 'lucide-react'
+import { Check, Play } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import type { Module } from '@/content/program'
+import type { Level } from '@/content/program'
 import { cn } from '@/lib/utils'
 
 import type { LessonPathItem, PathItemState } from './learningPath'
@@ -83,7 +83,7 @@ const stateCopy = {
 export function LessonPathMap({
   sections,
 }: {
-  moduleOrder: number
+  levelOrder: number
   sections: LessonPathSection[]
 }) {
   if (sections.length === 0) {
@@ -91,7 +91,7 @@ export function LessonPathMap({
   }
 
   return (
-    <section id="module-sections" className="flex flex-col gap-9" aria-label="Разделы тира">
+    <section id="level-sections" className="flex flex-col gap-9" aria-label="Разделы уровня">
       {sections.map((section, sectionIndex) => (
         <PathSection
           accent={accents[sectionIndex % accents.length]}
@@ -104,14 +104,14 @@ export function LessonPathMap({
   )
 }
 
-export function ModuleTransitionCard({ isComplete, nextModule }: { isComplete: boolean; nextModule: Module | null }) {
-  if (!nextModule && !isComplete) {
+export function LevelTransitionCard({ isComplete, nextLevel }: { isComplete: boolean; nextLevel: Level | null }) {
+  if (!nextLevel && !isComplete) {
     return null
   }
 
-  const target = nextModule ? `/modules/${nextModule.slug}` : '/program'
-  const title = nextModule ? `Тир ${nextModule.order}` : 'Тир завершён'
-  const description = nextModule?.title ?? 'Вернитесь к списку тиров и выберите следующий шаг.'
+  const target = nextLevel ? `/levels/${nextLevel.slug}` : '/program'
+  const title = nextLevel ? `Уровень ${nextLevel.order}` : 'Уровень завершён'
+  const description = nextLevel?.title ?? 'Вернитесь к списку уровней и выберите следующий шаг.'
 
   return (
     <section className="rounded-[28px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 text-center shadow-[var(--fr-shadow-sm)]">
@@ -121,15 +121,15 @@ export function ModuleTransitionCard({ isComplete, nextModule }: { isComplete: b
           <p className="text-base font-semibold leading-6 text-[var(--fr-text-secondary)]">
             {description}
           </p>
-          {nextModule?.description ? (
-            <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">{nextModule.description}</p>
+          {nextLevel?.description ? (
+            <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">{nextLevel.description}</p>
           ) : null}
         </div>
         <Button
           asChild
           className="min-h-12 w-full rounded-2xl bg-[var(--fr-color-sky-500)] text-[15px] font-bold text-white shadow-[0_5px_0_var(--fr-color-sky-600)] hover:bg-[var(--fr-color-sky-600)]"
         >
-          <Link to={target}>{nextModule ? 'Перейти к тиру' : 'К тирам'}</Link>
+          <Link to={target}>{nextLevel ? 'Перейти к уровню' : 'К уровням'}</Link>
         </Button>
       </div>
     </section>
@@ -196,7 +196,8 @@ function LessonNode({
   const Icon = state === 'completed' ? Check : Play
   const isHighlighted = state === 'completed' || state === 'current'
   const primaryAction = state === 'completed' ? 'Повторить урок' : state === 'current' ? 'Продолжить урок' : 'Открыть урок'
-  const duration = lesson.estimatedMinutes ? `${lesson.estimatedMinutes} мин` : 'Короткий урок'
+  const duration = lesson.estimatedMinutes ? `${lesson.estimatedMinutes} мин` : null
+  const primaryActionLabel = duration ? `${primaryAction} · ${duration}` : primaryAction
 
   return (
     <Dialog>
@@ -281,14 +282,9 @@ function LessonNode({
               <DialogHeader className="gap-3 pr-10">
                 <DialogTitle className="text-2xl font-bold leading-8 tracking-normal text-white">{lesson.title}</DialogTitle>
                 <DialogDescription className="sr-only">
-                  Откройте урок или вернитесь к карте тира.
+                  Откройте урок или вернитесь к карте уровня.
                 </DialogDescription>
               </DialogHeader>
-
-              <span className="inline-flex w-fit items-center gap-2 rounded-2xl bg-white/15 px-3 py-2 text-sm font-semibold leading-5 text-white">
-                <Clock aria-hidden="true" className="size-4" />
-                {duration}
-              </span>
             </div>
 
             <DialogFooter className="m-0 flex-col gap-3 rounded-none border-0 bg-[var(--fr-surface-card)] p-4 sm:flex-col sm:justify-start">
@@ -300,7 +296,7 @@ function LessonNode({
                   accent.hover,
                 )}
               >
-                <Link to={`/lessons/${lesson.slug}`}>{primaryAction}</Link>
+                <Link to={`/lessons/${lesson.slug}`}>{primaryActionLabel}</Link>
               </Button>
               <DialogClose asChild>
                 <Button className="min-h-11 w-full rounded-2xl" variant="outline">

@@ -15,15 +15,15 @@ export type ReflectionAnswerUpsert = {
   cardId: string
   saveKey: string | null
   lessonSlug: string
-  moduleSlug: string
-  unitSlug: string
+  levelSlug: string
+  sectionSlug: string
   cardType: ReflectionCardType
   title: string | null
   prompt: string
   contextTitle: string
   sourceSection: string | null
-  moduleTitle: string
-  unitTitle: string
+  levelTitle: string
+  sectionTitle: string
   lessonTitle: string
   answer: JsonObject
   updatedAt?: Date | string
@@ -33,16 +33,16 @@ export type ReflectionAnswerEntry = {
   cardId: string
   saveKey: string | null
   lessonSlug: string
-  moduleSlug: string
-  unitSlug: string
+  levelSlug: string
+  sectionSlug: string
   cardType: ReflectionCardType
   cardTitle: string | null
   prompt: string
   template: string[] | null
   contextTitle: string
   sourceSection: string | null
-  moduleTitle: string
-  unitTitle: string
+  levelTitle: string
+  sectionTitle: string
   lessonTitle: string
   answer: JsonObject
   createdAt: string
@@ -53,15 +53,15 @@ type ReflectionAnswerRow = QueryResultRow & {
   card_id: string
   save_key: string | null
   lesson_slug: string
-  module_slug: string
-  unit_slug: string
+  level_slug: string
+  section_slug: string
   card_type: ReflectionCardType
   title: string | null
   prompt: string
   context_title: string
   source_section: string | null
-  module_title: string
-  unit_title: string
+  level_title: string
+  section_title: string
   lesson_title: string
   answer_json: JsonValue | string
   created_at: Date | string
@@ -81,15 +81,15 @@ export class ReflectionAnswersRepository {
       `SELECT card_id,
               save_key,
               lesson_slug,
-              module_slug,
-              unit_slug,
+              level_slug,
+              section_slug,
               card_type,
               title,
               prompt,
               context_title,
               source_section,
-              module_title,
-              unit_title,
+              level_title,
+              section_title,
               lesson_title,
               answer_json,
               created_at,
@@ -112,15 +112,15 @@ export class ReflectionAnswersRepository {
          card_id,
          save_key,
          lesson_slug,
-         module_slug,
-         unit_slug,
+         level_slug,
+         section_slug,
          card_type,
          title,
          prompt,
          context_title,
          source_section,
-         module_title,
-         unit_title,
+         level_title,
+         section_title,
          lesson_title,
          answer_json,
          created_at,
@@ -148,15 +148,15 @@ export class ReflectionAnswersRepository {
        ON CONFLICT (user_id, card_id)
        DO UPDATE SET save_key = excluded.save_key,
                      lesson_slug = excluded.lesson_slug,
-                     module_slug = excluded.module_slug,
-                     unit_slug = excluded.unit_slug,
+                     level_slug = excluded.level_slug,
+                     section_slug = excluded.section_slug,
                      card_type = excluded.card_type,
                      title = excluded.title,
                      prompt = excluded.prompt,
                      context_title = excluded.context_title,
                      source_section = excluded.source_section,
-                     module_title = excluded.module_title,
-                     unit_title = excluded.unit_title,
+                     level_title = excluded.level_title,
+                     section_title = excluded.section_title,
                      lesson_title = excluded.lesson_title,
                      answer_json = excluded.answer_json,
                      updated_at = excluded.updated_at`,
@@ -165,15 +165,15 @@ export class ReflectionAnswersRepository {
         input.cardId,
         input.saveKey,
         input.lessonSlug,
-        input.moduleSlug,
-        input.unitSlug,
+        input.levelSlug,
+        input.sectionSlug,
         input.cardType,
         input.title,
         input.prompt,
         input.contextTitle,
         input.sourceSection,
-        input.moduleTitle,
-        input.unitTitle,
+        input.levelTitle,
+        input.sectionTitle,
         input.lessonTitle,
         JSON.stringify(input.answer),
         updatedAt,
@@ -187,16 +187,16 @@ function toReflectionAnswerEntry(row: ReflectionAnswerRow): ReflectionAnswerEntr
     cardId: row.card_id,
     saveKey: row.save_key,
     lessonSlug: row.lesson_slug,
-    moduleSlug: row.module_slug,
-    unitSlug: row.unit_slug,
+    levelSlug: row.level_slug,
+    sectionSlug: row.section_slug,
     cardType: row.card_type,
     cardTitle: row.title,
     prompt: row.prompt,
     template: null,
     contextTitle: row.context_title,
     sourceSection: row.source_section,
-    moduleTitle: row.module_title,
-    unitTitle: row.unit_title,
+    levelTitle: row.level_title,
+    sectionTitle: row.section_title,
     lessonTitle: row.lesson_title,
     answer: toJsonObject(row.answer_json),
     createdAt: toRequiredIsoTimestamp(row.created_at),

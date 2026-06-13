@@ -5,36 +5,36 @@ import { sendError } from '../../lib/http'
 import type { ContentService } from './contentService'
 
 const slugParamSchema = z.object({
-  moduleSlug: z.string().optional(),
-  unitSlug: z.string().optional(),
+  levelSlug: z.string().optional(),
+  sectionSlug: z.string().optional(),
   lessonSlug: z.string().optional(),
 }).strict()
 
 export function registerContentRoutes(app: FastifyInstance, content: ContentService) {
   app.get('/api/program', async () => content.getProgram())
 
-  app.get('/api/modules', async () => content.getModules())
+  app.get('/api/levels', async () => content.getLevels())
 
-  app.get('/api/modules/:moduleSlug', async (request, reply) => {
+  app.get('/api/levels/:levelSlug', async (request, reply) => {
     const params = slugParamSchema.parse(request.params)
-    const module = params.moduleSlug ? content.getModule(params.moduleSlug) : null
+    const level = params.levelSlug ? content.getLevel(params.levelSlug) : null
 
-    if (!module) {
-      return sendError(reply, 404, 'not_found', 'Module not found')
+    if (!level) {
+      return sendError(reply, 404, 'not_found', 'Level not found')
     }
 
-    return module
+    return level
   })
 
-  app.get('/api/units/:unitSlug', async (request, reply) => {
+  app.get('/api/sections/:sectionSlug', async (request, reply) => {
     const params = slugParamSchema.parse(request.params)
-    const unit = params.unitSlug ? content.getUnit(params.unitSlug) : null
+    const section = params.sectionSlug ? content.getSection(params.sectionSlug) : null
 
-    if (!unit) {
-      return sendError(reply, 404, 'not_found', 'Unit not found')
+    if (!section) {
+      return sendError(reply, 404, 'not_found', 'Section not found')
     }
 
-    return unit
+    return section
   })
 
   app.get('/api/lessons/:lessonSlug', async (request, reply) => {
