@@ -29,6 +29,7 @@ Use files under `harness/tasks/active/` for real active work.
 
 | ID | Status | Task | Intended write set | Notes |
 |---|---:|---|---|---|
+| T-139 | review | Internal admin progress board | `docs/DECISIONS.md`, `docs/{ARCHITECTURE,DEVELOPMENT,PRODUCT}.md`, `.env.example`, `.gitignore`, `server/modules/admin/**`, `server/db/adminReadModelRepository.ts`, `server/lib/adminSession.ts`, `apps/admin/**`, package metadata, focused tests, `harness/**` | Added separate Next.js admin surface under `apps/admin`, env-configured single-admin login, protected `/api/admin/**` read model, no default answer-text leakage, resizable split detail panel with sticky table, docs, tests, and full verify with PostgreSQL. |
 
 ## Review tasks
 
@@ -36,6 +37,7 @@ Use task files and PR/diff summaries.
 
 | ID | Status | Task | Intended write set | Notes |
 |---|---:|---|---|---|
+| T-140 | review | Production admin deploy path | `docs/{DECISIONS,ARCHITECTURE,DEVELOPMENT,PRODUCT}.md`, `docs/operations/yandex-cloud-finpulse-deploy.md`, `.github/workflows/{deploy,deploy-admin}.yml`, `Dockerfile.admin`, package metadata, `.env.example`, `harness/**` | Accepted ADR-0011: separate Yandex Serverless Container for `apps/admin`, backend deploy receives admin auth secrets, manual `Deploy Admin` workflow builds/pushes/smokes the Next.js admin image. Full verify, both Docker builds, and local admin container/browser smoke passed. |
 | T-138 | review | Skeleton geometry alignment | `src/shared/ui/RouteLoadingSkeletons.tsx`, `src/features/lesson-reader/LessonSession.tsx`, focused tests, `harness/**` | Aligned high-priority skeleton shells with actual program/path/lesson geometry; focused tests, typecheck, lint, full verify with local PostgreSQL, and Browser visual QA passed. |
 | T-137 | review | Cleanup stale design code | `src/App.tsx`, `src/App.test.tsx`, deleted `src/pages/MobileLessonCardPaddingExperimentPage.tsx`, selected unused exports, `harness/**` | Removed the stale full-width lesson-card experiment route/page and trimmed unused external exports. Typecheck, lint, focused App tests, runtime import guard, `knip`, build, and Storybook build passed; full verify still needs a PostgreSQL DB URL in this shell. |
 | T-136 | review | Route loading skeletons | `src/components/ui/skeleton.tsx`, `src/shared/ui/RouteLoadingSkeletons.tsx`, `src/pages/{ProgramOverviewPage,LevelPage,SectionPage,LessonPage}.tsx`, `src/App.test.tsx`, `harness/**` | Added shadcn Skeleton and route skeleton shells for program, level, section, and lesson loading. Focused tests, typecheck, lint, full verify with local PostgreSQL, and Browser mobile/desktop smoke passed. |

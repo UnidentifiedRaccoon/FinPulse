@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'dist-server']),
+  globalIgnores(['dist', 'dist-server', 'apps/admin/.next']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -47,6 +47,18 @@ export default defineConfig([
     files: ['server/**/*.ts', 'vite.config.ts'],
     languageOptions: {
       globals: globals.node,
+    },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['apps/admin/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
     },
     rules: {
       'react-refresh/only-export-components': 'off',

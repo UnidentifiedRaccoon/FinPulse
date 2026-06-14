@@ -11,5 +11,8 @@ npm-debug.log*
 *.sqlite-shm
 *.sqlite-wal
 *.tsbuildinfo
+**/*.tsbuildinfo
+.next
 .env
 .env.*
+**/.next

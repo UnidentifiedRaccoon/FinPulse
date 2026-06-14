@@ -35,6 +35,23 @@ export type CardDetails = {
   card: Card
 }
 
+export type LearningCatalogLesson = {
+  levelSlug: string
+  levelTitle: string
+  sectionSlug: string
+  sectionTitle: string
+  lessonSlug: string
+  lessonTitle: string
+  lessonOrder: number
+  cardCount: number
+  cards: Array<{
+    cardId: string
+    cardType: Card['type']
+    cardTitle: string | null
+    order: number
+  }>
+}
+
 export type ContentService = ReturnType<typeof createContentService>
 
 export function createContentService(contentRoot = resolve(process.cwd(), 'src/content')) {
@@ -72,6 +89,24 @@ export function createContentService(contentRoot = resolve(process.cwd(), 'src/c
     },
     getCardDetails(cardId: string): CardDetails | null {
       return getCardDetailsFromProgram(program, cardId)
+    },
+    getLearningCatalog(): LearningCatalogLesson[] {
+      return getAllLessons(program).map(({ level, section, lesson }) => ({
+        levelSlug: level.slug,
+        levelTitle: level.title,
+        sectionSlug: section.slug,
+        sectionTitle: section.title,
+        lessonSlug: lesson.slug,
+        lessonTitle: lesson.title,
+        lessonOrder: lesson.order,
+        cardCount: lesson.cards.length,
+        cards: getOrderedCards(lesson).map((card) => ({
+          cardId: card.id,
+          cardType: card.type,
+          cardTitle: 'title' in card && typeof card.title === 'string' ? card.title : null,
+          order: card.order,
+        })),
+      }))
     },
   }
 }

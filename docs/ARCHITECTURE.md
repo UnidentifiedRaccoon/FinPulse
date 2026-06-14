@@ -2,7 +2,9 @@
 
 ## Decision summary
 
-Use a Vite React + TypeScript SPA for the frontend. Starting in Stage 2, use a small Fastify + PostgreSQL backend for learner identity, session-backed progress, private reflection/artifact answers, and read-only content API delivery.
+Use a Vite React + TypeScript SPA for the learner frontend. Starting in Stage 2, use a small Fastify + PostgreSQL backend for learner identity, session-backed progress, private reflection/artifact answers, and read-only content API delivery.
+
+ADR-0010 adds a separate internal Next.js admin surface under `apps/admin` for a read-only curator progress board. ADR-0011 deploys that admin surface as a separate Yandex Serverless Container. This is not a migration of the learner app and does not change the learner SPA decision.
 
 Rationale:
 - content remains canonical static JSON;
@@ -27,6 +29,13 @@ Next.js/SSR can be reconsidered later if one of these becomes true:
 - SSR-specific personalization becomes central;
 - content is moved to a CMS requiring server rendering or dynamic metadata;
 - the app needs server actions, edge rendering, or dynamic metadata at scale.
+
+The accepted exception is the internal admin surface from ADR-0010 and ADR-0011:
+- it lives in `apps/admin`;
+- it uses Next.js as a separate admin app;
+- it reads protected backend admin APIs under `/api/admin/**`;
+- it must not add `/admin` routes to the learner SPA;
+- it must not reintroduce `Module -> Unit` terminology.
 
 ## Recommended frontend stack
 
@@ -201,6 +210,17 @@ GET  /api/reflections
 PUT  /api/reflections/:cardId
 ```
 
+Initial internal admin routes:
+
+```txt
+POST /api/admin/auth/login
+POST /api/admin/auth/logout
+GET  /api/admin/auth/me
+GET  /api/admin/summary
+GET  /api/admin/users
+GET  /api/admin/users/:userId/progress
+```
+
 Auth, progress, and reflection answer policy:
 - content routes may remain public;
 - progress and reflection routes require a valid httpOnly cookie session;
@@ -208,6 +228,15 @@ Auth, progress, and reflection answer policy:
 - password hashes and session records are stored server-side in PostgreSQL;
 - progress stores viewed/completed markers, not diagnostics/scoring/analytics;
 - reflection answers store neutral answer fields for `reflection`/`artifact` cards only and never store scores, labels, inferred traits, recommendations, or analytics.
+
+Admin auth and privacy policy:
+- admin auth is separate from learner auth and uses the `finpulse_admin_session` httpOnly cookie;
+- the first admin is configured through `FINPULSE_ADMIN_LOGIN`, `FINPULSE_ADMIN_PASSWORD_HASH`, and `FINPULSE_ADMIN_SESSION_SECRET`;
+- learner sessions do not authorize `/api/admin/**`;
+- admin sessions do not authorize learner-owned routes such as `/api/progress` or `/api/reflections`;
+- admin read models may expose learner `id`, `login`, `createdAt`, progress counts, lesson/card statuses, timestamps, current lesson, last activity, and derived stuck-days;
+- admin read models must not expose `reflection_answers.answer_json` or personal reflection/artifact answer text by default;
+- `organizationId`, `includeAnswers`, and private field-selection query parameters are rejected while organization filtering and answer review are out of scope.
 
 Persistence boundary:
 - route handlers should call async repository functions instead of embedding SQL directly;
@@ -218,16 +247,21 @@ Persistence boundary:
 
 ## Deployment
 
-Production deployment uses one same-origin Yandex Serverless Container. The Fastify backend serves `/api/**` and the built Vite SPA from `dist/`, so content, auth, progress, and reflection routes share one public origin with the learner frontend.
+Learner production deployment uses one same-origin Yandex Serverless Container. The Fastify backend serves `/api/**` and the built Vite SPA from `dist/`, so content, learner auth, progress, and reflection routes share one public origin with the learner frontend.
+
+Admin production deployment uses a separate Yandex Serverless Container for the `apps/admin` Next.js app. The admin container does not connect to PostgreSQL directly; it rewrites `/api/**` to the production Fastify backend through `FINPULSE_ADMIN_API_BASE_URL`. The backend still owns `/api/admin/**`, admin authentication, session cookies, and all curator read models. This keeps the learner SPA deployment stable while allowing the admin surface to be deployed and restricted independently.
+
+Local admin development still runs separately from the learner SPA, typically on `http://localhost:3002`, with Next rewrites forwarding `/api/**` to the local Fastify backend on `http://127.0.0.1:3001`.
 
 Runtime expectations:
 - the backend must read `PORT` from the environment and bind to `0.0.0.0` so it can run in container platforms such as future Yandex Serverless Containers;
 - PostgreSQL connection settings come from environment variables, with the deployed DB password supplied through GitHub secret `FINPULSE_DATABASE_PASSWORD`; the runtime also supports Lockbox payload lookup through `FINPULSE_DATABASE_PASSWORD_SECRET_ID` for non-VPC deployments;
 - no database password, session secret, or connection string should be committed;
+- production admin credentials are injected as `FINPULSE_ADMIN_LOGIN`, `FINPULSE_ADMIN_PASSWORD_HASH`, and `FINPULSE_ADMIN_SESSION_SECRET` into the backend container, not the Next.js admin container;
 - Yandex Managed PostgreSQL is reachable through the deployed Serverless Container VPC network configuration; the DB security group allows the Serverless service subnet CIDR `198.19.0.0/16` on port `6432`;
 - the backend applies the committed idempotent schema SQL on startup; introduce a versioned migration ledger before broad schema evolution.
 
-Deploy resources, IAM, required GitHub secrets, smoke checks, rollback, and DB start handling are documented in `docs/operations/yandex-cloud-finpulse-deploy.md`.
+Deploy resources, IAM, required GitHub secrets/variables, smoke checks, rollback, DB start handling, and the separate admin deployment workflow are documented in `docs/operations/yandex-cloud-finpulse-deploy.md`.
 
 ## Error handling
 

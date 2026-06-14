@@ -1,0 +1,174 @@
+name: Deploy Admin
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: finpulse-admin-production-deploy
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 24
+  YC_CLOUD_ID: b1gmnnjgdcc1b7qhjmlk
+  YC_FOLDER_ID: b1gpl04msqva2tsff46k
+  YC_REGISTRY_ID: crp5j8penr0hui0ttaum
+  YC_RUNTIME_SA_ID: aje0lujm0q1obpn9fbu9
+  YC_DEPLOY_SA_ID: ajeboe0h7j2k9vtfi06j
+  YC_WIF_AUDIENCE: https://github.com/UnidentifiedRaccoon
+  YC_ADMIN_CONTAINER_ID: ${{ vars.YC_ADMIN_CONTAINER_ID }}
+  FINPULSE_ADMIN_APP_URL: ${{ vars.FINPULSE_ADMIN_APP_URL }}
+  FINPULSE_ADMIN_API_BASE_URL: ${{ vars.FINPULSE_ADMIN_API_BASE_URL || 'https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net' }}
+
+jobs:
+  deploy-admin:
+    name: Build, deploy, smoke admin
+    runs-on: ubuntu-latest
+    env:
+      ADMIN_IMAGE: cr.yandex/crp5j8penr0hui0ttaum/finpulse-admin:${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate admin deploy configuration
+        run: |
+          test -n "$YC_ADMIN_CONTAINER_ID"
+          test -n "$FINPULSE_ADMIN_APP_URL"
+          test -n "$FINPULSE_ADMIN_API_BASE_URL"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify admin
+        run: |
+          npm run typecheck:admin
+          npm run test:admin
+
+      - name: Install Yandex Cloud CLI
+        run: |
+          curl -fsSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -i "$HOME/yandex-cloud" -n
+          echo "$HOME/yandex-cloud/bin" >> "$GITHUB_PATH"
+
+      - name: Exchange GitHub OIDC token for Yandex IAM token
+        id: yc-token
+        run: |
+          encoded_audience="$(jq -rn --arg value "$YC_WIF_AUDIENCE" '$value|@uri')"
+          oidc_token="$(curl -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${encoded_audience}" | jq -r '.value')"
+
+          iam_token="$(curl -fsS -X POST "https://auth.yandex.cloud/oauth/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            --data-urlencode "grant_type=urn:ietf:params:oauth:grant-type:token-exchange" \
+            --data-urlencode "requested_token_type=urn:ietf:params:oauth:token-type:access_token" \
+            --data-urlencode "audience=$YC_DEPLOY_SA_ID" \
+            --data-urlencode "subject_token=$oidc_token" \
+            --data-urlencode "subject_token_type=urn:ietf:params:oauth:token-type:id_token" | jq -r '.access_token')"
+
+          if [ -z "$iam_token" ] || [ "$iam_token" = "null" ]; then
+            echo "Failed to exchange GitHub OIDC token for Yandex IAM token" >&2
+            exit 1
+          fi
+          echo "::add-mask::$iam_token"
+          echo "YC_IAM_TOKEN=$iam_token" >> "$GITHUB_ENV"
+          echo "token=$iam_token" >> "$GITHUB_OUTPUT"
+
+      - name: Configure Yandex Cloud CLI
+        run: |
+          yc config profile create finpulse-admin-ci
+          yc config profile activate finpulse-admin-ci
+          yc config set cloud-id "$YC_CLOUD_ID"
+          yc config set folder-id "$YC_FOLDER_ID"
+
+      - name: Login to Yandex Container Registry
+        run: echo "${{ steps.yc-token.outputs.token }}" | docker login --username iam --password-stdin cr.yandex
+
+      - name: Build admin image
+        run: |
+          docker build \
+            --file Dockerfile.admin \
+            --build-arg FINPULSE_ADMIN_API_BASE_URL="$FINPULSE_ADMIN_API_BASE_URL" \
+            --tag "$ADMIN_IMAGE" \
+            .
+
+      - name: Push admin image
+        run: docker push "$ADMIN_IMAGE"
+
+      - name: Deploy admin serverless container revision
+        run: |
+          yc serverless container revision deploy \
+            --container-id "$YC_ADMIN_CONTAINER_ID" \
+            --image "$ADMIN_IMAGE" \
+            --cores 1 \
+            --memory 512MB \
+            --concurrency 8 \
+            --execution-timeout 30s \
+            --service-account-id "$YC_RUNTIME_SA_ID" \
+            --environment NODE_ENV=production \
+            --environment FINPULSE_ADMIN_API_BASE_URL="$FINPULSE_ADMIN_API_BASE_URL"
+
+      - name: Smoke test admin production
+        run: |
+          check_200() {
+            local label="$1"
+            local url="$2"
+            local body="$RUNNER_TEMP/${label}.body"
+            local code=""
+
+            for attempt in $(seq 1 30); do
+              code="$(curl -fsS -o "$body" -w "%{http_code}" "$url" || true)"
+              if [ "$code" = "200" ]; then
+                return 0
+              fi
+              sleep 5
+            done
+
+            echo "Smoke check failed: $label returned HTTP ${code:-none}" >&2
+            sed -n '1,80p' "$body" >&2 || true
+            return 1
+          }
+
+          check_status() {
+            local label="$1"
+            local url="$2"
+            local expected="$3"
+            local body="$RUNNER_TEMP/${label}.body"
+            local code=""
+
+            for attempt in $(seq 1 30); do
+              code="$(curl -sS -o "$body" -w "%{http_code}" "$url" || true)"
+              if [ "$code" = "$expected" ]; then
+                return 0
+              fi
+              sleep 5
+            done
+
+            echo "Smoke check failed: $label returned HTTP ${code:-none}, expected $expected" >&2
+            sed -n '1,80p' "$body" >&2 || true
+            return 1
+          }
+
+          check_200 "admin-frontend" "$FINPULSE_ADMIN_APP_URL/"
+          grep -qi '<html' "$RUNNER_TEMP/admin-frontend.body"
+          check_200 "admin-api-health" "$FINPULSE_ADMIN_APP_URL/api/health"
+          check_status "admin-auth-boundary" "$FINPULSE_ADMIN_APP_URL/api/admin/auth/me" "401"
+          grep -qi 'admin_unauthenticated' "$RUNNER_TEMP/admin-auth-boundary.body"
+
+          {
+            echo "## FinPulse admin deployment"
+            echo ""
+            echo "- Image: \`$ADMIN_IMAGE\`"
+            echo "- Admin URL: $FINPULSE_ADMIN_APP_URL"
+            echo "- API base URL: $FINPULSE_ADMIN_API_BASE_URL"
+            echo "- Smoke: admin frontend, API proxy health, admin auth boundary passed"
+          } >> "$GITHUB_STEP_SUMMARY"

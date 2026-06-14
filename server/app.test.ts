@@ -6,10 +6,10 @@ import { join } from 'node:path'
 import { Pool } from 'pg'
 import { describe, expect, it } from 'vitest'
 
-import { createApp } from './app'
-import { verifyPassword } from './lib/password'
+import { createApp, type CreateAppOptions } from './app'
+import { hashPassword, verifyPassword } from './lib/password'
 
-async function setupTestApp(options: { staticRoot?: string } = {}) {
+async function setupTestApp(options: Pick<CreateAppOptions, 'staticRoot' | 'adminAuth'> = {}) {
   const created = await createApp({
     databaseUrl: getTestDatabaseUrl(),
     databaseSchema: createTestSchemaName(),
@@ -19,6 +19,7 @@ async function setupTestApp(options: { staticRoot?: string } = {}) {
     staticRoot: options.staticRoot,
     cookieSecure: false,
     corsOrigin: 'http://localhost:5173',
+    adminAuth: options.adminAuth,
   })
   await created.app.ready()
 
@@ -106,6 +107,28 @@ function sessionCookie(response: { headers: Record<string, number | string | str
   }
 
   return String(cookie).split(';')[0]
+}
+
+function rawSetCookie(response: { headers: Record<string, number | string | string[] | undefined> }) {
+  const rawCookie = response.headers['set-cookie']
+  return Array.isArray(rawCookie) ? rawCookie.join('\n') : String(rawCookie ?? '')
+}
+
+async function createAdminAuth() {
+  return {
+    login: 'admin@example.com',
+    passwordHash: await hashPassword('admin-passphrase'),
+    sessionSecret: 'test-admin-session-secret',
+  }
+}
+
+function expectNoPrivateAnswerLeak(payload: unknown) {
+  const serialized = JSON.stringify(payload)
+  expect(serialized).not.toContain('СЕКРЕТНЫЙ личный ответ')
+  expect(serialized).not.toContain('answer_json')
+  expect(serialized).not.toContain('textValue')
+  expect(serialized).not.toContain('singleValue')
+  expect(serialized).not.toContain('templateValues')
 }
 
 describe('backend API', () => {
@@ -435,6 +458,114 @@ describe('backend API', () => {
     }
   })
 
+  it('keeps admin authentication separate from learner sessions', async () => {
+    const { app } = await setupTestApp({
+      adminAuth: await createAdminAuth(),
+    })
+
+    try {
+      const missingConfigApp = await createApp({
+        databaseUrl: getTestDatabaseUrl(),
+        databaseSchema: createTestSchemaName(),
+        resetDatabaseSchema: true,
+        dropDatabaseSchemaOnClose: true,
+        databasePoolMax: 1,
+        cookieSecure: false,
+        adminAuth: {
+          login: '',
+          passwordHash: '',
+          sessionSecret: '',
+        },
+      })
+      await missingConfigApp.app.ready()
+      try {
+        const missingConfigLogin = await missingConfigApp.app.inject({
+          method: 'POST',
+          url: '/api/admin/auth/login',
+          payload: {
+            login: 'admin@example.com',
+            password: 'admin-passphrase',
+          },
+        })
+        expect(missingConfigLogin.statusCode).toBe(503)
+        expect(missingConfigLogin.json()).toMatchObject({
+          error: {
+            code: 'admin_not_configured',
+          },
+        })
+      } finally {
+        await missingConfigApp.app.close()
+      }
+
+      const learnerRegister = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'learner-for-admin-boundary',
+          password: 'secure-passphrase',
+        },
+      })
+      const learnerCookie = sessionCookie(learnerRegister)
+
+      const learnerAdminResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/users',
+        headers: {
+          cookie: learnerCookie,
+        },
+      })
+      expect(learnerAdminResponse.statusCode).toBe(401)
+
+      const loginResponse = await app.inject({
+        method: 'POST',
+        url: '/api/admin/auth/login',
+        payload: {
+          login: 'ADMIN@example.com',
+          password: 'admin-passphrase',
+        },
+      })
+      expect(loginResponse.statusCode).toBe(200)
+      expect(rawSetCookie(loginResponse)).toContain('finpulse_admin_session=')
+      expect(rawSetCookie(loginResponse)).not.toContain('finpulse_session=')
+      const adminCookie = sessionCookie(loginResponse)
+
+      const meResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/auth/me',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(meResponse.statusCode).toBe(200)
+      expect(meResponse.json()).toMatchObject({
+        admin: {
+          login: 'admin@example.com',
+        },
+        scope: {
+          access: 'global_all_users',
+          organizationFiltering: {
+            enabled: false,
+          },
+          rbac: {
+            enabled: false,
+          },
+        },
+      })
+      expect(meResponse.headers['cache-control']).toBe('no-store')
+
+      const adminLearnerProgressResponse = await app.inject({
+        method: 'GET',
+        url: '/api/progress',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(adminLearnerProgressResponse.statusCode).toBe(401)
+    } finally {
+      await app.close()
+    }
+  })
+
   it('protects progress routes and stores lesson/card progress per user', async () => {
     const { app } = await setupTestApp()
 
@@ -503,6 +634,200 @@ describe('backend API', () => {
         lessons: [],
         cards: [],
       })
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('returns read-only admin progress summaries without private reflection answer text', async () => {
+    const { app, db } = await setupTestApp({
+      adminAuth: await createAdminAuth(),
+    })
+
+    try {
+      const adminLoginResponse = await app.inject({
+        method: 'POST',
+        url: '/api/admin/auth/login',
+        payload: {
+          login: 'admin@example.com',
+          password: 'admin-passphrase',
+        },
+      })
+      const adminCookie = sessionCookie(adminLoginResponse)
+
+      const learnerRegister = await app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'learner.email@example.com',
+          password: 'secure-passphrase',
+        },
+      })
+      const learner = learnerRegister.json().user as { id: string; login: string }
+      const learnerCookie = sessionCookie(learnerRegister)
+      const oldActivity = new Date(Date.now() - 9 * 24 * 60 * 60 * 1000)
+
+      await db.progress.upsertLessonProgress(learner.id, 'where-money-goes', { completed: true }, oldActivity)
+      await db.progress.upsertLessonProgress(learner.id, 'mandatory-and-desired', { viewed: true }, oldActivity)
+      await db.progress.upsertCardProgress(learner.id, 'card_l1s1l1_03_sorting_choice', { completed: true }, oldActivity)
+
+      const reflectionResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_l1s1l1_05_surprise_reflection',
+        headers: {
+          cookie: learnerCookie,
+        },
+        payload: {
+          singleValue: 'СЕКРЕТНЫЙ личный ответ',
+          fallbackValue: 'СЕКРЕТНЫЙ личный ответ',
+        },
+      })
+      expect(reflectionResponse.statusCode).toBe(200)
+      await db.query('UPDATE reflection_answers SET updated_at = $1::timestamptz WHERE user_id = $2::uuid', [
+        oldActivity.toISOString(),
+        learner.id,
+      ])
+
+      const blockedOrganizationFilter = await app.inject({
+        method: 'GET',
+        url: '/api/admin/users?organizationId=org_1',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(blockedOrganizationFilter.statusCode).toBe(400)
+      expect(blockedOrganizationFilter.json()).toMatchObject({
+        error: {
+          code: 'organization_filtering_not_enabled',
+        },
+      })
+
+      const blockedPrivateFields = await app.inject({
+        method: 'GET',
+        url: '/api/admin/users?fields=answer_json',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(blockedPrivateFields.statusCode).toBe(400)
+      expect(blockedPrivateFields.json()).toMatchObject({
+        error: {
+          code: 'private_answer_fields_not_supported',
+        },
+      })
+
+      const summaryResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/summary?stuckThresholdDays=7',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(summaryResponse.statusCode).toBe(200)
+      expect(summaryResponse.json()).toMatchObject({
+        scope: {
+          access: 'global_all_users',
+          organizationFiltering: {
+            enabled: false,
+          },
+        },
+        totals: {
+          totalUsers: 1,
+          totalLessons: 2,
+          completedLessons: 1,
+          completedCards: 1,
+          stuckUsers: 1,
+          stuckThresholdDays: 7,
+        },
+      })
+      expectNoPrivateAnswerLeak(summaryResponse.json())
+
+      const usersResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/users?search=learner.email&stuckThresholdDays=7',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(usersResponse.statusCode).toBe(200)
+      expect(usersResponse.json()).toMatchObject({
+        page: {
+          total: 1,
+        },
+        totals: {
+          totalLessons: 2,
+          totalCards: 16,
+        },
+        users: [
+          {
+            id: learner.id,
+            login: learner.login,
+            progress: {
+              viewedLessons: 2,
+              completedLessons: 1,
+              totalLessons: 2,
+              completedCards: 1,
+              currentLesson: {
+                lessonSlug: 'mandatory-and-desired',
+                lessonTitle: 'Обязательное и желаемое',
+                sectionSlug: 'money-and-operations',
+                levelSlug: 'level-1-start',
+              },
+              stuckDays: expect.any(Number),
+              isStuck: true,
+            },
+          },
+        ],
+      })
+      expect(usersResponse.json().users[0].progress.stuckDays).toBeGreaterThanOrEqual(9)
+      expectNoPrivateAnswerLeak(usersResponse.json())
+
+      const detailResponse = await app.inject({
+        method: 'GET',
+        url: `/api/admin/users/${learner.id}/progress?includeAnswers=true`,
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(detailResponse.statusCode).toBe(400)
+
+      const detailWithoutAnswersResponse = await app.inject({
+        method: 'GET',
+        url: `/api/admin/users/${learner.id}/progress`,
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(detailWithoutAnswersResponse.statusCode).toBe(200)
+      expect(detailWithoutAnswersResponse.json()).toMatchObject({
+        privacy: {
+          reflectionAnswerTextIncluded: false,
+        },
+        user: {
+          id: learner.id,
+          login: 'learner.email@example.com',
+        },
+        lessons: [
+          expect.objectContaining({
+            lessonSlug: 'where-money-goes',
+            status: 'completed',
+            completedAt: expect.any(String),
+            cards: expect.arrayContaining([
+              expect.objectContaining({
+                cardId: 'card_l1s1l1_03_sorting_choice',
+                status: 'completed',
+              }),
+            ]),
+          }),
+          expect.objectContaining({
+            lessonSlug: 'mandatory-and-desired',
+            status: 'viewed',
+            viewedAt: expect.any(String),
+            completedAt: null,
+          }),
+        ],
+      })
+      expectNoPrivateAnswerLeak(detailWithoutAnswersResponse.json())
     } finally {
       await app.close()
     }

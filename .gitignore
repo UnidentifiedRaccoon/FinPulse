@@ -12,6 +12,7 @@ dist
 dist-server
 dist-ssr
 .next/
+*.tsbuildinfo
 *.local
 .env
 .env.*

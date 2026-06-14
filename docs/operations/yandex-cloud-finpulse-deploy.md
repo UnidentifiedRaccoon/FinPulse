@@ -9,8 +9,9 @@ FinPulse deploys as one same-origin Serverless Container: the Fastify backend se
 - Production URL: `https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net/`.
 - Container image path: `cr.yandex/crp5j8penr0hui0ttaum/finpulse:<git-sha>`.
 - Deploy workflow: `.github/workflows/deploy.yml`, triggered on push to `main` and `workflow_dispatch`.
+- Admin deploy workflow: `.github/workflows/deploy-admin.yml`, manual `workflow_dispatch` for a separate Next.js admin Serverless Container.
 - DB control layer: `docs/operations/yandex-cloud-finpulse-db-control.md`.
-- Current limitation: no production revision has been deployed from this repo yet in the local run because the local Docker daemon was unavailable. The workflow is ready to build, push, deploy, and smoke-test the first revision from GitHub Actions.
+- Current limitation: the learner/backend and admin production containers exist. Run `Deploy` for backend changes first, then run `Deploy Admin` for the separate Next.js admin surface.
 
 ## Resources
 
@@ -31,6 +32,8 @@ FinPulse deploys as one same-origin Serverless Container: the Fastify backend se
 | DB host | `rc1a-ua11qmcqokpra171.mdb.yandexcloud.net:6432` |
 | DB name/user | `finpulse` / `finpulse_app` |
 | DB password secret metadata | `e6qdr1f6uh0k9aj2v34c`, key `postgresql_password` |
+| Admin container | `finpulse-admin` / `bba3qtl3p9qu0sja739n` |
+| Admin URL | `https://bba3qtl3p9qu0sja739n.containers.yandexcloud.net/` |
 
 The DB start function URL is intentionally not repeated here. Store it as the GitHub Actions secret `YC_DB_START_URL`; the function ID is documented in the DB control runbook.
 
@@ -60,6 +63,22 @@ Required GitHub Actions secret:
 | --- | --- |
 | `YC_DB_START_URL` | Public DB start function URL. Treat as sensitive because it starts or extends paid DB runtime. |
 | `FINPULSE_DATABASE_PASSWORD` | PostgreSQL password for `finpulse_app`, passed to the deployed Serverless Container revision. |
+| `FINPULSE_ADMIN_LOGIN` | Single production admin login/email. |
+| `FINPULSE_ADMIN_PASSWORD_HASH` | Bcrypt hash for the single production admin password. Generate locally; never store the plaintext password. |
+| `FINPULSE_ADMIN_SESSION_SECRET` | Long random secret used to sign the `finpulse_admin_session` cookie. |
+
+Required GitHub Actions variables for the admin deploy workflow:
+
+| Variable | Purpose |
+| --- | --- |
+| `YC_ADMIN_CONTAINER_ID` | Yandex Serverless Container id for the separate Next.js admin app. |
+| `FINPULSE_ADMIN_APP_URL` | Public/internal URL of the admin Serverless Container, used by admin smoke checks. |
+
+Optional GitHub Actions variable:
+
+| Variable | Purpose |
+| --- | --- |
+| `FINPULSE_ADMIN_API_BASE_URL` | Backend origin used by the admin Next.js rewrite. Defaults to `https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net` in the admin deploy workflow. |
 
 The remaining resource IDs are committed in `.github/workflows/deploy.yml` because they are non-secret infrastructure identifiers. Move them to repository variables later if operators need to retarget environments without code changes.
 
@@ -87,10 +106,14 @@ On push to `main`, `.github/workflows/deploy.yml` does the following:
     - `FINPULSE_STATIC_ROOT=/app/dist`;
     - DB host/name/user/port/password/sslmode env vars;
     - `FINPULSE_DATABASE_SSL_LIBPQ_COMPAT=true` for Yandex Managed PostgreSQL SSL compatibility;
+    - `FINPULSE_ADMIN_LOGIN`;
+    - `FINPULSE_ADMIN_PASSWORD_HASH`;
+    - `FINPULSE_ADMIN_SESSION_SECRET`;
 11. smoke-tests:
     - `/api/health`;
     - `/api/readyz`;
     - `/`.
+    - `/api/admin/auth/me` returns `401 admin_unauthenticated`, proving admin auth is configured and protected.
 
 The backend applies the committed `server/db/schema.sql` on startup through `openDatabase()` / `runMigrations()`. This is an idempotent schema bootstrap in a transaction, not a versioned migration ledger. In production, GitHub Actions passes the DB password from GitHub secret `FINPULSE_DATABASE_PASSWORD`; the password is not committed or printed.
 
@@ -108,6 +131,9 @@ export YC_RUNTIME_SA_ID=aje0lujm0q1obpn9fbu9
 export YC_NETWORK_ID=enpanp4tbmpj9gckolkg
 export IMAGE="cr.yandex/${YC_REGISTRY_ID}/finpulse:manual-$(git rev-parse --short HEAD)"
 DB_PASSWORD="$(yc lockbox payload get --id e6qdr1f6uh0k9aj2v34c --key postgresql_password)"
+ADMIN_LOGIN="<admin-email>"
+ADMIN_PASSWORD_HASH="<bcrypt-hash>"
+ADMIN_SESSION_SECRET="<long-random-secret>"
 
 npm run build:container
 docker build --tag "$IMAGE" .
@@ -134,9 +160,72 @@ yc serverless container revision deploy \
   --environment FINPULSE_DATABASE_USER=finpulse_app \
   --environment FINPULSE_DATABASE_SSLMODE=require \
   --environment FINPULSE_DATABASE_SSL_LIBPQ_COMPAT=true \
-  --environment FINPULSE_DATABASE_PASSWORD="$DB_PASSWORD"
+  --environment FINPULSE_DATABASE_PASSWORD="$DB_PASSWORD" \
+  --environment FINPULSE_ADMIN_LOGIN="$ADMIN_LOGIN" \
+  --environment FINPULSE_ADMIN_PASSWORD_HASH="$ADMIN_PASSWORD_HASH" \
+  --environment FINPULSE_ADMIN_SESSION_SECRET="$ADMIN_SESSION_SECRET"
 unset DB_PASSWORD
+unset ADMIN_LOGIN ADMIN_PASSWORD_HASH ADMIN_SESSION_SECRET
 ```
+
+## Admin production deployment
+
+The admin UI is intentionally not served from the learner container. The separate Serverless Container is `finpulse-admin` (`bba3qtl3p9qu0sja739n`). Run `.github/workflows/deploy-admin.yml` after the backend `Deploy` workflow has passed with admin secrets configured.
+
+One-time container creation from a secure operator shell:
+
+```bash
+export YC_FOLDER_ID=b1gpl04msqva2tsff46k
+yc serverless container create \
+  --folder-id "$YC_FOLDER_ID" \
+  --name finpulse-admin
+
+yc serverless container get finpulse-admin
+```
+
+The created container id is stored as GitHub repository variable `YC_ADMIN_CONTAINER_ID`. The container URL is stored as `FINPULSE_ADMIN_APP_URL`.
+
+Manual local build/push/deploy shape:
+
+```bash
+export YC_REGISTRY_ID=crp5j8penr0hui0ttaum
+export YC_ADMIN_CONTAINER_ID=bba3qtl3p9qu0sja739n
+export YC_RUNTIME_SA_ID=aje0lujm0q1obpn9fbu9
+export FINPULSE_ADMIN_API_BASE_URL=https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net
+export ADMIN_IMAGE="cr.yandex/${YC_REGISTRY_ID}/finpulse-admin:manual-$(git rev-parse --short HEAD)"
+
+docker build \
+  --file Dockerfile.admin \
+  --build-arg FINPULSE_ADMIN_API_BASE_URL="$FINPULSE_ADMIN_API_BASE_URL" \
+  --tag "$ADMIN_IMAGE" \
+  .
+yc container registry configure-docker
+docker push "$ADMIN_IMAGE"
+
+yc serverless container revision deploy \
+  --container-id "$YC_ADMIN_CONTAINER_ID" \
+  --image "$ADMIN_IMAGE" \
+  --cores 1 \
+  --memory 512MB \
+  --concurrency 8 \
+  --execution-timeout 30s \
+  --service-account-id "$YC_RUNTIME_SA_ID" \
+  --environment NODE_ENV=production \
+  --environment FINPULSE_ADMIN_API_BASE_URL="$FINPULSE_ADMIN_API_BASE_URL"
+```
+
+Admin smoke checks:
+
+```bash
+ADMIN_URL="https://bba3qtl3p9qu0sja739n.containers.yandexcloud.net"
+curl -fsS "$ADMIN_URL/" | grep -qi '<html'
+curl -fsS "$ADMIN_URL/api/health"
+code="$(curl -sS -o /tmp/finpulse-admin-auth.json -w "%{http_code}" "$ADMIN_URL/api/admin/auth/me" || true)"
+test "$code" = "401"
+grep -qi 'admin_unauthenticated' /tmp/finpulse-admin-auth.json
+```
+
+The first login is the single admin configured in the backend production container. The admin container does not receive the admin password hash or session secret.
 
 ## Smoke checks
 
@@ -145,6 +234,9 @@ APP_URL="https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net"
 curl -fsS "$APP_URL/api/health"
 curl -fsS "$APP_URL/api/readyz"
 curl -fsS "$APP_URL/" | grep -qi '<html'
+code="$(curl -sS -o /tmp/finpulse-admin-auth.json -w "%{http_code}" "$APP_URL/api/admin/auth/me" || true)"
+test "$code" = "401"
+grep -qi 'admin_unauthenticated' /tmp/finpulse-admin-auth.json
 ```
 
 `/api/health` is a process health check and does not query PostgreSQL. `/api/readyz` queries PostgreSQL with `SELECT 1` and returns `503` if the database is unavailable.

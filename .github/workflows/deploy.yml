@@ -128,8 +128,14 @@ jobs:
       - name: Deploy serverless container revision
         env:
           FINPULSE_DATABASE_PASSWORD: ${{ secrets.FINPULSE_DATABASE_PASSWORD }}
+          FINPULSE_ADMIN_LOGIN: ${{ secrets.FINPULSE_ADMIN_LOGIN }}
+          FINPULSE_ADMIN_PASSWORD_HASH: ${{ secrets.FINPULSE_ADMIN_PASSWORD_HASH }}
+          FINPULSE_ADMIN_SESSION_SECRET: ${{ secrets.FINPULSE_ADMIN_SESSION_SECRET }}
         run: |
           test -n "$FINPULSE_DATABASE_PASSWORD"
+          test -n "$FINPULSE_ADMIN_LOGIN"
+          test -n "$FINPULSE_ADMIN_PASSWORD_HASH"
+          test -n "$FINPULSE_ADMIN_SESSION_SECRET"
           yc serverless container revision deploy \
             --container-id "$YC_CONTAINER_ID" \
             --image "$IMAGE" \
@@ -149,7 +155,10 @@ jobs:
             --environment FINPULSE_DATABASE_USER="$FINPULSE_DATABASE_USER" \
             --environment FINPULSE_DATABASE_SSLMODE="$FINPULSE_DATABASE_SSLMODE" \
             --environment FINPULSE_DATABASE_SSL_LIBPQ_COMPAT="$FINPULSE_DATABASE_SSL_LIBPQ_COMPAT" \
-            --environment FINPULSE_DATABASE_PASSWORD="$FINPULSE_DATABASE_PASSWORD"
+            --environment FINPULSE_DATABASE_PASSWORD="$FINPULSE_DATABASE_PASSWORD" \
+            --environment FINPULSE_ADMIN_LOGIN="$FINPULSE_ADMIN_LOGIN" \
+            --environment FINPULSE_ADMIN_PASSWORD_HASH="$FINPULSE_ADMIN_PASSWORD_HASH" \
+            --environment FINPULSE_ADMIN_SESSION_SECRET="$FINPULSE_ADMIN_SESSION_SECRET"
 
       - name: Smoke test production
         run: |
@@ -177,10 +186,18 @@ jobs:
           check_url "frontend" "$FINPULSE_APP_URL/"
           grep -qi '<html' "$RUNNER_TEMP/frontend.body"
 
+          admin_code="$(curl -sS -o "$RUNNER_TEMP/admin-auth.body" -w "%{http_code}" "$FINPULSE_APP_URL/api/admin/auth/me" || true)"
+          if [ "$admin_code" != "401" ]; then
+            echo "Smoke check failed: admin auth boundary returned HTTP ${admin_code:-none}, expected 401" >&2
+            sed -n '1,80p' "$RUNNER_TEMP/admin-auth.body" >&2 || true
+            exit 1
+          fi
+          grep -qi 'admin_unauthenticated' "$RUNNER_TEMP/admin-auth.body"
+
           {
             echo "## FinPulse deployment"
             echo ""
             echo "- Image: \`$IMAGE\`"
             echo "- URL: $FINPULSE_APP_URL"
-            echo "- Smoke: health, readyz, frontend passed"
+            echo "- Smoke: health, readyz, frontend, admin auth boundary passed"
           } >> "$GITHUB_STEP_SUMMARY"
