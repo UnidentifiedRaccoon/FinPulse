@@ -47,6 +47,30 @@ function jsonResponse(data: unknown, status = 200) {
   )
 }
 
+function deferApiGet(path: string, options: ApiResponseOptions) {
+  let resolveResponse: (response: Response) => void = () => undefined
+  const promise = new Promise<Response>((resolve) => {
+    resolveResponse = resolve
+  })
+
+  vi.mocked(fetch).mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
+    const requestPath = new URL(String(input), 'http://localhost').pathname
+    const requestMethod = init?.method?.toUpperCase() ?? 'GET'
+
+    if (requestPath === path && requestMethod === 'GET') {
+      return promise
+    }
+
+    return apiResponse(String(input), options, init)
+  })
+
+  return {
+    resolve: async () => {
+      resolveResponse(await apiResponse(`http://localhost${path}`, options))
+    },
+  }
+}
+
 function apiResponse(url: string, options: ApiResponseOptions, init: RequestInit = {}) {
   if (!program) {
     return jsonResponse({ error: { code: 'content_error', message: 'Program content is invalid' } }, 500)
@@ -193,6 +217,7 @@ describe('App', () => {
     apiOptions = {}
     window.sessionStorage.clear()
     vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL, init?: RequestInit) => apiResponse(String(input), apiOptions, init)))
+    vi.stubGlobal('scrollTo', vi.fn())
   })
 
   afterEach(() => {
@@ -243,6 +268,7 @@ describe('App', () => {
   })
 
   it('renders a profile screen with identity and learning stats', async () => {
+    const user = userEvent.setup()
     setAuthenticatedLearner(apiOptions)
     apiOptions.reflectionAnswers = {
       answers: [
@@ -344,7 +370,17 @@ describe('App', () => {
     expect(within(answersSection).getByRole('heading', { name: 'Куда уходят деньги · 2 ответа' })).toBeTruthy()
     expect(within(answersSection).getByRole('heading', { name: 'Обязательное и желаемое · 1 ответ' })).toBeTruthy()
     expect(within(answersSection).queryByText('Раздел 1. Деньги и операции · Куда уходят деньги')).toBeNull()
-    expect(within(answersSection).getAllByText('Вопрос')).toHaveLength(3)
+    const questionButtons = within(answersSection).getAllByRole('button', { name: 'Вспомнить вопрос' })
+    expect(questionButtons).toHaveLength(3)
+    expect(screen.queryByRole('dialog', { name: 'Вопрос' })).toBeNull()
+    expect(answersSection.querySelector('details')).toBeNull()
+    await user.click(questionButtons[0])
+    const questionDialog = await screen.findByRole('dialog', { name: 'Вопрос' })
+    expect(within(questionDialog).getByText('Вспомни и запиши 3 свои траты за сегодня: сумма и категория, без оценок «хорошо/плохо».')).toBeTruthy()
+    await user.click(within(questionDialog).getByRole('button', { name: 'Закрыть вопрос' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Вопрос' })).toBeNull()
+    })
     expect(within(answersSection).getByRole('heading', { name: 'Твои 3 траты за сегодня' })).toBeTruthy()
     expect(within(answersSection).getByRole('heading', { name: 'Что удивило?' })).toBeTruthy()
     expect(within(answersSection).getByText('Кофе/перекусы — их больше, чем думал(а)')).toBeTruthy()
@@ -389,6 +425,82 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/levels/level-1-start')
   })
 
+  it('renders the program skeleton while the program route is loading', async () => {
+    setAuthenticatedLearner(apiOptions)
+    const delayedProgram = deferApiGet('/api/program', apiOptions)
+    window.history.pushState({}, '', '/program')
+
+    render(<App />)
+
+    const skeleton = await screen.findByTestId('program-loading-skeleton')
+    expect(within(skeleton).getAllByTestId('program-level-card-skeleton')).toHaveLength(1)
+    expect(screen.queryByText('Загружаем программу')).toBeNull()
+
+    await delayedProgram.resolve()
+
+    expect(await screen.findByRole('heading', { name: 'Старт' })).toBeTruthy()
+    expect(screen.queryByTestId('program-loading-skeleton')).toBeNull()
+  })
+
+  it('renders the level path skeleton while the level route is loading', async () => {
+    setAuthenticatedLearner(apiOptions)
+    const delayedLevel = deferApiGet('/api/levels/level-1-start', apiOptions)
+    window.history.pushState({}, '', '/levels/level-1-start')
+
+    render(<App />)
+
+    const skeleton = await screen.findByTestId('path-loading-skeleton')
+
+    expect(within(skeleton).getByRole('link', { name: 'Вернуться к уровням' }).getAttribute('href')).toBe('/program')
+    expect(within(skeleton).getAllByTestId('path-skeleton-node')).toHaveLength(2)
+    expect(screen.queryByText('Загружаем уровень')).toBeNull()
+
+    await delayedLevel.resolve()
+
+    expect(await screen.findByRole('region', { name: 'Разделы уровня' })).toBeTruthy()
+    expect(screen.queryByTestId('path-loading-skeleton')).toBeNull()
+  })
+
+  it('renders the section path skeleton while the section route is loading', async () => {
+    setAuthenticatedLearner(apiOptions)
+    const delayedSection = deferApiGet('/api/sections/money-and-operations', apiOptions)
+    window.history.pushState({}, '', '/levels/level-1-start/sections/money-and-operations')
+
+    render(<App />)
+
+    const skeleton = await screen.findByTestId('path-loading-skeleton')
+
+    expect(within(skeleton).getByRole('link', { name: 'Вернуться к уровню' }).getAttribute('href')).toBe('/levels/level-1-start')
+    expect(within(skeleton).getAllByTestId('path-skeleton-node')).toHaveLength(2)
+    expect(screen.queryByText('Загружаем раздел')).toBeNull()
+
+    await delayedSection.resolve()
+
+    expect(await screen.findByRole('button', { name: /Куда уходят деньги/i })).toBeTruthy()
+    expect(screen.queryByTestId('path-loading-skeleton')).toBeNull()
+  })
+
+  it('renders the lesson skeleton while the lesson route is loading before writing progress', async () => {
+    setAuthenticatedLearner(apiOptions)
+    const delayedLesson = deferApiGet('/api/lessons/where-money-goes', apiOptions)
+    window.history.pushState({}, '', '/lessons/where-money-goes')
+
+    render(<App />)
+
+    expect(await screen.findByTestId('lesson-loading-skeleton')).toBeTruthy()
+    expect(screen.queryByText('Загружаем урок')).toBeNull()
+    await new Promise((resolve) => setTimeout(resolve, 25))
+    expect(getProgressWriteCount('/api/progress/lessons/where-money-goes')).toBe(0)
+
+    await delayedLesson.resolve()
+
+    expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+    await waitFor(() => {
+      expect(getProgressWriteCount('/api/progress/lessons/where-money-goes')).toBe(1)
+    })
+    expect(screen.queryByTestId('lesson-loading-skeleton')).toBeNull()
+  })
+
   it('shows not found for removed routes', async () => {
     const removedRoutes = [
       {
@@ -398,6 +510,10 @@ describe('App', () => {
       {
         path: '/design/mobile-section-compact',
         removedHeading: 'Раздел 1. Деньги и операции',
+      },
+      {
+        path: '/design/lesson-card-full-width',
+        removedHeading: 'Распредели траты на две группы',
       },
     ]
 
@@ -444,30 +560,6 @@ describe('App', () => {
 
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
-  })
-
-  it('renders the full-width lesson card padding experiment', async () => {
-    window.history.pushState({}, '', '/design/lesson-card-full-width')
-
-    render(<App />)
-
-    const fullWidthCard = await screen.findByTestId('full-width-lesson-card')
-    const main = screen.getByRole('main')
-
-    expect(main.className).toContain('max-w-none')
-    expect(main.className).toContain('px-0')
-    expect(main.className).toContain('py-0')
-    expect(fullWidthCard.className).toContain('w-full')
-    expect(fullWidthCard.className).toContain('p-4')
-    expect(screen.getByRole('heading', { level: 1, name: 'Куда уходят деньги' })).toBeTruthy()
-    expect(screen.getByRole('heading', { level: 2, name: 'Распредели траты на две группы' })).toBeTruthy()
-    expect(screen.getByText('Распредели траты на две группы: «замечаю сразу» и «проходит мимо внимания».')).toBeTruthy()
-    expect(screen.getByTestId('full-width-categorization-table')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Покупка телефона: Замечаю сразу' }).getAttribute('aria-pressed')).toBe('true')
-    expect(screen.getByRole('button', { name: 'Кофе навынос: Проходит мимо внимания' }).getAttribute('aria-pressed')).toBe('true')
-    expect(screen.getByRole('button', { name: 'Проверить' })).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Войдите в ФинПульс' })).toBeNull()
-    expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
   })
 
   it('does not expose the removed lesson goal variants experiment route', async () => {
@@ -594,6 +686,32 @@ describe('App', () => {
     expect(within(bottomNavigation).getByRole('link', { name: 'Профиль' }).getAttribute('href')).toBe('/profile')
   })
 
+  it('applies route transition attributes for learning and profile navigation', async () => {
+    const user = userEvent.setup()
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/program')
+
+    const { container } = render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
+    expect(getRouteTransitionFrame(container)).toHaveAttribute('data-route-transition', 'none')
+
+    await user.click(screen.getByRole('link', { name: 'Далее' }))
+
+    expect(await screen.findByTestId('compact-path-header')).toBeTruthy()
+    expect(getRouteTransitionFrame(container)).toHaveAttribute('data-route-transition', 'learning-forward')
+
+    await user.click(within(screen.getByTestId('compact-path-header')).getByRole('link', { name: 'Уровень 1 раздел 1' }))
+
+    expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
+    expect(getRouteTransitionFrame(container)).toHaveAttribute('data-route-transition', 'learning-back')
+
+    await user.click(screen.getAllByRole('link', { name: 'Профиль' })[0])
+
+    expect(await screen.findByRole('heading', { name: 'Профиль' })).toBeTruthy()
+    expect(getRouteTransitionFrame(container)).toHaveAttribute('data-route-transition', 'profile-fade')
+  })
+
   it('separates authenticated account and logout controls in desktop while keeping mobile nav focused', async () => {
     setAuthenticatedLearner(apiOptions)
     window.history.pushState({}, '', '/program')
@@ -710,6 +828,28 @@ describe('App', () => {
     expect(screen.getAllByText(/Конец месяца/i).length).toBeGreaterThan(0)
   })
 
+  it('returns from a lesson to the focused lesson node on the level path', async () => {
+    const user = userEvent.setup()
+    const { restore, scrollIntoView } = mockElementScrollIntoView()
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/lessons/where-money-goes')
+
+    try {
+      const { container } = render(<App />)
+
+      expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+      await user.click(screen.getByRole('link', { name: 'Вернуться к уровню Уровень 1 · Старт' }))
+
+      expect(await screen.findByTestId('compact-path-header')).toBeTruthy()
+      expect(getRouteTransitionFrame(container)).toHaveAttribute('data-route-transition', 'learning-back')
+      await waitFor(() => {
+        expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center', behavior: 'auto' })
+      })
+    } finally {
+      restore()
+    }
+  })
+
   it('shows selected option feedback immediately after selecting a subjective choice', async () => {
     const user = userEvent.setup()
     setAuthenticatedLearner(apiOptions)
@@ -732,6 +872,34 @@ describe('App', () => {
 
     expect(await screen.findByRole('status')).toHaveTextContent('Отлично — проверим это на практике.')
     expect(screen.queryByText('Знакомо. Сейчас увидим, куда уходят деньги.')).toBeNull()
+  })
+
+  it('shows mandatory-and-desired first-screen feedback from source JSON options', async () => {
+    const user = userEvent.setup()
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/lessons/mandatory-and-desired')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Обязательное и желаемое' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Это мне точно нужно?' })).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+
+    await user.click(screen.getByRole('radio', { name: 'Да, регулярно' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Знакомо. Научимся различать нужное и приятное.')
+    expect(screen.getByRole('status')).not.toHaveTextContent('Любой ответ')
+
+    await user.click(screen.getByRole('radio', { name: 'Иногда' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Бывает у многих — посмотрим на разницу.')
+    expect(screen.queryByText('Знакомо. Научимся различать нужное и приятное.')).toBeNull()
+
+    await user.click(screen.getByRole('radio', { name: 'Почти никогда' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Отлично. Закрепим это на примерах.')
+    expect(screen.getByRole('button', { name: mandatoryDesiredFirstCta })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Проверить' })).toBeNull()
   })
 
   it('uses lesson-specific CTA labels from card content', async () => {
@@ -964,7 +1132,7 @@ describe('App', () => {
     setAuthenticatedLearner(apiOptions)
     window.history.pushState({}, '', '/lessons/where-money-goes')
 
-    render(<App />)
+    const { container } = render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
     await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
@@ -996,6 +1164,12 @@ describe('App', () => {
     expect(screen.getByText('Сохранено в Навигатор')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Урок пройден' })).toBeTruthy()
     expect(screen.getByRole('link', { name: 'К следующему уроку' }).getAttribute('href')).toBe('/lessons/mandatory-and-desired')
+
+    await user.click(screen.getByRole('link', { name: 'К следующему уроку' }))
+
+    expect(await screen.findByRole('heading', { name: 'Обязательное и желаемое' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Это мне точно нужно?' })).toBeTruthy()
+    expect(getRouteTransitionFrame(container)).toHaveAttribute('data-route-transition', 'lesson-forward')
   })
 })
 
@@ -1006,6 +1180,31 @@ function getProgressWriteCount(path: string) {
       const requestPath = new URL(String(input), 'http://localhost').pathname
       return requestPath === path && init?.method === 'PUT'
     }).length
+}
+
+function getRouteTransitionFrame(container: HTMLElement) {
+  const routeTransitionFrame = container.querySelector('[data-route-transition]')
+  expect(routeTransitionFrame).toBeInstanceOf(HTMLElement)
+  return routeTransitionFrame as HTMLElement
+}
+
+function mockElementScrollIntoView() {
+  const scrollIntoView = vi.fn()
+  const originalScrollIntoView = Element.prototype.scrollIntoView
+
+  Element.prototype.scrollIntoView = scrollIntoView as Element['scrollIntoView']
+
+  return {
+    scrollIntoView,
+    restore: () => {
+      if (originalScrollIntoView) {
+        Element.prototype.scrollIntoView = originalScrollIntoView
+        return
+      }
+
+      delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>).scrollIntoView
+    },
+  }
 }
 
 async function completeWhereMoneyGoesPractice(user: ReturnType<typeof userEvent.setup>) {

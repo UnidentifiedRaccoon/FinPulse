@@ -7,7 +7,7 @@ export type ProgressPatch = {
   completed?: boolean
 }
 
-export type LessonProgressEntry = {
+type LessonProgressEntry = {
   lessonSlug: string
   viewed: boolean
   completed: boolean
@@ -16,7 +16,7 @@ export type LessonProgressEntry = {
   updatedAt: string
 }
 
-export type CardProgressEntry = {
+type CardProgressEntry = {
   cardId: string
   viewed: boolean
   completed: boolean

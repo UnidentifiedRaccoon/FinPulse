@@ -409,6 +409,64 @@ body {
   }
 }
 
+@keyframes fr-route-enter-forward {
+  from {
+    opacity: 0;
+    transform: translate3d(0.75rem, 0.375rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fr-route-enter-back {
+  from {
+    opacity: 0;
+    transform: translate3d(-0.75rem, -0.125rem, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fr-route-enter-lesson-forward {
+  from {
+    opacity: 0;
+    transform: translate3d(0.625rem, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fr-route-enter-lesson-back {
+  from {
+    opacity: 0;
+    transform: translate3d(-0.625rem, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fr-route-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes fr-completion-mascot-celebrate {
   0% {
     transform: translateY(0) rotate(0deg);
@@ -479,6 +537,38 @@ body {
     animation-name: fr-lesson-card-enter-back;
   }
 
+  .fr-route-transition {
+    animation-fill-mode: both;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: opacity, transform;
+  }
+
+  .fr-route-transition--learning-forward {
+    animation-duration: 220ms;
+    animation-name: fr-route-enter-forward;
+  }
+
+  .fr-route-transition--learning-back {
+    animation-duration: 190ms;
+    animation-name: fr-route-enter-back;
+  }
+
+  .fr-route-transition--lesson-forward {
+    animation-duration: 190ms;
+    animation-name: fr-route-enter-lesson-forward;
+  }
+
+  .fr-route-transition--lesson-back {
+    animation-duration: 180ms;
+    animation-name: fr-route-enter-lesson-back;
+  }
+
+  .fr-route-transition--profile-fade {
+    animation-duration: 150ms;
+    animation-name: fr-route-fade;
+    animation-timing-function: ease-out;
+  }
+
   .fr-completion-card-rise {
     animation: fr-completion-card-rise 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
@@ -528,6 +618,7 @@ body {
   @media (prefers-reduced-motion: reduce) {
     .fr-completion-card-rise,
     .fr-lesson-card-transition,
+    .fr-route-transition,
     .fr-completion-mascot-celebrate,
     .fr-completion-progress-fill,
     .fr-compass-dot,

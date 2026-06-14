@@ -2,8 +2,8 @@ import type { ImgHTMLAttributes } from 'react'
 
 import { cn } from '@/lib/utils'
 
-export const FINPULSE_MASCOT_SRC = '/assets/mascot/finpulse-mascot.png'
-export const FINPULSE_MASCOT_ALT = 'Дружелюбный кремово-голубой маскот ФинПульс в виде фенека с компасом.'
+const FINPULSE_MASCOT_SRC = '/assets/mascot/finpulse-mascot.png'
+const FINPULSE_MASCOT_ALT = 'Дружелюбный кремово-голубой маскот ФинПульс в виде фенека с компасом.'
 
 type MascotSize = 'xs' | 'sm' | 'md' | 'lg'
 type MascotVariant = 'avatar' | 'inline' | 'empty' | 'welcome' | 'completion'

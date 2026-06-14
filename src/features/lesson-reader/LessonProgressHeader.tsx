@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 
 export function LessonProgressHeader({
   backTo,
+  backState,
   backLabel,
   context,
   title,
@@ -14,6 +15,7 @@ export function LessonProgressHeader({
   isSavedComplete,
 }: {
   backTo: string
+  backState?: unknown
   backLabel: string
   context: string
   title: string
@@ -31,6 +33,7 @@ export function LessonProgressHeader({
           <Link
             aria-label={backLabel}
             className="flex size-11 items-center justify-center rounded-xl text-[var(--fr-text-secondary)] transition-[background-color,color,box-shadow] hover:bg-[var(--fr-surface-soft)] hover:text-[var(--fr-text-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
+            state={backState}
             to={backTo}
           >
             <ChevronLeft aria-hidden="true" />

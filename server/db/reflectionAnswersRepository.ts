@@ -8,7 +8,7 @@ import {
   toTimestampParam,
 } from './query'
 
-export type ReflectionCardType = 'reflection' | 'artifact'
+type ReflectionCardType = 'reflection' | 'artifact'
 
 export type ReflectionAnswerUpsert = {
   userId: string

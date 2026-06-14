@@ -2,7 +2,7 @@ import type { Pool, QueryResult, QueryResultRow } from 'pg'
 
 export type QueryValues = unknown[]
 
-export type JsonPrimitive = string | number | boolean | null
+type JsonPrimitive = string | number | boolean | null
 export type JsonObject = {
   [key: string]: JsonValue
 }

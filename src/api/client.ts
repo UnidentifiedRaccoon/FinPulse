@@ -11,7 +11,7 @@ export type ApiUser = {
   createdAt: string
 }
 
-export type ProgressItem = {
+type ProgressItem = {
   viewed: boolean
   completed: boolean
   viewedAt: string | null
@@ -19,11 +19,11 @@ export type ProgressItem = {
   updatedAt: string
 }
 
-export type LessonProgressItem = ProgressItem & {
+type LessonProgressItem = ProgressItem & {
   lessonSlug: string
 }
 
-export type CardProgressItem = ProgressItem & {
+type CardProgressItem = ProgressItem & {
   cardId: string
 }
 

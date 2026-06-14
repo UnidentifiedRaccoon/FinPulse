@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft } from 'lucide-react'
-import { Link, Navigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useNavigationType, useParams } from 'react-router'
 
 import { api, type ProgressResponse } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
@@ -9,6 +9,8 @@ import { getOrderedLevels } from '@/content/order'
 import { LessonPathMap, LevelTransitionCard } from '@/features/program-navigation/LessonPathMap'
 import { buildLevelLearningPath } from '@/features/program-navigation/learningPath'
 import { buildLessonPathSections, type LessonPathSection } from '@/features/program-navigation/lessonPathSections'
+import { PathPageSkeleton } from '@/shared/ui/RouteLoadingSkeletons'
+import { usePathReturnScroll } from '@/shared/usePathReturnScroll'
 
 const EMPTY_SECTIONS: LessonPathSection[] = []
 const SECTION_ACTIVATION_RATIO = 0.35
@@ -16,6 +18,8 @@ const SECTION_ACTIVATION_MAX_PX = 260
 
 export function LevelPage({ progress }: { progress: ProgressResponse | null }) {
   const { levelSlug } = useParams()
+  const location = useLocation()
+  const navigationType = useNavigationType()
   const levelQuery = useApiQuery(() => api.getLevel(levelSlug ?? ''), [levelSlug])
   const programQuery = useApiQuery(api.getProgram, [])
   const levelPathState = useMemo(() => {
@@ -33,12 +37,19 @@ export function LevelPage({ progress }: { progress: ProgressResponse | null }) {
   const sectionIds = useMemo(() => sections.map((section) => section.id), [sections])
   const scrollActiveSectionId = useScrollActiveSectionId(sectionIds)
 
+  usePathReturnScroll({
+    isReady: levelQuery.status === 'success',
+    navigationType,
+    pathname: location.pathname,
+    state: location.state,
+  })
+
   if (!levelSlug) {
     return <Navigate to="/" replace />
   }
 
   if (levelQuery.status === 'loading') {
-    return <PageState title="Загружаем уровень" />
+    return <PathPageSkeleton backLabel="Вернуться к уровням" backTo="/program" variant="level" />
   }
 
   if (levelQuery.status === 'error') {

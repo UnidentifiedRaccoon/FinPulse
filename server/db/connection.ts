@@ -123,10 +123,6 @@ function logIdleClientError(error: Error) {
   console.warn('PostgreSQL idle client error', error)
 }
 
-export function resolveDatabaseUrl(env: DatabaseEnvironment = process.env): string | undefined {
-  return env.FINPULSE_DATABASE_URL ?? env.DATABASE_URL ?? resolveDatabaseUrlFromParts(env) ?? (env.NODE_ENV === 'production' ? undefined : DEFAULT_LOCAL_DATABASE_URL)
-}
-
 export async function resolveDatabaseUrlWithSecrets(env: DatabaseEnvironment = process.env): Promise<string | undefined> {
   const configuredUrl = env.FINPULSE_DATABASE_URL ?? env.DATABASE_URL ?? resolveDatabaseUrlFromParts(env)
 

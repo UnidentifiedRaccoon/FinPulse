@@ -314,7 +314,7 @@ const levelRefSchema = z.object({
   path: z.string().min(1),
 }).strict()
 
-export const programManifestSchema = z.object({
+const programManifestSchema = z.object({
   schemaVersion: z.literal(1),
   id: z.string().min(1),
   slug: slugSchema,
@@ -331,11 +331,6 @@ export const programSchema = programManifestSchema.extend({
   levels: z.array(levelSchema).min(1),
 }).strict()
 
-export type ProgramManifest = z.infer<typeof programManifestSchema>
-export type LevelRef = z.infer<typeof levelRefSchema>
-export type LevelFile = z.infer<typeof levelFileSchema>
-export type SectionRef = z.infer<typeof sectionRefSchema>
-export type SectionFile = z.infer<typeof sectionFileSchema>
 export type Program = z.infer<typeof programSchema>
 export type Level = Program['levels'][number]
 export type Section = Level['sections'][number]

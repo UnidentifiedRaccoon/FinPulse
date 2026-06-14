@@ -2,12 +2,13 @@ import { api, type ProgressResponse } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
 import { buildProgramLearningPath } from '@/features/program-navigation/learningPath'
 import { LevelPathNode } from '@/features/program-navigation/LevelPathNode'
+import { ProgramOverviewSkeleton } from '@/shared/ui/RouteLoadingSkeletons'
 
 export function ProgramOverviewPage({ progress }: { progress: ProgressResponse | null }) {
   const programQuery = useApiQuery(api.getProgram, [])
 
   if (programQuery.status === 'loading') {
-    return <PageState title="Загружаем программу" />
+    return <ProgramOverviewSkeleton />
   }
 
   if (programQuery.status === 'error') {

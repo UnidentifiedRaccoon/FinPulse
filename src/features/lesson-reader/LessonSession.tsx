@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import type { Card } from '@/content/program'
 import { getOrderedCards } from '@/content/order'
 import { Mascot } from '@/shared/ui/Mascot'
+import { createLessonReturnState } from '@/shared/routeTransitions'
 
 import { LessonBottomAction } from './LessonBottomAction'
 import { LessonCardFrame } from './LessonCardFrame'
@@ -78,11 +79,7 @@ export function LessonSession({
   const [reflectionStates, setReflectionStates] = useState<Record<string, ReflectionState>>({})
   const [artifactStates, setArtifactStates] = useState<Record<string, ArtifactState>>({})
   const viewedCardIdsRef = useRef(new Set<string>())
-  const lessonScreenRef = useRef<HTMLElement | null>(null)
   const completionPanelRef = useRef<HTMLElement | null>(null)
-  const setLessonScreenElement = useCallback((element: HTMLElement | null) => {
-    lessonScreenRef.current = element
-  }, [])
   const setCompletionPanelElement = useCallback((element: HTMLElement | null) => {
     completionPanelRef.current = element
   }, [])
@@ -93,6 +90,7 @@ export function LessonSession({
   const context = formatLessonHeaderContext(details.level.title, details.section.title)
   const lessonGoal = details.lesson.learningGoal
   const showLessonIntro = activeIndex === 0 && Boolean(lessonGoal)
+  const lessonReturnState = useMemo(() => createLessonReturnState(details.lesson.slug), [details.lesson.slug])
 
   useEffect(() => {
     if (!activeCard || !onCardViewed || viewedCardIdsRef.current.has(activeCard.id)) return
@@ -101,7 +99,7 @@ export function LessonSession({
   }, [activeCard, onCardViewed])
 
   useLayoutEffect(() => {
-    resetLessonScreenScroll(lessonScreenRef.current)
+    resetLessonScreenScroll()
   }, [activeCard?.id])
 
   useLayoutEffect(() => {
@@ -111,10 +109,7 @@ export function LessonSession({
 
   if (!activeCard) {
     return (
-      <section
-        className="mx-auto w-full max-w-[480px] rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5"
-        ref={setLessonScreenElement}
-      >
+      <section className="mx-auto w-full max-w-[480px] rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5">
         <h1 className="text-xl font-bold text-[var(--fr-text-primary)]">В уроке пока нет карточек</h1>
         <p className="mt-1 text-sm leading-6 text-[var(--fr-text-secondary)]">
           Материалы появятся после обновления программы.
@@ -247,12 +242,10 @@ export function LessonSession({
       : `fr-lesson-card-transition fr-lesson-card-transition--${cardTransition}`
 
   return (
-    <article
-      className="flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] sm:rounded-3xl"
-      ref={setLessonScreenElement}
-    >
+    <article className="flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] sm:rounded-3xl">
       <LessonProgressHeader
         backLabel={`Вернуться к уровню ${details.level.title}`}
+        backState={lessonReturnState}
         backTo={`/levels/${details.level.slug}`}
         context={context}
         current={currentPosition}
@@ -286,6 +279,7 @@ export function LessonSession({
             isMascotLoaded={isCompletionMascotLoaded}
             onMascotLoad={() => setCompletionMascotLoaded(true)}
             rootRef={setCompletionPanelElement}
+            returnState={lessonReturnState}
             total={cards.length}
           />
         ) : null}
@@ -353,6 +347,7 @@ function InlineLessonCompletion({
   isMascotLoaded,
   onMascotLoad,
   rootRef,
+  returnState,
 }: {
   details: LessonDetails
   current: number
@@ -360,6 +355,7 @@ function InlineLessonCompletion({
   isMascotLoaded: boolean
   onMascotLoad: () => void
   rootRef: (element: HTMLElement | null) => void
+  returnState: ReturnType<typeof createLessonReturnState>
 }) {
   const completionDescription = details.next
     ? 'Твой результат сохранён. Можно перейти к следующему уроку или вернуться к списку уроков.'
@@ -415,12 +411,14 @@ function InlineLessonCompletion({
             </Link>
           </Button>
           <Button asChild className="min-h-12 rounded-xl" variant="outline">
-            <Link to={`/levels/${details.level.slug}`}>К списку уроков</Link>
+            <Link state={returnState} to={`/levels/${details.level.slug}`}>
+              К списку уроков
+            </Link>
           </Button>
         </div>
       ) : (
         <Button asChild className="min-h-12 rounded-xl">
-          <Link to={`/levels/${details.level.slug}`}>
+          <Link state={returnState} to={`/levels/${details.level.slug}`}>
             К списку уроков
             <ArrowRight data-icon="inline-end" />
           </Link>
@@ -850,8 +848,11 @@ function scrollFeedbackIntoView(cardId: string) {
   }, 0)
 }
 
-function resetLessonScreenScroll(element: HTMLElement | null) {
-  scrollElementIntoView(element, 'start')
+function resetLessonScreenScroll() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'auto',
+  })
 }
 
 function scrollElementIntoView(element: HTMLElement | null, block: ScrollLogicalPosition) {

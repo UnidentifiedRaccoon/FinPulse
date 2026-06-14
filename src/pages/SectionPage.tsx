@@ -1,5 +1,5 @@
 import { ChevronLeft } from 'lucide-react'
-import { Link, Navigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useNavigationType, useParams } from 'react-router'
 
 import { api, type ProgressResponse } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
@@ -7,17 +7,28 @@ import { Button } from '@/components/ui/button'
 import { LessonPathMap } from '@/features/program-navigation/LessonPathMap'
 import { buildSectionLearningPath } from '@/features/program-navigation/learningPath'
 import { buildLessonPathSections } from '@/features/program-navigation/lessonPathSections'
+import { PathPageSkeleton } from '@/shared/ui/RouteLoadingSkeletons'
+import { usePathReturnScroll } from '@/shared/usePathReturnScroll'
 
 export function SectionPage({ progress }: { progress: ProgressResponse | null }) {
   const { levelSlug, sectionSlug } = useParams()
+  const location = useLocation()
+  const navigationType = useNavigationType()
   const sectionQuery = useApiQuery(() => api.getSection(sectionSlug ?? ''), [sectionSlug])
+
+  usePathReturnScroll({
+    isReady: sectionQuery.status === 'success',
+    navigationType,
+    pathname: location.pathname,
+    state: location.state,
+  })
 
   if (!levelSlug || !sectionSlug) {
     return <Navigate to="/" replace />
   }
 
   if (sectionQuery.status === 'loading') {
-    return <PageState title="Загружаем раздел" />
+    return <PathPageSkeleton backLabel="Вернуться к уровню" backTo={`/levels/${levelSlug}`} variant="section" />
   }
 
   if (sectionQuery.status === 'error') {

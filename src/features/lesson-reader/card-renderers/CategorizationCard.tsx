@@ -452,7 +452,7 @@ function getNextUnassignedCategorizationIndex(
   return orderedIndexes.find((index) => !selectedCategoryIdsByItemId[card.items[index].id]) ?? activeIndex
 }
 
-export function CategorizationFeedback({
+function CategorizationFeedback({
   card,
   id,
   state,

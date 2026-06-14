@@ -218,14 +218,14 @@ export const lessonFixture = {
   ],
 } satisfies Lesson
 
-export const completedLessonFixture = {
+const completedLessonFixture = {
   ...lessonFixture,
   id: 'story-lesson-completed',
   slug: 'money-goal-completed',
   title: 'Цель уже собрана',
 } satisfies Lesson
 
-export const lockedLessonFixture = {
+const lockedLessonFixture = {
   ...lessonFixture,
   id: 'story-lesson-locked',
   slug: 'money-goal-locked',
