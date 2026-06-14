@@ -623,6 +623,12 @@ Allowed:
 - card appearance from `8-12px`;
 - subtle feedback highlight.
 
+Route transitions:
+- learning drill-in (`program -> level -> section -> lesson`) uses a restrained `180-230ms` fade with small forward offset;
+- learning back navigation mirrors the direction and stays slightly shorter;
+- lesson-to-lesson navigation uses the same side-motion language as lesson cards, without a celebration treatment;
+- profile navigation is opacity-only so the profile feels adjacent to learning, not deeper in the lesson path.
+
 Avoid:
 - spinning rewards;
 - aggressive confetti;

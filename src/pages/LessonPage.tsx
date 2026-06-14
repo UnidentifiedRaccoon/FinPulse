@@ -4,6 +4,7 @@ import { Navigate, useParams } from 'react-router'
 import { api, type ApiUser, type ProgressResponse, type ReflectionAnswerPayload } from '@/api/client'
 import { useApiQuery } from '@/api/useApiQuery'
 import { LessonSession } from '@/features/lesson-reader/LessonSession'
+import { LessonPageSkeleton } from '@/shared/ui/RouteLoadingSkeletons'
 
 export function LessonPage({
   user,
@@ -48,7 +49,7 @@ export function LessonPage({
   }
 
   if (lessonQuery.status === 'loading') {
-    return <PageState title="Загружаем урок" />
+    return <LessonPageSkeleton />
   }
 
   if (lessonQuery.status === 'error') {

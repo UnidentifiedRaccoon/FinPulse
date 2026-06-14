@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import type { Level } from '@/content/program'
 import { cn } from '@/lib/utils'
+import { getLessonNodeElementId, rememberPathScrollPosition } from '@/shared/routeTransitions'
 
 import type { LessonPathItem, PathItemState } from './learningPath'
 import type { LessonPathSection } from './lessonPathSections'
@@ -209,6 +210,8 @@ function LessonNode({
             state === 'current' ? 'pt-12' : 'pt-2',
             offset,
           )}
+          data-lesson-node-slug={lesson.slug}
+          id={getLessonNodeElementId(lesson.slug)}
           type="button"
         >
           {state === 'current' ? (
@@ -296,7 +299,9 @@ function LessonNode({
                   accent.hover,
                 )}
               >
-                <Link to={`/lessons/${lesson.slug}`}>{primaryActionLabel}</Link>
+                <Link onClick={() => rememberPathScrollPosition()} to={`/lessons/${lesson.slug}`}>
+                  {primaryActionLabel}
+                </Link>
               </Button>
               <DialogClose asChild>
                 <Button className="min-h-11 w-full rounded-2xl" variant="outline">

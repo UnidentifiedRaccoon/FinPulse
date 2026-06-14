@@ -229,7 +229,7 @@ function getMultiSelectDotState({
   return 'default'
 }
 
-export function MultiSelectFeedback({
+function MultiSelectFeedback({
   card,
   id,
   state,

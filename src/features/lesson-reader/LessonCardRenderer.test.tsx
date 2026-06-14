@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
-import { vi } from 'vitest'
+import { useEffect } from 'react'
+import { MemoryRouter, useLocation, type Location } from 'react-router'
+import { afterEach, beforeEach, vi } from 'vitest'
 
 import type { LessonDetails } from '@/api/client'
 import type { Card, Lesson, Level, Section } from '@/content/program'
@@ -9,6 +10,17 @@ import type { Card, Lesson, Level, Section } from '@/content/program'
 import { LessonSession } from './LessonSession'
 
 describe('LessonSession', () => {
+  let originalWindowScrollTo: typeof window.scrollTo
+
+  beforeEach(() => {
+    originalWindowScrollTo = window.scrollTo
+    window.scrollTo = vi.fn() as typeof window.scrollTo
+  })
+
+  afterEach(() => {
+    window.scrollTo = originalWindowScrollTo
+  })
+
   it('renders the first card in a focused session', () => {
     renderSession(
       [
@@ -286,7 +298,8 @@ describe('LessonSession', () => {
 
   it('resets the lesson screen scroll when moving between cards', async () => {
     const user = userEvent.setup()
-    const { restore, scrollIntoView } = mockElementScrollIntoView()
+    const { restore: restoreScrollIntoView, scrollIntoView } = mockElementScrollIntoView()
+    const { restore: restoreScrollTo, scrollTo } = mockWindowScrollTo()
 
     try {
       renderSession([
@@ -306,16 +319,19 @@ describe('LessonSession', () => {
         },
       ])
 
+      scrollTo.mockClear()
       scrollIntoView.mockClear()
       await user.click(screen.getByRole('button', { name: 'Далее' }))
 
       expect(screen.getByRole('heading', { name: 'Итог' })).toBeInTheDocument()
-      expect(scrollIntoView).toHaveBeenCalledWith({
-        block: 'start',
+      expect(scrollTo).toHaveBeenCalledWith({
+        top: 0,
         behavior: 'auto',
       })
+      expect(scrollIntoView).not.toHaveBeenCalled()
     } finally {
-      restore()
+      restoreScrollTo()
+      restoreScrollIntoView()
     }
   })
 
@@ -1012,6 +1028,32 @@ describe('LessonSession', () => {
 
     expect(mascot).toHaveAttribute('data-loaded', 'true')
   })
+
+  it('passes the focused lesson state through the completion lesson-list action', async () => {
+    const user = userEvent.setup()
+    const locations: Location[] = []
+
+    renderSession(
+      [
+        {
+          id: 'card-summary',
+          type: 'summary',
+          order: 1,
+          title: 'Итог',
+          points: ['Пункт'],
+        },
+      ],
+      { onLocationChange: (location) => locations.push(location) },
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Завершить' }))
+    await user.click(screen.getByRole('link', { name: 'К списку уроков' }))
+
+    await waitFor(() => {
+      expect(locations.at(-1)?.pathname).toBe('/levels/level-1')
+    })
+    expect(locations.at(-1)?.state).toEqual({ focusLessonSlug: 'test-lesson' })
+  })
 })
 
 function renderSession(
@@ -1025,6 +1067,7 @@ function renderSession(
     onLessonCompleted: (lessonSlug: string) => void | Promise<void>
     levelTitle: string
     sectionTitle: string
+    onLocationChange: (location: Location) => void
   }> = {},
 ) {
   const details = createLessonDetails(cards, {
@@ -1034,7 +1077,7 @@ function renderSession(
   })
 
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={['/lessons/test-lesson']}>
       <LessonSession
         canSaveProgress={overrides.canSaveProgress ?? false}
         details={details}
@@ -1044,8 +1087,19 @@ function renderSession(
         onReflectionAnswerSave={overrides.onReflectionAnswerSave}
         onLessonCompleted={overrides.onLessonCompleted}
       />
+      {overrides.onLocationChange ? <LocationProbe onChange={overrides.onLocationChange} /> : null}
     </MemoryRouter>,
   )
+}
+
+function LocationProbe({ onChange }: { onChange: (location: Location) => void }) {
+  const location = useLocation()
+
+  useEffect(() => {
+    onChange(location)
+  }, [location, onChange])
+
+  return null
 }
 
 function mockElementScrollIntoView() {
@@ -1063,6 +1117,20 @@ function mockElementScrollIntoView() {
       }
 
       delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>).scrollIntoView
+    },
+  }
+}
+
+function mockWindowScrollTo() {
+  const scrollTo = vi.fn()
+  const originalScrollTo = window.scrollTo
+
+  window.scrollTo = scrollTo as typeof window.scrollTo
+
+  return {
+    scrollTo,
+    restore: () => {
+      window.scrollTo = originalScrollTo
     },
   }
 }

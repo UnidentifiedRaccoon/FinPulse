@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto'
 import type { AppDatabase } from '../db/connection'
 
 export const SESSION_COOKIE_NAME = 'finpulse_session'
-export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 
 export type SessionUser = {
   id: string

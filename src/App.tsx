@@ -1,16 +1,17 @@
+import type { ReactNode } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { CircleUserRound, LogIn, LogOut, Map, type LucideIcon } from 'lucide-react'
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate, useNavigationType } from 'react-router'
 
 import { api, ApiError, type ApiUser, type ProgressResponse, type ReflectionAnswerPayload, type ReflectionAnswersResponse } from '@/api/client'
 import { LessonPage } from '@/pages/LessonPage'
 import { EntryPage } from '@/pages/EntryPage'
 import { LevelPage } from '@/pages/LevelPage'
-import { MobileLessonCardPaddingExperimentPage } from '@/pages/MobileLessonCardPaddingExperimentPage'
 import { ProgramOverviewPage } from '@/pages/ProgramOverviewPage'
 import { SectionPage } from '@/pages/SectionPage'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { getRouteTransitionKind, type RouteTransitionKind } from '@/shared/routeTransitions'
 
 const LOGOUT_MARKER_KEY = 'finpulse:logged-out'
 
@@ -268,11 +269,27 @@ function AppShell({
 }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const navigationType = useNavigationType()
   const isLessonRoute = location.pathname.startsWith('/lessons/')
   const isPathRoute = location.pathname.startsWith('/levels/')
-  const isStandaloneDesignRoute = location.pathname === '/design/lesson-card-full-width'
-  const showAuthenticatedShell = Boolean(user) && !isStandaloneDesignRoute
+  const showAuthenticatedShell = Boolean(user)
   const showMobileNavigation = showAuthenticatedShell && !isLessonRoute
+  const [routeTransitionState, setRouteTransitionState] = useState<{
+    pathname: string
+    transition: RouteTransitionKind
+  }>(() => ({
+    pathname: location.pathname,
+    transition: 'none',
+  }))
+  let routeTransition = routeTransitionState.transition
+  if (routeTransitionState.pathname !== location.pathname) {
+    const nextRouteTransitionState = {
+      pathname: location.pathname,
+      transition: getRouteTransitionKind(routeTransitionState.pathname, location.pathname, navigationType),
+    }
+    setRouteTransitionState(nextRouteTransitionState)
+    routeTransition = nextRouteTransitionState.transition
+  }
   const handleLogoutAndRedirect = useCallback(async () => {
     const didLogout = await onLogout()
     if (didLogout) {
@@ -300,9 +317,7 @@ function AppShell({
       <main
         className={cn(
           'mx-auto w-full',
-          isStandaloneDesignRoute
-            ? 'max-w-none px-0 py-0'
-            : showAuthenticatedShell && isPathRoute
+          showAuthenticatedShell && isPathRoute
               ? 'max-w-[720px] px-0 py-0'
               : showAuthenticatedShell && isLessonRoute
                 ? 'max-w-none px-0 py-0 lg:px-8 lg:py-6'
@@ -320,46 +335,44 @@ function AppShell({
               </p>
             ))
           : null}
-        {isStandaloneDesignRoute ? (
-          <Routes>
-            <Route path="/design/lesson-card-full-width" element={<MobileLessonCardPaddingExperimentPage />} />
-          </Routes>
-        ) : showAuthenticatedShell ? (
-          <Routes>
-            <Route path="/" element={<Navigate to="/program" replace />} />
-            <Route
-              path="/profile"
-              element={
-                <EntryPage
-                  authError={authError}
-                  isAuthBusy={isAuthBusy}
-                  isAuthReady={isAuthReady}
-                  onLogin={onLogin}
-                  onLogout={handleLogoutAndRedirect}
-                  onRegister={onRegister}
-                  progress={progress}
-                  reflectionAnswers={reflectionAnswers}
-                  user={user}
-                />
-              }
-            />
-            <Route path="/program" element={<ProgramOverviewPage progress={progress} />} />
-            <Route path="/levels/:levelSlug" element={<LevelPage progress={progress} />} />
-            <Route path="/levels/:levelSlug/sections/:sectionSlug" element={<SectionPage progress={progress} />} />
-            <Route
-              path="/lessons/:lessonSlug"
-              element={
-                <LessonPage
-                  markCardProgress={markCardProgress}
-                  markLessonProgress={markLessonProgress}
-                  progress={progress}
-                  saveReflectionAnswer={saveReflectionAnswer}
-                  user={user}
-                />
-              }
-            />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+        {showAuthenticatedShell ? (
+          <RouteTransitionFrame pathname={location.pathname} transition={routeTransition}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/program" replace />} />
+              <Route
+                path="/profile"
+                element={
+                  <EntryPage
+                    authError={authError}
+                    isAuthBusy={isAuthBusy}
+                    isAuthReady={isAuthReady}
+                    onLogin={onLogin}
+                    onLogout={handleLogoutAndRedirect}
+                    onRegister={onRegister}
+                    progress={progress}
+                    reflectionAnswers={reflectionAnswers}
+                    user={user}
+                  />
+                }
+              />
+              <Route path="/program" element={<ProgramOverviewPage progress={progress} />} />
+              <Route path="/levels/:levelSlug" element={<LevelPage progress={progress} />} />
+              <Route path="/levels/:levelSlug/sections/:sectionSlug" element={<SectionPage progress={progress} />} />
+              <Route
+                path="/lessons/:lessonSlug"
+                element={
+                  <LessonPage
+                    markCardProgress={markCardProgress}
+                    markLessonProgress={markLessonProgress}
+                    progress={progress}
+                    saveReflectionAnswer={saveReflectionAnswer}
+                    user={user}
+                  />
+                }
+              />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </RouteTransitionFrame>
         ) : (
           <EntryPage
             authError={authError}
@@ -408,6 +421,30 @@ const accountNavigationItem: NavigationItem = {
   to: '/profile',
   Icon: CircleUserRound,
   isActive: (pathname) => pathname === '/profile',
+}
+
+function RouteTransitionFrame({
+  children,
+  pathname,
+  transition,
+}: {
+  children: ReactNode
+  pathname: string
+  transition: RouteTransitionKind
+}) {
+  return (
+    <div
+      className={cn(
+        transition !== 'none' && 'fr-route-transition',
+        transition !== 'none' && `fr-route-transition--${transition}`,
+      )}
+      data-route-pathname={pathname}
+      data-route-transition={transition}
+      key={pathname}
+    >
+      {children}
+    </div>
+  )
 }
 
 function NotFoundPage() {

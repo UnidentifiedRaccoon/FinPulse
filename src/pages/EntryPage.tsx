@@ -2,11 +2,13 @@ import type { ReactNode } from 'react'
 import {
   BookOpenCheck,
   CalendarDays,
+  CircleHelp,
   ClipboardCheck,
   Fingerprint,
   Layers3,
   LogOut,
   Mail,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -14,6 +16,7 @@ import { api, type ApiUser, type ProgressResponse, type ReflectionAnswer, type R
 import type { Program } from '@/content/program'
 import { useApiQuery } from '@/api/useApiQuery'
 import { Button } from '@/components/ui/button'
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { AuthControls } from '@/features/auth/AuthControls'
 import { buildProgramLearningPath, getProgressPercent } from '@/features/program-navigation/learningPath'
@@ -270,13 +273,15 @@ function PersonalAnswerLessonGroup({ group }: { group: PersonalAnswerGroup }) {
 
 function PersonalAnswerItem({ answer }: { answer: ReflectionAnswer }) {
   const entries = getAnswerEntries(answer)
+  const questionId = `${answer.cardId}-profile-question`
 
   return (
     <div className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0">
-      <div className="min-w-0">
-        <h4 className="text-base font-black leading-6 tracking-normal text-[var(--fr-text-primary)]">
+      <div className="flex min-w-0 items-center gap-1.5">
+        <h4 className="min-w-0 text-base font-black leading-6 tracking-normal text-[var(--fr-text-primary)]">
           {answer.cardTitle ?? (answer.cardType === 'artifact' ? 'Рабочий блок' : 'Ответ')}
         </h4>
+        <QuestionTooltip id={questionId} prompt={answer.prompt} />
       </div>
 
       <dl className="flex flex-col gap-2">
@@ -291,13 +296,46 @@ function PersonalAnswerItem({ answer }: { answer: ReflectionAnswer }) {
         ))}
       </dl>
 
-      <details className="rounded-2xl bg-[var(--fr-surface-soft)] px-3 py-2 text-sm leading-6 text-[var(--fr-text-secondary)]">
-        <summary className="cursor-pointer select-none font-bold text-[var(--fr-text-primary)] marker:text-[var(--fr-color-sky-600)]">
-          Вопрос
-        </summary>
-        <p className="mt-2">{answer.prompt}</p>
-      </details>
     </div>
+  )
+}
+
+function QuestionTooltip({ id, prompt }: { id: string; prompt: string }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          aria-label="Вспомнить вопрос"
+          className="inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[var(--fr-color-sky-600)] transition hover:bg-[var(--fr-color-sky-50)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--fr-color-sky-500)] focus-visible:ring-offset-2"
+          type="button"
+        >
+          <CircleHelp aria-hidden="true" className="size-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        aria-label="Вопрос"
+        className="w-[min(19rem,calc(100vw-2rem))] p-3 text-sm font-medium leading-6"
+        collisionPadding={16}
+        id={id}
+        role="dialog"
+        side="bottom"
+        sideOffset={8}
+      >
+        <div className="flex items-start gap-2">
+          <p className="min-w-0">{prompt}</p>
+          <PopoverClose asChild>
+            <button
+              aria-label="Закрыть вопрос"
+              className="-mr-1 -mt-1 inline-flex size-7 shrink-0 items-center justify-center rounded-full text-[var(--fr-text-tertiary)] transition hover:bg-[var(--fr-surface-soft)] hover:text-[var(--fr-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--fr-color-sky-500)] focus-visible:ring-offset-2"
+              type="button"
+            >
+              <X aria-hidden="true" className="size-4" />
+            </button>
+          </PopoverClose>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 
