@@ -24,7 +24,7 @@ frontend routes, and persistence context use this hierarchy directly. Old
 src/content/
   program.json
   levels/
-    t1_start/
+    level_1_start/
       level.json
       sections/
         section_01_money_and_operations.json
@@ -234,14 +234,14 @@ For `artifact` cards with `variants`, use `customOption` when the learner may wr
 
 The reader renders artifact `variants` plus `customOption` as a selectable group when `customOption` is present. When the custom row is selected, the saved answer stores the learner's typed text in the existing `selectedVariant` field.
 
-## T1 lesson contract
+## Level 1 lesson contract
 
-Current T1 lessons use a fixed eight-card runtime architecture. General card
+Current Level 1 lessons use a fixed eight-card runtime architecture. General card
 types such as `callout`, `multi_select`, and `checklist` remain in the content
-model for older or non-T1 material, but they are not valid for new T1 lessons
+model for older or non-Level 1 material, but they are not valid for new Level 1 lessons
 unless a later content-model decision changes this contract.
 
-Every T1 lesson must have exactly eight cards with orders `1` through `8`:
+Every Level 1 lesson must have exactly eight cards with orders `1` through `8`:
 
 | Order | Required type | Required checkability | Runtime rule |
 |---:|---|---|---|
@@ -254,9 +254,9 @@ Every T1 lesson must have exactly eight cards with orders `1` through `8`:
 | 7 | `artifact` | `mixed` | Micro-rule or first step with exactly two ready `variants` plus `customOption` / `Свой вариант`. Do not create reminders, schedules, or habit mechanics. |
 | 8 | `summary` | `subjective` | Navigator summary and bridge to the next lesson. |
 
-Each T1 card must include a stable `id`, `order`, `type`, `checkability`, and a
+Each Level 1 card must include a stable `id`, `order`, `type`, `checkability`, and a
 `sourceSection` ending with `/ Экран N`. `npm run check:content` enforces this
-contract for active `T1` runtime lessons.
+contract for active `L1` runtime lessons.
 
 ## Supplemental content
 
@@ -312,8 +312,8 @@ Validation checks:
 - ordered arrays are sorted and do not reuse `order`;
 - lessons contain cards;
 - card type-specific fields are present;
-- active T1 lessons contain exactly eight cards and match the required
-  screen-by-screen T1 architecture.
+- active Level 1 lessons contain exactly eight cards and match the required
+  screen-by-screen Level 1 architecture.
 
 ## Backend API policy
 

@@ -6,12 +6,12 @@
   "description": "Мобильный тренажёр финансовой грамотности, культуры и привычек.",
   "levels": [
     {
-      "id": "level_t1_start",
-      "slug": "t1-start",
-      "title": "T1 Старт",
+      "id": "level_1_start",
+      "slug": "level-1-start",
+      "title": "Уровень 1 · Старт",
       "description": "Первый уровень помогает увидеть реальные денежные привычки, начать фиксировать траты и сделать первые безопасные шаги.",
       "order": 1,
-      "path": "levels/t1_start/level.json"
+      "path": "levels/level_1_start/level.json"
     }
   ]
 }

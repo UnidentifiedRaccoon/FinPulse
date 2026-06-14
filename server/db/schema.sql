@@ -60,5 +60,110 @@ CREATE TABLE IF NOT EXISTS reflection_answers (
   PRIMARY KEY (user_id, card_id)
 );
 
+ALTER TABLE reflection_answers
+  ADD COLUMN IF NOT EXISTS level_slug text,
+  ADD COLUMN IF NOT EXISTS section_slug text,
+  ADD COLUMN IF NOT EXISTS level_title text,
+  ADD COLUMN IF NOT EXISTS section_title text;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = current_schema()
+      AND table_name = 'reflection_answers'
+      AND column_name = 'module_slug'
+  ) THEN
+    EXECUTE $migration$
+      UPDATE reflection_answers
+      SET level_slug = COALESCE(NULLIF(level_slug, ''), CASE WHEN module_slug = 't1-start' THEN 'level-1-start' ELSE module_slug END)
+      WHERE level_slug IS NULL OR level_slug = ''
+    $migration$;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = current_schema()
+      AND table_name = 'reflection_answers'
+      AND column_name = 'unit_slug'
+  ) THEN
+    EXECUTE $migration$
+      UPDATE reflection_answers
+      SET section_slug = COALESCE(NULLIF(section_slug, ''), unit_slug)
+      WHERE section_slug IS NULL OR section_slug = ''
+    $migration$;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = current_schema()
+      AND table_name = 'reflection_answers'
+      AND column_name = 'module_title'
+  ) THEN
+    EXECUTE $migration$
+      UPDATE reflection_answers
+      SET level_title = COALESCE(
+        NULLIF(level_title, ''),
+        CASE WHEN module_title = 'T1 Старт' THEN 'Уровень 1 · Старт' ELSE module_title END
+      )
+      WHERE level_title IS NULL OR level_title = ''
+    $migration$;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = current_schema()
+      AND table_name = 'reflection_answers'
+      AND column_name = 'unit_title'
+  ) THEN
+    EXECUTE $migration$
+      UPDATE reflection_answers
+      SET section_title = COALESCE(
+        NULLIF(section_title, ''),
+        CASE
+          WHEN unit_title = 'Юнит 1. Деньги и операции' THEN 'Раздел 1. Деньги и операции'
+          WHEN unit_title = 'Юнит 2. Планирование и управление' THEN 'Раздел 2. Планирование и управление'
+          ELSE unit_title
+        END
+      )
+      WHERE section_title IS NULL OR section_title = ''
+    $migration$;
+  END IF;
+END $$;
+
+UPDATE reflection_answers
+SET level_slug = 'level-1-start'
+WHERE level_slug IS NULL OR level_slug = '' OR level_slug = 't1-start';
+
+UPDATE reflection_answers
+SET section_slug = 'money-and-operations'
+WHERE section_slug IS NULL OR section_slug = '';
+
+UPDATE reflection_answers
+SET level_title = 'Уровень 1 · Старт'
+WHERE level_title IS NULL OR level_title = '' OR level_title = 'T1 Старт';
+
+UPDATE reflection_answers
+SET section_title = CASE
+  WHEN section_title IS NULL OR section_title = '' THEN 'Раздел 1. Деньги и операции'
+  WHEN section_title = 'Юнит 1. Деньги и операции' THEN 'Раздел 1. Деньги и операции'
+  WHEN section_title = 'Юнит 2. Планирование и управление' THEN 'Раздел 2. Планирование и управление'
+  ELSE section_title
+END;
+
+ALTER TABLE reflection_answers
+  ALTER COLUMN level_slug SET NOT NULL,
+  ALTER COLUMN section_slug SET NOT NULL,
+  ALTER COLUMN level_title SET NOT NULL,
+  ALTER COLUMN section_title SET NOT NULL,
+  DROP COLUMN IF EXISTS module_slug,
+  DROP COLUMN IF EXISTS unit_slug,
+  DROP COLUMN IF EXISTS module_title,
+  DROP COLUMN IF EXISTS unit_title;
+
 CREATE INDEX IF NOT EXISTS reflection_answers_user_updated_idx ON reflection_answers(user_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS reflection_answers_save_key_idx ON reflection_answers(save_key);

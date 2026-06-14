@@ -29,7 +29,7 @@ During work:
 - use the approved educational hierarchy Program -> Level -> Section ->
   Lesson -> Card in product/methodology/docs language; do not reintroduce
   `module`/`unit` content architecture or compatibility surfaces.
-- for new or changed T1 lessons, follow the exact eight-screen contract in
+- for new or changed Level 1 lessons, follow the exact eight-screen contract in
   docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md.
 
 After work:

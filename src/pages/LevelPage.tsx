@@ -78,7 +78,7 @@ export function LevelPage({ progress }: { progress: ProgressResponse | null }) {
         </h1>
       </header>
 
-      <div className="flex flex-col gap-8 px-4 pb-6 pt-7">
+      <div className="flex flex-col gap-8 pb-6 pt-7">
         <LessonPathMap levelOrder={level.order} sections={sections} />
 
         {programQuery.status !== 'loading' && (nextLevel || path.isComplete) ? (
@@ -166,7 +166,7 @@ function getPathSectionElementId(sectionId: string) {
 
 function PageState({ title, description }: { title: string; description?: string }) {
   return (
-    <section className="rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
+    <section className="w-full rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
       <h1 className="text-xl font-bold">{title}</h1>
       {description ? <p className="mt-1 text-sm leading-6 text-[var(--fr-text-secondary)]">{description}</p> : null}
     </section>

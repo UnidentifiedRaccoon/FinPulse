@@ -77,7 +77,7 @@ describe('content API contract', () => {
 
     try {
       const levelsResponse = await app.inject('/api/levels')
-      const levelResponse = await app.inject('/api/levels/t1-start')
+      const levelResponse = await app.inject('/api/levels/level-1-start')
 
       expect(levelsResponse.statusCode).toBe(200)
       expect(z.array(levelSchema).safeParse(levelsResponse.json()).success).toBe(true)
@@ -117,7 +117,7 @@ describe('content API contract', () => {
 
     try {
       const modulesResponse = await app.inject('/api/modules')
-      const moduleResponse = await app.inject('/api/modules/t1-start')
+      const moduleResponse = await app.inject('/api/modules/level-1-start')
       const unitResponse = await app.inject('/api/units/money-and-operations')
 
       expect(modulesResponse.statusCode).toBe(404)

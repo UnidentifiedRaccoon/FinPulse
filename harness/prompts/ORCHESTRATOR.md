@@ -33,7 +33,7 @@ Hard constraints:
 - Tailwind + shadcn/ui;
 - no accounts beyond accepted minimal learner auth, diagnostics, rewards,
   analytics dashboards, personalized recommendations, or SSR migration;
-- new or changed T1 lessons must use the accepted eight-screen architecture
+- new or changed Level 1 lessons must use the accepted eight-screen architecture
   from docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md.
 
 When spawning a subagent, provide:

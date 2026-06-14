@@ -69,7 +69,7 @@ export const LongRussianTitle: Story = {
   args: {
     backTo: `/levels/${levelFixture.slug}`,
     backLabel: `Вернуться к уровню ${levelFixture.title}`,
-    context: 'T1 Старт · Раздел 1. Деньги и операции',
+    context: 'Старт · Деньги и операции',
     title: 'Куда уходят деньги: первые денежные утечки без осуждения',
     current: 1,
     total: 7,

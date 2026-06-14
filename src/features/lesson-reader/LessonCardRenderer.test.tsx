@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
@@ -10,24 +10,33 @@ import { LessonSession } from './LessonSession'
 
 describe('LessonSession', () => {
   it('renders the first card in a focused session', () => {
-    renderSession([
+    renderSession(
+      [
+        {
+          id: 'card-theory',
+          type: 'theory',
+          order: 1,
+          title: 'Первый шаг',
+          body: 'Короткое объяснение.',
+        },
+        {
+          id: 'card-summary',
+          type: 'summary',
+          order: 2,
+          title: 'Итог',
+          points: ['Пункт'],
+        },
+      ],
       {
-        id: 'card-theory',
-        type: 'theory',
-        order: 1,
-        title: 'Первый шаг',
-        body: 'Короткое объяснение.',
+        levelTitle: 'Уровень 1 · Старт',
+        sectionTitle: 'Раздел 1. Деньги и операции',
       },
-      {
-        id: 'card-summary',
-        type: 'summary',
-        order: 2,
-        title: 'Итог',
-        points: ['Пункт'],
-      },
-    ])
+    )
 
     expect(screen.getByRole('heading', { name: 'Тестовый урок' })).toBeInTheDocument()
+    expect(screen.getByText('Старт · Деньги и операции')).toBeInTheDocument()
+    expect(screen.queryByText('Уровень 1. Старт · Раздел 1. Деньги и операции')).not.toBeInTheDocument()
+    expect(screen.queryByText('Уровень 1 · Старт · Раздел 1. Деньги и операции')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Первый шаг' })).toBeInTheDocument()
     expect(screen.getByText('1 из 2')).toBeInTheDocument()
     expect(screen.getByRole('progressbar', { name: 'Прогресс урока' })).toHaveAttribute('aria-valuenow', '50')
@@ -45,9 +54,13 @@ describe('LessonSession', () => {
     ])
 
     const goalCard = screen.getByRole('region', { name: 'Цель урока' })
+    const goalLabel = within(goalCard).getByText('Цель урока')
 
-    expect(within(goalCard).getByText('Цель урока')).toBeInTheDocument()
+    expect(goalLabel).toBeInTheDocument()
+    expect(goalLabel.className).toContain('bg-[var(--fr-color-sky-500)]')
     expect(within(goalCard).getByText('Сделать один маленький шаг.')).toBeInTheDocument()
+    expect(goalCard.className).toContain('border-[var(--fr-color-sky-500)]/35')
+    expect(goalCard.querySelector('svg')).toBeNull()
     expect(screen.queryByText('В этом уроке')).not.toBeInTheDocument()
     expect(screen.queryByText('Описание урока.')).not.toBeInTheDocument()
   })
@@ -200,6 +213,77 @@ describe('LessonSession', () => {
     expect(screen.getByText('2 из 2')).toBeInTheDocument()
   })
 
+  it('resets third-screen categorization practice after using the bottom back action', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-theory-one',
+        type: 'theory',
+        order: 1,
+        title: 'Первый шаг',
+        body: 'Короткое объяснение.',
+      },
+      {
+        id: 'card-theory-two',
+        type: 'theory',
+        order: 2,
+        title: 'Второй шаг',
+        body: 'Ещё одно объяснение.',
+      },
+      {
+        id: 'card-categorization-reset',
+        type: 'categorization',
+        order: 3,
+        title: 'Раздели траты',
+        question: 'Распредели траты по группам.',
+        categories: [
+          { id: 'mandatory', label: 'Обязательное' },
+          { id: 'desired', label: 'Желаемое' },
+        ],
+        items: [
+          { id: 'rent', label: 'Аренда квартиры', correctCategoryId: 'mandatory' },
+          { id: 'coffee', label: 'Кофе навынос', correctCategoryId: 'desired' },
+          { id: 'utilities', label: 'Оплата ЖКХ', correctCategoryId: 'mandatory' },
+        ],
+      },
+      {
+        id: 'card-summary',
+        type: 'summary',
+        order: 4,
+        title: 'Итог',
+        points: ['Пункт'],
+      },
+    ])
+
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+
+    expect(screen.getByRole('group', { name: 'Аренда квартиры' })).toBeInTheDocument()
+
+    await user.click(within(screen.getByRole('group', { name: 'Аренда квартиры' })).getByRole('radio', { name: 'Обязательное' }))
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Кофе навынос' })).toBeInTheDocument())
+
+    await user.click(within(screen.getByRole('group', { name: 'Кофе навынос' })).getByRole('radio', { name: 'Желаемое' }))
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Оплата ЖКХ' })).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Назад' }))
+
+    expect(screen.getByRole('heading', { name: 'Второй шаг' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+
+    const firstItem = screen.getByRole('group', { name: 'Аренда квартиры' })
+    expect(within(firstItem).getByRole('radio', { name: 'Обязательное' })).not.toBeChecked()
+    expect(screen.getByRole('button', { name: 'Проверить' })).toBeDisabled()
+
+    await user.click(within(firstItem).getByRole('radio', { name: 'Обязательное' }))
+
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Кофе навынос' })).toBeInTheDocument())
+    expect(screen.queryByRole('group', { name: 'Оплата ЖКХ' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Аренда квартиры: Обязательное' })).not.toBeInTheDocument()
+  })
+
   it('resets the lesson screen scroll when moving between cards', async () => {
     const user = userEvent.setup()
     const { restore, scrollIntoView } = mockElementScrollIntoView()
@@ -233,6 +317,44 @@ describe('LessonSession', () => {
     } finally {
       restore()
     }
+  })
+
+  it('uses directional side motion for next and back card transitions', async () => {
+    const user = userEvent.setup()
+    const { container } = renderSession([
+      {
+        id: 'card-theory',
+        type: 'theory',
+        order: 1,
+        title: 'Первый шаг',
+        body: 'Короткое объяснение.',
+      },
+      {
+        id: 'card-summary',
+        type: 'summary',
+        order: 2,
+        title: 'Итог',
+        points: ['Пункт'],
+      },
+    ])
+
+    expect(getLessonCardTransition(container)).toHaveAttribute('data-lesson-card-transition', 'none')
+    expect(getLessonCardTransition(container)).not.toHaveClass('fr-lesson-card-transition')
+
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+
+    expect(screen.getByRole('heading', { name: 'Итог' })).toBeInTheDocument()
+    expect(getLessonCardTransition(container)).toHaveAttribute('data-lesson-card-transition', 'forward')
+    expect(getLessonCardTransition(container)).toHaveClass(
+      'fr-lesson-card-transition',
+      'fr-lesson-card-transition--forward',
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Назад' }))
+
+    expect(screen.getByRole('heading', { name: 'Первый шаг' })).toBeInTheDocument()
+    expect(getLessonCardTransition(container)).toHaveAttribute('data-lesson-card-transition', 'back')
+    expect(getLessonCardTransition(container)).toHaveClass('fr-lesson-card-transition', 'fr-lesson-card-transition--back')
   })
 
   it('embeds supported video cards inside the lesson', async () => {
@@ -667,8 +789,8 @@ describe('LessonSession', () => {
     expect(screen.queryByRole('checkbox', { name: 'Трата 3: сумма и категория' })).not.toBeInTheDocument()
 
     const firstExpense = screen.getByRole('textbox', { name: 'Трата 1: сумма и категория' })
-    expect(screen.getByRole('textbox', { name: 'Трата 2: сумма и категория' })).toBeInTheDocument()
-    expect(screen.getByRole('textbox', { name: 'Трата 3: сумма и категория' })).toBeInTheDocument()
+    const secondExpense = screen.getByRole('textbox', { name: 'Трата 2: сумма и категория' })
+    const thirdExpense = screen.getByRole('textbox', { name: 'Трата 3: сумма и категория' })
 
     const finishButton = screen.getByRole('button', { name: 'Завершить' })
     expect(finishButton).toBeDisabled()
@@ -676,9 +798,15 @@ describe('LessonSession', () => {
     await user.type(firstExpense, '350 ₽, продукты')
 
     expect(firstExpense).toHaveValue('350 ₽, продукты')
-    expect(screen.getByRole('status')).toHaveTextContent('Рабочий блок заполнен.')
+    expect(screen.getByRole('status')).toHaveTextContent('Заполни все поля, чтобы продолжить.')
     expect(screen.getByRole('status')).toHaveClass('sr-only')
+    expect(finishButton).toBeDisabled()
+
+    await user.type(secondExpense, '120 ₽, транспорт')
+    await user.type(thirdExpense, '200 ₽, кофе')
+
     expect(finishButton).toBeEnabled()
+    expect(screen.getByRole('status')).toHaveTextContent('Рабочий блок заполнен.')
   })
 
   it('saves a normal artifact custom-option radio variant before completing the card', async () => {
@@ -842,15 +970,19 @@ describe('LessonSession', () => {
 
     await waitFor(() => expect(onCardCompleted).toHaveBeenCalledWith('card-two'))
     expect(onLessonCompleted).toHaveBeenCalledWith('test-lesson')
+    expect(screen.getByRole('heading', { name: 'Итог' })).toBeInTheDocument()
+    expect(screen.getByText('Пункт')).toBeInTheDocument()
+    expect(screen.getByText('Сохранено в Навигатор')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Урок пройден' })).toBeInTheDocument()
     expect(screen.getByText('2 из 2 карточек')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Завершить' })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'К списку уроков' })).toHaveAttribute('href', '/levels/level-1')
   })
 
   it('renders next lesson and lesson-list actions on completion when another lesson exists', async () => {
     const user = userEvent.setup()
 
-    renderSession(
+    const { container } = renderSession(
       [
         {
           id: 'card-summary',
@@ -865,10 +997,20 @@ describe('LessonSession', () => {
 
     await user.click(screen.getByRole('button', { name: 'Завершить' }))
 
+    expect(screen.getByRole('heading', { name: 'Итог' })).toBeInTheDocument()
+    expect(screen.getByText('Сохранено в Навигатор')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Урок пройден' })).toBeInTheDocument()
-    expect(screen.getByText('Один небольшой шаг пройден. Можно перейти к следующему уроку или вернуться к списку уроков.')).toBeInTheDocument()
+    expect(screen.getByText('Твой результат сохранён. Можно перейти к следующему уроку или вернуться к списку уроков.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'К следующему уроку' })).toHaveAttribute('href', '/lessons/next-lesson')
     expect(screen.getByRole('link', { name: 'К списку уроков' })).toHaveAttribute('href', '/levels/level-1')
+
+    const mascot = container.querySelector('.fr-completion-mascot-celebrate')
+    expect(mascot).toHaveAttribute('loading', 'eager')
+    expect(mascot).toHaveAttribute('data-loaded', 'false')
+
+    fireEvent.load(mascot as Element)
+
+    expect(mascot).toHaveAttribute('data-loaded', 'true')
   })
 })
 
@@ -881,9 +1023,15 @@ function renderSession(
     onCardCompleted: (cardId: string) => void | Promise<void>
     onReflectionAnswerSave: (cardId: string, payload: Record<string, unknown>) => void | Promise<void>
     onLessonCompleted: (lessonSlug: string) => void | Promise<void>
+    levelTitle: string
+    sectionTitle: string
   }> = {},
 ) {
-  const details = createLessonDetails(cards, overrides.nextLessonSlug)
+  const details = createLessonDetails(cards, {
+    levelTitle: overrides.levelTitle,
+    nextLessonSlug: overrides.nextLessonSlug,
+    sectionTitle: overrides.sectionTitle,
+  })
 
   return render(
     <MemoryRouter>
@@ -919,7 +1067,16 @@ function mockElementScrollIntoView() {
   }
 }
 
-function createLessonDetails(cards: Card[], nextLessonSlug?: string): LessonDetails {
+function getLessonCardTransition(container: HTMLElement) {
+  const transition = container.querySelector('[data-lesson-card-transition]')
+  expect(transition).toBeInstanceOf(HTMLElement)
+  return transition as HTMLElement
+}
+
+function createLessonDetails(
+  cards: Card[],
+  options: { levelTitle?: string; nextLessonSlug?: string; sectionTitle?: string } = {},
+): LessonDetails {
   const lesson: Lesson = {
     id: 'lesson-1',
     slug: 'test-lesson',
@@ -929,10 +1086,10 @@ function createLessonDetails(cards: Card[], nextLessonSlug?: string): LessonDeta
     order: 1,
     cards,
   }
-  const nextLesson: Lesson | null = nextLessonSlug
+  const nextLesson: Lesson | null = options.nextLessonSlug
     ? {
         id: 'lesson-next',
-        slug: nextLessonSlug,
+        slug: options.nextLessonSlug,
         title: 'Следующий урок',
         description: 'Описание следующего урока.',
         learningGoal: 'Продолжить маршрут.',
@@ -945,7 +1102,7 @@ function createLessonDetails(cards: Card[], nextLessonSlug?: string): LessonDeta
     schemaVersion: 1,
     id: 'section-1',
     slug: 'section-1',
-    title: 'Тестовый раздел',
+    title: options.sectionTitle ?? 'Тестовый раздел',
     order: 1,
     source: 'test',
     lessons: nextLesson ? [lesson, nextLesson] : [lesson],
@@ -955,7 +1112,7 @@ function createLessonDetails(cards: Card[], nextLessonSlug?: string): LessonDeta
     schemaVersion: 1,
     id: 'level-1',
     slug: 'level-1',
-    title: 'Тестовый уровень',
+    title: options.levelTitle ?? 'Тестовый уровень',
     order: 1,
     sections: [section],
   }

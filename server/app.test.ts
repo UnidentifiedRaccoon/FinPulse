@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { Pool } from 'pg'
 import { describe, expect, it } from 'vitest'
 
 import { createApp } from './app'
@@ -37,6 +38,55 @@ function getTestDatabaseUrl() {
 
 function createTestSchemaName() {
   return `test_${randomUUID().replaceAll('-', '_')}`
+}
+
+async function createLegacyReflectionAnswersSchema(databaseUrl: string, schema: string) {
+  const pool = new Pool({
+    connectionString: databaseUrl,
+    max: 1,
+  })
+
+  try {
+    await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`)
+    await pool.query(`CREATE SCHEMA ${schema}`)
+    await pool.query(`
+      CREATE TABLE ${schema}.reflection_answers (
+        user_id uuid NOT NULL,
+        card_id text NOT NULL,
+        save_key text,
+        lesson_slug text NOT NULL,
+        module_slug text NOT NULL,
+        unit_slug text NOT NULL,
+        card_type text NOT NULL CHECK (card_type IN ('reflection', 'artifact')),
+        title text,
+        prompt text NOT NULL,
+        context_title text NOT NULL,
+        source_section text,
+        module_title text NOT NULL,
+        unit_title text NOT NULL,
+        lesson_title text NOT NULL,
+        answer_json jsonb NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        PRIMARY KEY (user_id, card_id)
+      )
+    `)
+  } finally {
+    await pool.end()
+  }
+}
+
+async function dropTestSchema(databaseUrl: string, schema: string) {
+  const pool = new Pool({
+    connectionString: databaseUrl,
+    max: 1,
+  })
+
+  try {
+    await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`)
+  } finally {
+    await pool.end()
+  }
 }
 
 async function createStaticRoot() {
@@ -422,14 +472,14 @@ describe('backend API', () => {
 
       const cardProgress = await app.inject({
         method: 'PUT',
-        url: '/api/progress/cards/card_t1u1l1_03_sorting_choice',
+        url: '/api/progress/cards/card_l1s1l1_03_sorting_choice',
         headers: { cookie: firstCookie },
         payload: { viewed: true },
       })
       expect(cardProgress.statusCode).toBe(200)
       expect(cardProgress.json().cards).toEqual([
         expect.objectContaining({
-          cardId: 'card_t1u1l1_03_sorting_choice',
+          cardId: 'card_l1s1l1_03_sorting_choice',
           viewed: true,
           completed: false,
         }),
@@ -470,7 +520,7 @@ describe('backend API', () => {
 
       const blockedPutResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
+        url: '/api/reflections/card_l1s1l1_05_surprise_reflection',
         payload: { singleValue: 'Свобода выбора' },
       })
       expect(blockedPutResponse.statusCode).toBe(401)
@@ -487,7 +537,7 @@ describe('backend API', () => {
 
       const rejectedUserIdPayload = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
+        url: '/api/reflections/card_l1s1l1_05_surprise_reflection',
         headers: { cookie: firstCookie },
         payload: {
           singleValue: 'Свобода выбора',
@@ -503,7 +553,7 @@ describe('backend API', () => {
 
       const rejectedEmptyPayload = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
+        url: '/api/reflections/card_l1s1l1_05_surprise_reflection',
         headers: { cookie: firstCookie },
         payload: {
           singleValue: '   ',
@@ -518,7 +568,7 @@ describe('backend API', () => {
 
       const createReflectionResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
+        url: '/api/reflections/card_l1s1l1_05_surprise_reflection',
         headers: { cookie: firstCookie },
         payload: {
           singleValue: 'Свобода выбора',
@@ -529,10 +579,10 @@ describe('backend API', () => {
       expect(createReflectionResponse.json()).toMatchObject({
         answers: [
           expect.objectContaining({
-            cardId: 'card_t1u1l1_05_surprise_reflection',
+            cardId: 'card_l1s1l1_05_surprise_reflection',
             saveKey: 'unexpected_expense',
             lessonSlug: 'where-money-goes',
-            levelSlug: 't1-start',
+            levelSlug: 'level-1-start',
             sectionSlug: 'money-and-operations',
             cardType: 'reflection',
             prompt: expect.any(String),
@@ -557,15 +607,15 @@ describe('backend API', () => {
       }
       const storedResult = await db.query<StoredReflectionRow>(
         'SELECT user_id, card_id, save_key, lesson_slug, level_slug, section_slug, answer_json FROM reflection_answers WHERE card_id = $1',
-        ['card_t1u1l1_05_surprise_reflection'],
+        ['card_l1s1l1_05_surprise_reflection'],
       )
       const storedRow = storedResult.rows[0]
       expect(storedRow).toMatchObject({
         user_id: firstRegister.json().user.id,
-        card_id: 'card_t1u1l1_05_surprise_reflection',
+        card_id: 'card_l1s1l1_05_surprise_reflection',
         save_key: 'unexpected_expense',
         lesson_slug: 'where-money-goes',
-        level_slug: 't1-start',
+        level_slug: 'level-1-start',
         section_slug: 'money-and-operations',
       })
       expect(storedRow?.answer_json).toEqual({
@@ -575,7 +625,7 @@ describe('backend API', () => {
 
       const updateReflectionResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
+        url: '/api/reflections/card_l1s1l1_05_surprise_reflection',
         headers: { cookie: firstCookie },
         payload: {
           singleValue: 'здоровье',
@@ -585,7 +635,7 @@ describe('backend API', () => {
       expect(updateReflectionResponse.json()).toMatchObject({
         answers: [
           expect.objectContaining({
-            cardId: 'card_t1u1l1_05_surprise_reflection',
+            cardId: 'card_l1s1l1_05_surprise_reflection',
             answer: {
               singleValue: 'здоровье',
             },
@@ -595,7 +645,7 @@ describe('backend API', () => {
 
       const createArtifactResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_t1u1l1_04_expense_diary',
+        url: '/api/reflections/card_l1s1l1_04_expense_diary',
         headers: { cookie: firstCookie },
         payload: {
           multiValues: ['Обучение', 'Рост'],
@@ -607,7 +657,7 @@ describe('backend API', () => {
       expect(createArtifactResponse.json()).toMatchObject({
         answers: expect.arrayContaining([
           expect.objectContaining({
-            cardId: 'card_t1u1l1_04_expense_diary',
+            cardId: 'card_l1s1l1_04_expense_diary',
             saveKey: null,
             lessonSlug: 'where-money-goes',
             cardType: 'artifact',
@@ -635,13 +685,13 @@ describe('backend API', () => {
       expect(firstAnswersResponse.json().answers).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            cardId: 'card_t1u1l1_05_surprise_reflection',
+            cardId: 'card_l1s1l1_05_surprise_reflection',
             answer: {
               singleValue: 'здоровье',
             },
           }),
           expect.objectContaining({
-            cardId: 'card_t1u1l1_04_expense_diary',
+            cardId: 'card_l1s1l1_04_expense_diary',
             cardType: 'artifact',
           }),
         ]),
@@ -669,7 +719,7 @@ describe('backend API', () => {
 
       const secondReflectionResponse = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_t1u1l1_05_surprise_reflection',
+        url: '/api/reflections/card_l1s1l1_05_surprise_reflection',
         headers: { cookie: secondCookie },
         payload: {
           singleValue: 'Свой отдельный ориентир',
@@ -685,7 +735,7 @@ describe('backend API', () => {
       expect(firstAnswersAfterSecondWrite.json().answers).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            cardId: 'card_t1u1l1_05_surprise_reflection',
+            cardId: 'card_l1s1l1_05_surprise_reflection',
             answer: {
               singleValue: 'здоровье',
             },
@@ -701,7 +751,7 @@ describe('backend API', () => {
       expect(secondAnswersResponse.json()).toMatchObject({
         answers: [
           {
-            cardId: 'card_t1u1l1_05_surprise_reflection',
+            cardId: 'card_l1s1l1_05_surprise_reflection',
             answer: {
               singleValue: 'Свой отдельный ориентир',
             },
@@ -710,6 +760,79 @@ describe('backend API', () => {
       })
     } finally {
       await app.close()
+    }
+  })
+
+  it('migrates legacy reflection answer columns before saving level/section artifact answers', async () => {
+    const databaseUrl = getTestDatabaseUrl()
+    const databaseSchema = createTestSchemaName()
+    await createLegacyReflectionAnswersSchema(databaseUrl, databaseSchema)
+
+    let created: Awaited<ReturnType<typeof createApp>> | null = null
+
+    try {
+      created = await createApp({
+        databaseUrl,
+        databaseSchema,
+        resetDatabaseSchema: false,
+        dropDatabaseSchemaOnClose: true,
+        databasePoolMax: 1,
+        cookieSecure: false,
+        corsOrigin: 'http://localhost:5173',
+      })
+      await created.app.ready()
+
+      const legacyColumns = await created.db.query<{ column_name: string }>(
+        `SELECT column_name
+         FROM information_schema.columns
+         WHERE table_schema = current_schema()
+           AND table_name = 'reflection_answers'
+           AND column_name IN ('module_slug', 'unit_slug', 'module_title', 'unit_title')
+         ORDER BY column_name`,
+      )
+      expect(legacyColumns.rows).toEqual([])
+
+      const registerResponse = await created.app.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload: {
+          login: 'legacy-reflection-user',
+          password: 'secure-passphrase',
+        },
+      })
+      const cookie = sessionCookie(registerResponse)
+
+      const saveResponse = await created.app.inject({
+        method: 'PUT',
+        url: '/api/reflections/card_l1s1l1_04_expense_diary',
+        headers: { cookie },
+        payload: {
+          templateValues: ['Кофе 250, еда', 'Метро 70, транспорт', 'Кино 600, развлечения'],
+        },
+      })
+
+      expect(saveResponse.statusCode).toBe(200)
+      expect(saveResponse.json()).toMatchObject({
+        answers: [
+          expect.objectContaining({
+            cardId: 'card_l1s1l1_04_expense_diary',
+            levelSlug: 'level-1-start',
+            sectionSlug: 'money-and-operations',
+            levelTitle: 'Уровень 1 · Старт',
+            sectionTitle: 'Раздел 1. Деньги и операции',
+            cardType: 'artifact',
+            answer: {
+              templateValues: ['Кофе 250, еда', 'Метро 70, транспорт', 'Кино 600, развлечения'],
+            },
+          }),
+        ],
+      })
+    } finally {
+      if (created) {
+        await created.app.close()
+      } else {
+        await dropTestSchema(databaseUrl, databaseSchema)
+      }
     }
   })
 
@@ -728,7 +851,7 @@ describe('backend API', () => {
 
       const response = await app.inject({
         method: 'PUT',
-        url: '/api/reflections/card_t1u1l1_03_sorting_choice',
+        url: '/api/reflections/card_l1s1l1_03_sorting_choice',
         headers: { cookie: sessionCookie(registerResponse) },
         payload: { singleValue: 'any answer' },
       })
@@ -754,8 +877,8 @@ describe('backend API', () => {
         slug: 'finpulse-learning-mvp',
         levels: [
           expect.objectContaining({
-            slug: 't1-start',
-            title: 'T1 Старт',
+            slug: 'level-1-start',
+            title: 'Уровень 1 · Старт',
             sections: [
               expect.objectContaining({
                 slug: 'money-and-operations',
@@ -766,7 +889,7 @@ describe('backend API', () => {
         ],
       })
 
-      const targetLevelResponse = await app.inject('/api/levels/t1-start')
+      const targetLevelResponse = await app.inject('/api/levels/level-1-start')
       const targetSectionResponse = await app.inject('/api/sections/money-and-operations')
       const lessonResponse = await app.inject('/api/lessons/where-money-goes')
       const mandatoryLessonResponse = await app.inject('/api/lessons/mandatory-and-desired')
@@ -774,7 +897,7 @@ describe('backend API', () => {
 
       expect(targetLevelResponse.statusCode).toBe(200)
       expect(targetLevelResponse.json()).toMatchObject({
-        slug: 't1-start',
+        slug: 'level-1-start',
         sections: [
           expect.objectContaining({
             slug: 'money-and-operations',
@@ -785,20 +908,20 @@ describe('backend API', () => {
       expect(targetSectionLessons).toEqual(['where-money-goes', 'mandatory-and-desired'])
       expect(lessonResponse.statusCode).toBe(200)
       expect(lessonResponse.json()).toMatchObject({
-        level: expect.objectContaining({ slug: 't1-start' }),
+        level: expect.objectContaining({ slug: 'level-1-start' }),
         section: expect.objectContaining({ slug: 'money-and-operations' }),
         lesson: expect.objectContaining({
           slug: 'where-money-goes',
           title: 'Куда уходят деньги',
           cards: [
-            expect.objectContaining({ id: 'card_t1u1l1_01_hook', type: 'single_choice' }),
-            expect.objectContaining({ id: 'card_t1u1l1_02_theory_leaks', type: 'theory' }),
-            expect.objectContaining({ id: 'card_t1u1l1_03_sorting_choice', type: 'categorization' }),
-            expect.objectContaining({ id: 'card_t1u1l1_04_subscription_example', type: 'scenario' }),
-            expect.objectContaining({ id: 'card_t1u1l1_04_expense_diary', type: 'artifact' }),
-            expect.objectContaining({ id: 'card_t1u1l1_05_surprise_reflection', type: 'reflection' }),
-            expect.objectContaining({ id: 'card_t1u1l1_06_micro_rule', type: 'artifact' }),
-            expect.objectContaining({ id: 'card_t1u1l1_07_navigator_summary', type: 'summary' }),
+            expect.objectContaining({ id: 'card_l1s1l1_01_hook', type: 'single_choice' }),
+            expect.objectContaining({ id: 'card_l1s1l1_02_theory_leaks', type: 'theory' }),
+            expect.objectContaining({ id: 'card_l1s1l1_03_sorting_choice', type: 'categorization' }),
+            expect.objectContaining({ id: 'card_l1s1l1_04_subscription_example', type: 'scenario' }),
+            expect.objectContaining({ id: 'card_l1s1l1_04_expense_diary', type: 'artifact' }),
+            expect.objectContaining({ id: 'card_l1s1l1_05_surprise_reflection', type: 'reflection' }),
+            expect.objectContaining({ id: 'card_l1s1l1_06_micro_rule', type: 'artifact' }),
+            expect.objectContaining({ id: 'card_l1s1l1_07_navigator_summary', type: 'summary' }),
           ],
         }),
       })
@@ -811,7 +934,7 @@ describe('backend API', () => {
           slug: 'mandatory-and-desired',
           title: 'Обязательное и желаемое',
           cards: expect.arrayContaining([
-            expect.objectContaining({ id: 'card_t1u1l2_03_sorting_choice', type: 'categorization' }),
+            expect.objectContaining({ id: 'card_l1s1l2_03_sorting_choice', type: 'categorization' }),
           ]),
         }),
         next: null,

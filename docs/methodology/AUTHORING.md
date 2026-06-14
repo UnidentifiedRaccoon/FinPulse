@@ -58,7 +58,7 @@ routes, and persistence context use Level and Section directly.
 Example:
 
 ```text
-Уровень 1 / T1 Старт -> level `t1-start`
+Уровень 1 · Старт -> level `level-1-start`
 Раздел 1. Деньги и операции -> section `money-and-operations`
 У1.1 Куда уходят деньги -> lesson `where-money-goes`
 ```
@@ -79,19 +79,19 @@ The general runtime model currently supports these card types:
 - `summary`
 - `video` only when a real playable `src` is available
 
-For new T1 lessons, do not treat the full list above as free choice. Use the
-accepted eight-screen T1 architecture below and only the card types named in
+For new Level 1 lessons, do not treat the full list above as free choice. Use the
+accepted eight-screen Level 1 architecture below and only the card types named in
 that table. In particular, do not introduce `callout`, `multi_select`,
 `checklist`, matching, calculators, diary schemas, branching dialogue, scoring,
 diagnostics, reminders, gamification, psychotype adaptation, analytics, or
-personalized recommendations in a T1 runtime lesson.
+personalized recommendations in a Level 1 runtime lesson.
 
 Adapt target-only screens safely:
 
 | Target pattern | MVP adaptation |
 |---|---|
 | Sorting into named categories | `categorization` when the answer is objective and all target categories are known |
-| Multiple correct choices | For non-T1 content, `multi_select` when the source asks to mark several objectively correct options. For T1 screen 3, rewrite as `categorization`. |
+| Multiple correct choices | For non-Level 1 content, `multi_select` when the source asks to mark several objectively correct options. For Level 1 screen 3, rewrite as `categorization`. |
 | Expense diary | `artifact.template` or `reflection.inputType: "table"` |
 | `Блок статистики` / `Статистика по теме` inside a source screen | `card.statistics` on the same runtime card; preserve values and sources |
 | Reminder setup | `artifact.variants` or `summary.nextStep`; do not schedule reminders |
@@ -104,9 +104,9 @@ or `Статистика по теме`. If the block exists, it must become `st
 the runtime card whose `sourceSection` references that screen. Do not drop it
 because the main screen is an `artifact`, `scenario`, or `single_choice`.
 
-## Required T1 Lesson Architecture
+## Required Level 1 Lesson Architecture
 
-Create every new T1 lesson as exactly eight screens. One screen is one runtime
+Create every new Level 1 lesson as exactly eight screens. One screen is one runtime
 card and one user action. The lesson should take 3-5 minutes and move from a
 recognizable situation to a personal action and saved result.
 
@@ -121,7 +121,7 @@ recognizable situation to a personal action and saved result.
 | 7 | Микро-правило / первый шаг | `artifact` | `mixed` | Exactly two ready rule/first-step formulations plus `customOption` labelled `Свой вариант`. Do not create real reminders, schedules, or habit mechanics. |
 | 8 | Итог / Навигатор | `summary` | `subjective` | Briefly list what is saved in the Navigator and bridge to the next lesson. |
 
-For JSON, every T1 card must have a stable `id`, `order` from 1 to 8, `type`,
+For JSON, every Level 1 card must have a stable `id`, `order` from 1 to 8, `type`,
 `sourceSection` ending with `Экран N`, and the required `checkability`. Objective
 screens 3 and 4 must include feedback. If the source practice is written as a
 choice list, adapt it into screen-3 category sorting. If the source contains

@@ -18,6 +18,7 @@ export function ArtifactCard({
 }) {
   const hasTemplate = Boolean(card.template?.length)
   const statusId = `${card.id}-artifact-status`
+  const isFilled = isArtifactAnswerFilled(card, state)
 
   if (card.readOnly) {
     return (
@@ -129,7 +130,7 @@ export function ArtifactCard({
         id={statusId}
         role="status"
       >
-        {isArtifactAnswerFilled(card, state) ? 'Рабочий блок заполнен.' : 'Ответ пока не заполнен.'}
+        {isFilled ? 'Рабочий блок заполнен.' : hasTemplate ? 'Заполни все поля, чтобы продолжить.' : 'Ответ пока не заполнен.'}
       </p>
     </div>
   )

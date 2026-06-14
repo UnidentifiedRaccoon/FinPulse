@@ -11,7 +11,7 @@ this file tracks what is active now and what remains deferred.
 Displayed in the learner app:
 
 - Program: `FinPulse`
-- Level: `t1-start` — `T1 Старт`
+- Level: `level-1-start` — `Уровень 1 · Старт`
 - Section: `money-and-operations` — `Раздел 1. Деньги и операции`
   - `where-money-goes` — `Куда уходят деньги`
   - `mandatory-and-desired` — `Обязательное и желаемое`
@@ -20,8 +20,8 @@ Source package:
 
 - Central methodology: `docs/methodology/METHODOLOGY.md`
 - Scripted lesson sources:
-  - `docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md`
-  - `docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md`
+  - `docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md`
+  - `docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md`
 
 ## Removed Active Sources
 

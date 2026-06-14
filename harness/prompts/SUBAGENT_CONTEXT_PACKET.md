@@ -34,7 +34,7 @@ Important constraints:
 - Tailwind + shadcn/ui;
 - no accounts beyond accepted minimal learner auth, diagnostics, rewards,
   analytics, personalized recommendations, or SSR migration;
-- T1 lesson content must follow the accepted eight-screen architecture:
+- Level 1 lesson content must follow the accepted eight-screen architecture:
   `single_choice`, `theory`, `categorization`, `scenario`, `artifact`,
   `reflection`, `artifact`, `summary`.
 

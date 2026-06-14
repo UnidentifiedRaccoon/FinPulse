@@ -6,10 +6,11 @@ import { useApiQuery } from '@/api/useApiQuery'
 import type { Card } from '@/content/program'
 import { getOrderedCards } from '@/content/order'
 import { NoBreakText } from '@/features/lesson-reader/card-renderers/shared'
+import { formatLessonHeaderContext } from '@/features/lesson-reader/lessonHeaderContext'
 import { cn } from '@/lib/utils'
 
 const PREVIEW_LESSON_SLUG = 'where-money-goes'
-const PREVIEW_CARD_ID = 'card_t1u1l1_03_sorting_choice'
+const PREVIEW_CARD_ID = 'card_l1s1l1_03_sorting_choice'
 
 type CategorizationCard = Extract<Card, { type: 'categorization' }>
 
@@ -49,7 +50,7 @@ export function MobileLessonCardPaddingExperimentPage() {
             </Link>
             <div className="min-w-0 self-center">
               <p className="truncate text-xs font-semibold leading-5 text-[var(--fr-text-tertiary)]">
-                {level.title} · {section.title}
+                {formatLessonHeaderContext(level.title, section.title)}
               </p>
               <h1 className="truncate text-base font-bold leading-6 tracking-normal text-[var(--fr-text-primary)]">
                 {lesson.title}

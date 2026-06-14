@@ -19,7 +19,7 @@ export function LevelPathNode({ item, index }: { item: LevelPathItem; index: num
   return (
     <article
       className={cn(
-        'relative overflow-hidden rounded-[28px] border p-4 shadow-[var(--fr-shadow-sm)]',
+        'relative w-full overflow-hidden rounded-[28px] border p-4 shadow-[var(--fr-shadow-sm)]',
         'bg-[linear-gradient(135deg,var(--fr-surface-card)_0_34%,var(--fr-surface-soft)_34%_54%,var(--fr-surface-card)_54%_100%)]',
         item.state === 'completed' && 'border-[var(--fr-color-learn-correct-500)]/35',
         item.state === 'current' && 'border-[var(--fr-color-sky-500)] bg-[var(--fr-color-brand-50)]',
@@ -95,5 +95,5 @@ export function LevelPathNode({ item, index }: { item: LevelPathItem; index: num
 function getDisplayLevelTitle(title: string) {
   const normalizedTitle = title.trim()
 
-  return normalizedTitle.replace(/^T\d+\s+/i, '') || normalizedTitle
+  return normalizedTitle.replace(/^Уровень\s+\d+\s*[·-]?\s*/i, '') || normalizedTitle
 }

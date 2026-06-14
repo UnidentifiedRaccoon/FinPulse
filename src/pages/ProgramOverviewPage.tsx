@@ -19,7 +19,7 @@ export function ProgramOverviewPage({ progress }: { progress: ProgressResponse |
 
   return (
     <div className="flex flex-col gap-6 pb-8">
-      <section className="flex flex-col gap-3 pt-2">
+      <section className="flex flex-col gap-3 px-4 pt-2 sm:px-0">
         <h1 className="text-[2rem] font-bold leading-9 tracking-normal text-[var(--fr-text-primary)]">Уровни</h1>
       </section>
 
@@ -31,7 +31,7 @@ export function ProgramOverviewPage({ progress }: { progress: ProgressResponse |
             ))}
           </div>
         ) : (
-          <div className="rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
+          <div className="w-full rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
             Материалы программы пока не добавлены.
           </div>
         )}
@@ -42,7 +42,7 @@ export function ProgramOverviewPage({ progress }: { progress: ProgressResponse |
 
 function PageState({ title, description }: { title: string; description?: string }) {
   return (
-    <section className="rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
+    <section className="w-full rounded-[20px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)]">
       <h1 className="text-xl font-bold">{title}</h1>
       {description ? <p className="mt-1 text-sm leading-6 text-[var(--fr-text-secondary)]">{description}</p> : null}
     </section>

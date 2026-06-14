@@ -247,15 +247,38 @@ describe('App', () => {
     apiOptions.reflectionAnswers = {
       answers: [
         {
-          cardId: 'card_t1u1l1_05_surprise_reflection',
+          cardId: 'card_l1s1l1_04_expense_diary',
+          cardType: 'artifact',
+          saveKey: null,
+          lessonSlug: 'where-money-goes',
+          lessonTitle: 'Куда уходят деньги',
+          sectionSlug: 'money-and-operations',
+          sectionTitle: 'Раздел 1. Деньги и операции',
+          levelSlug: 'level-1-start',
+          levelTitle: 'Уровень 1 · Старт',
+          cardTitle: 'Твои 3 траты за сегодня',
+          prompt: 'Вспомни и запиши 3 свои траты за сегодня: сумма и категория, без оценок «хорошо/плохо».',
+          template: [
+            'Трата 1: сумма и категория',
+            'Трата 2: сумма и категория',
+            'Трата 3: сумма и категория',
+          ],
+          answer: {
+            templateValues: ['Кофе 250 ₽', 'Метро 70 ₽', 'Обед 420 ₽'],
+          },
+          createdAt: '2026-05-30T08:40:00.000Z',
+          updatedAt: '2026-05-30T08:40:00.000Z',
+        },
+        {
+          cardId: 'card_l1s1l1_05_surprise_reflection',
           cardType: 'reflection',
           saveKey: 'unexpected_expense',
           lessonSlug: 'where-money-goes',
           lessonTitle: 'Куда уходят деньги',
           sectionSlug: 'money-and-operations',
           sectionTitle: 'Раздел 1. Деньги и операции',
-          levelSlug: 't1-start',
-          levelTitle: 'T1 Старт',
+          levelSlug: 'level-1-start',
+          levelTitle: 'Уровень 1 · Старт',
           cardTitle: 'Что удивило?',
           prompt: 'Посмотри на свои три траты. Какая из них удивила тебя — оказалась больше или меньше, чем казалось?',
           template: null,
@@ -264,6 +287,25 @@ describe('App', () => {
           },
           createdAt: '2026-05-30T08:45:00.000Z',
           updatedAt: '2026-05-30T08:45:00.000Z',
+        },
+        {
+          cardId: 'card_l1s1l2_05_reduce_without_pain',
+          cardType: 'reflection',
+          saveKey: 'desired_expense_to_reduce',
+          lessonSlug: 'mandatory-and-desired',
+          lessonTitle: 'Обязательное и желаемое',
+          sectionSlug: 'money-and-operations',
+          sectionTitle: 'Раздел 1. Деньги и операции',
+          levelSlug: 'level-1-start',
+          levelTitle: 'Уровень 1 · Старт',
+          cardTitle: 'Что можно сократить без боли?',
+          prompt: 'Посмотри на свои «желаемые» траты. Какую из них ты сократил(а) бы — и почти не заметил(а) разницы?',
+          template: null,
+          answer: {
+            singleValue: 'Подписки, которыми почти не пользуюсь',
+          },
+          createdAt: '2026-05-30T09:15:00.000Z',
+          updatedAt: '2026-05-30T09:15:00.000Z',
         },
       ],
     }
@@ -280,7 +322,7 @@ describe('App', () => {
       ],
       cards: [
         {
-          cardId: 'card_t1u1l1_01_hook',
+          cardId: 'card_l1s1l1_01_hook',
           viewed: true,
           completed: true,
           viewedAt: '2026-05-30T08:20:00.000Z',
@@ -299,8 +341,14 @@ describe('App', () => {
     expect(screen.getByText('user-1')).toBeTruthy()
     const answersSection = screen.getByRole('region', { name: 'Персональный финансовый навигатор' })
     expect(within(answersSection).queryByText('Мои ответы')).toBeNull()
+    expect(within(answersSection).getByRole('heading', { name: 'Куда уходят деньги · 2 ответа' })).toBeTruthy()
+    expect(within(answersSection).getByRole('heading', { name: 'Обязательное и желаемое · 1 ответ' })).toBeTruthy()
+    expect(within(answersSection).queryByText('Раздел 1. Деньги и операции · Куда уходят деньги')).toBeNull()
+    expect(within(answersSection).getAllByText('Вопрос')).toHaveLength(3)
+    expect(within(answersSection).getByRole('heading', { name: 'Твои 3 траты за сегодня' })).toBeTruthy()
     expect(within(answersSection).getByRole('heading', { name: 'Что удивило?' })).toBeTruthy()
     expect(within(answersSection).getByText('Кофе/перекусы — их больше, чем думал(а)')).toBeTruthy()
+    expect(within(answersSection).getByText('Подписки, которыми почти не пользуюсь')).toBeTruthy()
     const progressSection = screen.getByRole('region', { name: 'Учебный прогресс' })
     expect(within(progressSection).getByRole('heading', { name: 'Учебный прогресс' })).toBeTruthy()
     expect(within(progressSection).getByText('Пройдено уроков')).toBeTruthy()
@@ -309,6 +357,19 @@ describe('App', () => {
     expect(within(progressSection).getAllByText('1').length).toBeGreaterThan(0)
     expect(within(progressSection).getByText('Карточек завершено')).toBeTruthy()
     expect(within(screen.getByRole('main')).getByRole('button', { name: 'Выйти' })).toBeTruthy()
+  })
+
+  it('keeps the profile answers empty state unchanged', async () => {
+    setAuthenticatedLearner(apiOptions)
+    apiOptions.reflectionAnswers = emptyReflectionAnswers
+    window.history.pushState({}, '', '/profile')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Профиль' })).toBeTruthy()
+    const answersSection = screen.getByRole('region', { name: 'Персональный финансовый навигатор' })
+    expect(within(answersSection).getByText('Здесь появятся ответы после заданий с рефлексией и рабочими блоками.')).toBeTruthy()
+    expect(within(answersSection).queryByText(/· \d+ ответ/)).toBeNull()
   })
 
   it('renders the real program overview', async () => {
@@ -325,7 +386,7 @@ describe('App', () => {
     ).toBeTruthy()
     expect(screen.queryByText('Ваш прогресс')).toBeNull()
     expect(screen.getByRole('progressbar', { name: /уровня завершено/ })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/levels/t1-start')
+    expect(screen.getByRole('link', { name: 'Далее' }).getAttribute('href')).toBe('/levels/level-1-start')
   })
 
   it('shows not found for removed routes', async () => {
@@ -357,14 +418,15 @@ describe('App', () => {
   it('renders the compact production level path header', async () => {
     const user = userEvent.setup()
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/levels/t1-start')
+    window.history.pushState({}, '', '/levels/level-1-start')
 
     render(<App />)
 
     const compactHeader = await screen.findByTestId('compact-path-header')
     const main = screen.getByRole('main')
 
-    expect(main.className).toContain('max-w-none')
+    expect(main.className).toContain('max-w-[720px]')
+    expect(main.className).not.toContain('max-w-none')
     expect(main.className).toContain('px-0')
     expect(main.className).toContain('py-0')
     expect(compactHeader.className).toContain('top-0')
@@ -408,14 +470,26 @@ describe('App', () => {
     expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
   })
 
-  it('does not redirect removed module routes to levels', async () => {
+  it('does not expose the removed lesson goal variants experiment route', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/modules/t1-start')
+    window.history.pushState({}, '', '/design/lesson-goal-feedback-variants')
 
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Страница не найдена' })).toBeTruthy()
-    expect(window.location.pathname).toBe('/modules/t1-start')
+    expect(window.location.pathname).toBe('/design/lesson-goal-feedback-variants')
+    expect(screen.queryByRole('heading', { name: 'Варианты блока цели урока' })).toBeNull()
+    expect(screen.queryByTestId('goal-feedback-variant-checkpoint')).toBeNull()
+  })
+
+  it('does not redirect removed module routes to levels', async () => {
+    setAuthenticatedLearner(apiOptions)
+    window.history.pushState({}, '', '/modules/level-1-start')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Страница не найдена' })).toBeTruthy()
+    expect(window.location.pathname).toBe('/modules/level-1-start')
     expect(screen.queryByRole('heading', { name: 'Старт' })).toBeNull()
   })
 
@@ -425,15 +499,15 @@ describe('App', () => {
     apiOptions.reflectionAnswers = {
       answers: [
         {
-          cardId: 'card_t1u1l1_05_surprise_reflection',
+          cardId: 'card_l1s1l1_05_surprise_reflection',
           cardType: 'reflection',
           saveKey: 'unexpected_expense',
           lessonSlug: 'where-money-goes',
           lessonTitle: 'Куда уходят деньги',
           sectionSlug: 'money-and-operations',
           sectionTitle: 'Раздел 1. Деньги и операции',
-          levelSlug: 't1-start',
-          levelTitle: 'T1 Старт',
+          levelSlug: 'level-1-start',
+          levelTitle: 'Уровень 1 · Старт',
           cardTitle: 'Что удивило?',
           prompt: 'Посмотри на свои три траты. Какая из них удивила тебя — оказалась больше или меньше, чем казалось?',
           template: null,
@@ -450,6 +524,7 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Профиль' })).toBeTruthy()
+    expect(screen.getByRole('main').className).toContain('px-0')
     expect(screen.getByText('Кофе/перекусы — их больше, чем думал(а)')).toBeTruthy()
 
     const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
@@ -478,7 +553,8 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
-    expect(screen.getByText('Материалы программы пока не добавлены.')).toBeTruthy()
+    expect(screen.getByRole('main').className).toContain('px-0')
+    expect(screen.getByText('Материалы программы пока не добавлены.').className).toContain('w-full')
     expect(screen.queryByRole('link', { name: 'Далее' })).toBeNull()
   })
 
@@ -504,6 +580,7 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Уровни' })).toBeTruthy()
+    expect(screen.getByRole('main').className).toContain('px-0')
 
     const sidebar = screen.getByRole('navigation', { name: 'Боковое меню приложения' })
     const bottomNavigation = screen.getByRole('navigation', { name: 'Нижнее меню приложения' })
@@ -537,7 +614,7 @@ describe('App', () => {
   it('opens lesson details from the level lesson path before navigation', async () => {
     const user = userEvent.setup()
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/levels/t1-start')
+    window.history.pushState({}, '', '/levels/level-1-start')
 
     render(<App />)
 
@@ -552,7 +629,7 @@ describe('App', () => {
 
   it('renders only the current active lesson nodes in source order', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/levels/t1-start')
+    window.history.pushState({}, '', '/levels/level-1-start')
 
     render(<App />)
 
@@ -578,7 +655,7 @@ describe('App', () => {
       ],
       cards: [],
     }
-    window.history.pushState({}, '', '/levels/t1-start')
+    window.history.pushState({}, '', '/levels/level-1-start')
 
     render(<App />)
 
@@ -599,7 +676,7 @@ describe('App', () => {
 
   it('renders the current target lesson node with locked future lessons', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/levels/t1-start')
+    window.history.pushState({}, '', '/levels/level-1-start')
 
     render(<App />)
 
@@ -611,7 +688,7 @@ describe('App', () => {
 
   it('renders the level sticky header for the target section', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/levels/t1-start')
+    window.history.pushState({}, '', '/levels/level-1-start')
 
     render(<App />)
 
@@ -627,6 +704,9 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
+    expect(screen.getByRole('main').className).toContain('px-0')
+    expect(screen.getByRole('main').className).toContain('py-0')
+    expect(screen.getByRole('heading', { name: 'Деньги были... или нет?' }).closest('section')?.className).toContain('w-full')
     expect(screen.getAllByText(/Конец месяца/i).length).toBeGreaterThan(0)
   })
 
@@ -691,12 +771,15 @@ describe('App', () => {
 
   it('renders canonical target section routes and rejects removed content routes', async () => {
     setAuthenticatedLearner(apiOptions)
-    window.history.pushState({}, '', '/levels/t1-start/sections/money-and-operations')
+    window.history.pushState({}, '', '/levels/level-1-start/sections/money-and-operations')
 
     const { unmount } = render(<App />)
 
     const sectionHeader = await screen.findByTestId('compact-path-header')
-    expect(within(sectionHeader).getByRole('link', { name: 'Уровень 1' }).getAttribute('href')).toBe('/levels/t1-start')
+    const main = screen.getByRole('main')
+    expect(main.className).toContain('max-w-[720px]')
+    expect(main.className).not.toContain('max-w-none')
+    expect(within(sectionHeader).getByRole('link', { name: 'Уровень 1' }).getAttribute('href')).toBe('/levels/level-1-start')
     expect(within(sectionHeader).getByRole('heading', { level: 1, name: 'Раздел 1. Деньги и операции' }).className).toContain('text-[20px]')
     expect((await screen.findAllByRole('heading', { name: 'Раздел 1. Деньги и операции' })).length).toBeGreaterThan(0)
     expect(await screen.findByRole('button', { name: /Куда уходят деньги/i })).toBeTruthy()
@@ -704,7 +787,7 @@ describe('App', () => {
     expect(screen.queryByRole('button', { name: /Сколько держать в резерве/i })).toBeNull()
 
     unmount()
-    window.history.pushState({}, '', '/levels/t1-start/sections/planning-and-management')
+    window.history.pushState({}, '', '/levels/level-1-start/sections/planning-and-management')
 
     const removedSectionRoute = render(<App />)
 
@@ -736,12 +819,12 @@ describe('App', () => {
 
     await waitFor(() => {
       expect(getProgressWriteCount('/api/progress/lessons/where-money-goes')).toBe(1)
-      expect(getProgressWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(1)
+      expect(getProgressWriteCount('/api/progress/cards/card_l1s1l1_01_hook')).toBe(1)
     })
     await new Promise((resolve) => setTimeout(resolve, 25))
 
     expect(getProgressWriteCount('/api/progress/lessons/where-money-goes')).toBe(1)
-    expect(getProgressWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(1)
+    expect(getProgressWriteCount('/api/progress/cards/card_l1s1l1_01_hook')).toBe(1)
   })
 
   it('saves an authenticated reflection answer before completing that card', async () => {
@@ -762,7 +845,10 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
     await completeWhereMoneyGoesExternalExample(user)
-    await user.type(screen.getAllByRole('textbox')[0], 'Кофе 250')
+    const expenseFields = screen.getAllByRole('textbox')
+    await user.type(expenseFields[0], 'Кофе 250')
+    await user.type(expenseFields[1], 'Проезд 70')
+    await user.type(expenseFields[2], 'Перекус 180')
     await user.click(screen.getByRole('button', { name: 'Далее' }))
 
     const continueButton = screen.getByRole('button', { name: 'Далее' })
@@ -772,14 +858,14 @@ describe('App', () => {
     await user.click(continueButton)
 
     await waitFor(() => {
-      expect(getRequestCount('/api/reflections/card_t1u1l1_05_surprise_reflection', 'PUT')).toBe(1)
-      expect(getProgressCompletedWriteCount('/api/progress/cards/card_t1u1l1_05_surprise_reflection')).toBe(1)
+      expect(getRequestCount('/api/reflections/card_l1s1l1_05_surprise_reflection', 'PUT')).toBe(1)
+      expect(getProgressCompletedWriteCount('/api/progress/cards/card_l1s1l1_05_surprise_reflection')).toBe(1)
     })
-    expect(getJsonRequestBody('/api/reflections/card_t1u1l1_05_surprise_reflection', 'PUT')).toEqual({
+    expect(getJsonRequestBody('/api/reflections/card_l1s1l1_05_surprise_reflection', 'PUT')).toEqual({
       singleValue: 'Кофе/перекусы — их больше, чем думал(а)',
     })
-    expect(getRequestOrder('/api/reflections/card_t1u1l1_05_surprise_reflection', 'PUT')).toBeLessThan(
-      getRequestOrder('/api/progress/cards/card_t1u1l1_05_surprise_reflection', 'PUT', (body) => body.completed === true),
+    expect(getRequestOrder('/api/reflections/card_l1s1l1_05_surprise_reflection', 'PUT')).toBeLessThan(
+      getRequestOrder('/api/progress/cards/card_l1s1l1_05_surprise_reflection', 'PUT', (body) => body.completed === true),
     )
   })
 
@@ -807,7 +893,7 @@ describe('App', () => {
     )
     expect(screen.getByRole('heading', { name: 'Деньги были... или нет?' })).toBeTruthy()
     expect(screen.queryByRole('heading', { name: 'Куда «утекают» деньги' })).toBeNull()
-    expect(getProgressCompletedWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(3)
+    expect(getProgressCompletedWriteCount('/api/progress/cards/card_l1s1l1_01_hook')).toBe(3)
   })
 
   it('retries a transient completed progress save and advances after success', async () => {
@@ -828,7 +914,7 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Куда «утекают» деньги' })).toBeTruthy()
     expect(screen.queryByText('Internal server error')).toBeNull()
-    expect(getProgressCompletedWriteCount('/api/progress/cards/card_t1u1l1_01_hook')).toBe(2)
+    expect(getProgressCompletedWriteCount('/api/progress/cards/card_l1s1l1_01_hook')).toBe(2)
   })
 
   it('clears authenticated and private state when a required progress save returns 401', async () => {
@@ -838,15 +924,15 @@ describe('App', () => {
     apiOptions.reflectionAnswers = {
       answers: [
         {
-          cardId: 'card_t1u1l1_05_surprise_reflection',
+          cardId: 'card_l1s1l1_05_surprise_reflection',
           cardType: 'reflection',
           saveKey: 'unexpected_expense',
           lessonSlug: 'where-money-goes',
           lessonTitle: 'Куда уходят деньги',
           sectionSlug: 'money-and-operations',
           sectionTitle: 'Раздел 1. Деньги и операции',
-          levelSlug: 't1-start',
-          levelTitle: 'T1 Старт',
+          levelSlug: 'level-1-start',
+          levelTitle: 'Уровень 1 · Старт',
           cardTitle: 'Что удивило?',
           prompt: 'Посмотри на свои три траты. Какая из них удивила тебя — оказалась больше или меньше, чем казалось?',
           template: null,
@@ -889,7 +975,10 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Далее' }))
     await completeWhereMoneyGoesExternalExample(user)
     expect(screen.getByRole('heading', { name: 'Твои 3 траты за сегодня' })).toBeTruthy()
-    await user.type(screen.getAllByRole('textbox')[0], 'Кофе 250')
+    const expenseFields = screen.getAllByRole('textbox')
+    await user.type(expenseFields[0], 'Кофе 250')
+    await user.type(expenseFields[1], 'Проезд 70')
+    await user.type(expenseFields[2], 'Перекус 180')
     await user.click(screen.getByRole('button', { name: 'Далее' }))
     await user.click(screen.getByRole('radio', { name: 'Кофе/перекусы — их больше, чем думал(а)' }))
     await user.click(screen.getByRole('button', { name: 'Далее' }))
@@ -900,6 +989,13 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: 'Сохранили в Навигатор' })).toBeTruthy()
     expect(screen.getByText(/Дальше — Уровень 1 · Раздел 1 · Урок 2/i)).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: 'Завершить' }))
+
+    expect(screen.getByRole('heading', { name: 'Сохранили в Навигатор' })).toBeTruthy()
+    expect(screen.getByText('Сохранено в Навигатор')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Урок пройден' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'К следующему уроку' }).getAttribute('href')).toBe('/lessons/mandatory-and-desired')
   })
 })
 

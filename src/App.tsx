@@ -299,21 +299,21 @@ function AppShell({
 
       <main
         className={cn(
-          'mx-auto w-full px-4',
+          'mx-auto w-full',
           isStandaloneDesignRoute
             ? 'max-w-none px-0 py-0'
             : showAuthenticatedShell && isPathRoute
-              ? 'max-w-none px-0 py-0'
+              ? 'max-w-[720px] px-0 py-0'
               : showAuthenticatedShell && isLessonRoute
-                ? 'max-w-none py-6 lg:px-8'
-                : 'max-w-[560px] py-5 sm:py-6 lg:max-w-[720px]',
+                ? 'max-w-none px-0 py-0 lg:px-8 lg:py-6'
+                : 'max-w-[560px] px-0 py-5 sm:py-6 lg:max-w-[720px]',
           showMobileNavigation ? 'pb-[calc(6.75rem+env(safe-area-inset-bottom))] lg:pb-8' : null,
         )}
       >
         {showAuthenticatedShell
           ? [progressError, reflectionError].filter(Boolean).map((error) => (
               <p
-                className="mb-4 rounded-[18px] border border-[var(--fr-color-danger-500)]/30 bg-[var(--fr-color-danger-50)] p-3 text-sm leading-6 text-[var(--fr-color-danger-500)]"
+                className="mb-4 w-full rounded-[18px] border border-[var(--fr-color-danger-500)]/30 bg-[var(--fr-color-danger-50)] p-3 text-sm leading-6 text-[var(--fr-color-danger-500)]"
                 key={error}
               >
                 {error}

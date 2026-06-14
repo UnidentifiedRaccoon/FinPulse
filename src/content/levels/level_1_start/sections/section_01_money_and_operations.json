@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "id": "section_t1_s1_money_operations",
+  "id": "section_l1_s1_money_operations",
   "slug": "money-and-operations",
   "title": "Раздел 1. Деньги и операции",
-  "description": "Первый раздел уровня T1 «Старт»: увидеть, куда уходят деньги, и отделить обязательные траты от желаемых.",
+  "description": "Первый раздел уровня 1 «Старт»: увидеть, куда уходят деньги, и отделить обязательные траты от желаемых.",
   "order": 1,
-  "source": "docs/levels/t1-start/sections/money-and-operations/",
+  "source": "docs/levels/level-1-start/sections/money-and-operations/",
   "lessons": [
     {
-      "id": "lesson_t1_u1_l1_where_money_goes",
+      "id": "lesson_l1_s1_l1_where_money_goes",
       "slug": "where-money-goes",
       "title": "Куда уходят деньги",
       "subtitle": "У1.1",
@@ -18,18 +18,18 @@
       "learningGoal": "Увидеть свои реальные траты и осознать «утечки».",
       "mainSkill": "Софт-навык наблюдения и привычка фиксации трат",
       "tags": [
-        "T1",
+        "L1",
         "money-operations",
         "spending-awareness"
       ],
-      "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md / У1.1 / Паспорт урока",
+      "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / У1.1 / Паспорт урока",
       "cards": [
         {
-          "id": "card_t1u1l1_01_hook",
+          "id": "card_l1s1l1_01_hook",
           "type": "single_choice",
           "order": 1,
           "title": "Деньги были... или нет?",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 1",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 1",
           "ctaLabel": "Разобраться, куда уходят мои деньги",
           "thinkingType": "understanding",
           "develops": "psychology",
@@ -54,11 +54,11 @@
           ]
         },
         {
-          "id": "card_t1u1l1_02_theory_leaks",
+          "id": "card_l1s1l1_02_theory_leaks",
           "type": "theory",
           "order": 2,
           "title": "Куда «утекают» деньги",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 2",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 2",
           "ctaLabel": "Понятно, дальше",
           "thinkingType": "memory",
           "develops": "hard skills",
@@ -66,11 +66,11 @@
           "body": "Большие траты мы помним. А маленькие — кофе, такси, подписка, доставка — проходят мимо внимания. За месяц из них набегает заметная сумма.\n\nГлавное правило: управлять можно только тем, что замечаешь.\n\n5 трат по 200 ₽ в день — это 30 000 ₽ в месяц. Незаметно по отдельности, но ощутимо в сумме."
         },
         {
-          "id": "card_t1u1l1_03_sorting_choice",
+          "id": "card_l1s1l1_03_sorting_choice",
           "type": "categorization",
           "order": 3,
           "title": "Распредели траты на две группы",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 3",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 3",
           "thinkingType": "application",
           "develops": "hard skills",
           "checkability": "objective",
@@ -120,11 +120,11 @@
           "feedback": "Точно. Именно траты «мимо внимания» обычно и создают утечку. Если сомневаешься, подумай: эту трату ты замечаешь в моменте или она проходит автоматически?"
         },
         {
-          "id": "card_t1u1l1_04_subscription_example",
+          "id": "card_l1s1l1_04_subscription_example",
           "type": "scenario",
           "order": 4,
           "title": "Куда уходят деньги Кирилла?",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 4",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 4",
           "thinkingType": "real world A",
           "develops": "hard skills",
           "checkability": "objective",
@@ -174,11 +174,11 @@
           }
         },
         {
-          "id": "card_t1u1l1_04_expense_diary",
+          "id": "card_l1s1l1_04_expense_diary",
           "type": "artifact",
           "order": 5,
           "title": "Твои 3 траты за сегодня",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 5",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 5",
           "thinkingType": "personal world",
           "develops": "soft skills",
           "checkability": "mixed",
@@ -190,11 +190,11 @@
           ]
         },
         {
-          "id": "card_t1u1l1_05_surprise_reflection",
+          "id": "card_l1s1l1_05_surprise_reflection",
           "type": "reflection",
           "order": 6,
           "title": "Что удивило?",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 6",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 6",
           "thinkingType": "personal world",
           "develops": "psychology",
           "checkability": "subjective",
@@ -213,11 +213,11 @@
           "guidance": "Здорово, что тебе удалось заметить это! На скоростях нашей жизни — считай, достижение."
         },
         {
-          "id": "card_t1u1l1_06_micro_rule",
+          "id": "card_l1s1l1_06_micro_rule",
           "type": "artifact",
           "order": 7,
           "title": "Твоё правило на 3 дня",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 7",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 7",
           "thinkingType": "habit",
           "develops": "habits",
           "checkability": "mixed",
@@ -232,11 +232,11 @@
           }
         },
         {
-          "id": "card_t1u1l1_07_navigator_summary",
+          "id": "card_l1s1l1_07_navigator_summary",
           "type": "summary",
           "order": 8,
           "title": "Сохранили в Навигатор",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 8",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 8",
           "thinkingType": "artifact",
           "develops": "habits",
           "checkability": "subjective",
@@ -251,7 +251,7 @@
       ]
     },
     {
-      "id": "lesson_t1_u1_l2_mandatory_desired",
+      "id": "lesson_l1_s1_l2_mandatory_desired",
       "slug": "mandatory-and-desired",
       "title": "Обязательное и желаемое",
       "subtitle": "У1.2",
@@ -261,18 +261,18 @@
       "learningGoal": "Делить траты на обязательные и желаемые; увидеть, что можно сократить без боли.",
       "mainSkill": "Категоризация трат и осознанный выбор",
       "tags": [
-        "T1",
+        "L1",
         "money-operations",
         "expense-categories"
       ],
-      "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / У1.2 / Паспорт урока",
+      "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / У1.2 / Паспорт урока",
       "cards": [
         {
-          "id": "card_t1u1l2_01_hook",
+          "id": "card_l1s1l2_01_hook",
           "type": "single_choice",
           "order": 1,
           "title": "Это мне точно нужно?",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 1",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 1",
           "ctaLabel": "Научиться различать",
           "thinkingType": "understanding",
           "develops": "psychology",
@@ -297,11 +297,11 @@
           ]
         },
         {
-          "id": "card_t1u1l2_02_theory_groups",
+          "id": "card_l1s1l2_02_theory_groups",
           "type": "theory",
           "order": 2,
           "title": "Две группы трат",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 2",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 2",
           "ctaLabel": "Понятно, дальше",
           "thinkingType": "memory",
           "develops": "hard skills",
@@ -309,11 +309,11 @@
           "body": "Обязательные траты — то, без чего не обойтись: жильё, еда, проезд, связь, лекарства, кредиты и налоги.\n\nЖелаемые траты — то, что улучшает жизнь, но без чего можно прожить: развлечения, новые вещи «для радости», импульсивные покупки.\n\nЖелаемое — это не «плохо». Цель не запретить, а видеть разницу и выбирать осознанно.\n\nПростой тест: «Что будет, если этого не купить прямо сейчас?» Ничего страшного — скорее желаемое."
         },
         {
-          "id": "card_t1u1l2_03_sorting_choice",
+          "id": "card_l1s1l2_03_sorting_choice",
           "type": "categorization",
           "order": 3,
           "title": "Раздели траты на две группы",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 3",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 3",
           "thinkingType": "application",
           "develops": "hard skills",
           "checkability": "objective",
@@ -369,11 +369,11 @@
           "feedback": "Верно. Обязательное — «нужно жить», желаемое — «хочу лучше». Разница не в сумме, а в необходимости. Если сомневаешься, спроси: «Что случится, если этого не будет?»"
         },
         {
-          "id": "card_t1u1l2_04_sale_example",
+          "id": "card_l1s1l2_04_sale_example",
           "type": "scenario",
           "order": 4,
           "title": "Чужая корзина",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 4",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 4",
           "thinkingType": "real world A",
           "develops": "hard skills",
           "checkability": "objective",
@@ -418,11 +418,11 @@
           }
         },
         {
-          "id": "card_t1u1l2_04_expense_markup",
+          "id": "card_l1s1l2_04_expense_markup",
           "type": "artifact",
           "order": 5,
           "title": "Размечаем твои траты",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 5",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 5",
           "thinkingType": "personal world",
           "develops": "soft skills",
           "checkability": "mixed",
@@ -434,11 +434,11 @@
           ]
         },
         {
-          "id": "card_t1u1l2_05_reduce_without_pain",
+          "id": "card_l1s1l2_05_reduce_without_pain",
           "type": "reflection",
           "order": 6,
           "title": "Что можно сократить без боли?",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 6",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 6",
           "thinkingType": "personal world",
           "develops": "psychology",
           "checkability": "subjective",
@@ -457,11 +457,11 @@
           "guidance": "Отлично. Ты не запрещаешь себе — ты делаешь выбор. Классный шаг!"
         },
         {
-          "id": "card_t1u1l2_06_choice_rule",
+          "id": "card_l1s1l2_06_choice_rule",
           "type": "artifact",
           "order": 7,
           "title": "Твоё правило выбора",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 7",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 7",
           "thinkingType": "habit",
           "develops": "habits",
           "checkability": "mixed",
@@ -476,11 +476,11 @@
           }
         },
         {
-          "id": "card_t1u1l2_07_navigator_summary",
+          "id": "card_l1s1l2_07_navigator_summary",
           "type": "summary",
           "order": 8,
           "title": "Сохранили в Навигатор",
-          "sourceSection": "docs/levels/t1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 8",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 8",
           "thinkingType": "artifact",
           "develops": "habits",
           "checkability": "subjective",

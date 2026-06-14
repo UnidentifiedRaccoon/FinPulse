@@ -29,7 +29,7 @@ export function LessonCardFrame({
   return (
     <section
       aria-labelledby={`${card.id}-title`}
-      className="flex flex-col gap-4 rounded-[20px] border border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)] shadow-[var(--fr-shadow-md)] [overflow-wrap:anywhere] sm:p-5"
+      className="flex w-full flex-col gap-4 rounded-[20px] border border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)] p-4 text-[var(--fr-text-primary)] shadow-[var(--fr-shadow-md)] [overflow-wrap:anywhere] sm:p-5"
     >
       <header>
         {card.title ? (

@@ -479,6 +479,8 @@ Recommended MVP structure:
 
 The first-screen intro should use `learningGoal` as the single learner-facing goal card. Do not show `lesson.description` inside the lesson reader intro; descriptions may remain useful on navigation surfaces, but repeating them beside the goal makes the first screen heavier without adding a distinct job.
 
+The goal card uses a compact checkpoint pattern: a sky-blue top label band with `Цель урока`, matching the primary lesson CTA color, followed by the goal text on a plain white surface. Do not add a decorative icon to this block; supportive feedback near the bottom CTA keeps its existing feedback component and icon treatment.
+
 This pattern is allowed even while content remains public and progress save requires auth.
 
 ### 9.2. Lesson Card

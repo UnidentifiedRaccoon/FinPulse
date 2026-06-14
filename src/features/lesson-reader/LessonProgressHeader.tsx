@@ -25,7 +25,7 @@ export function LessonProgressHeader({
   const progressValue = isComplete ? 100 : Math.round((current / total) * 100)
 
   return (
-    <header className="sticky top-0 z-10 -mx-5 border-b border-[var(--fr-border-subtle)] bg-[var(--fr-surface-canvas)]/95 px-5 pb-3 pt-3 backdrop-blur sm:rounded-b-2xl sm:border-x">
+    <header className="sticky top-0 z-10 border-b border-[var(--fr-border-subtle)] bg-[var(--fr-surface-canvas)]/95 px-4 pb-3 pt-3 backdrop-blur sm:rounded-b-2xl sm:border-x">
       <div className="mx-auto flex w-full max-w-[480px] flex-col gap-3">
         <div className="grid grid-cols-[44px_minmax(0,1fr)_minmax(4.75rem,auto)] items-center gap-3">
           <Link

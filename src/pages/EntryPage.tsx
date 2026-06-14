@@ -42,7 +42,7 @@ export function EntryPage({
   if (!isAuthReady) {
     return (
       <EntrySection>
-        <div className="rounded-[24px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 shadow-[var(--fr-shadow-sm)]">
+        <div className="w-full rounded-[24px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 shadow-[var(--fr-shadow-sm)]">
           <div className="min-w-0">
             <img alt="" aria-hidden="true" className="h-10 w-[116px] object-contain" src="/finpulse-logo.png" />
             <h1 className="mt-2 text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">
@@ -61,7 +61,7 @@ export function EntryPage({
     return (
       <EntrySection>
         <section className="flex flex-col gap-5" aria-labelledby="auth-entry-heading">
-          <div className="min-w-0">
+          <div className="min-w-0 px-4 sm:px-0">
             <h1
               id="auth-entry-heading"
               className="text-[2rem] font-bold leading-9 tracking-normal text-[var(--fr-text-primary)] [overflow-wrap:anywhere]"
@@ -70,7 +70,7 @@ export function EntryPage({
             </h1>
           </div>
 
-          <div className="rounded-[24px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 shadow-[var(--fr-shadow-md)]">
+          <div className="w-full rounded-[24px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 shadow-[var(--fr-shadow-md)]">
             <AuthControls
               error={authError}
               isBusy={isAuthBusy}
@@ -121,7 +121,7 @@ function ProfileEntry({
 
   return (
     <section aria-labelledby="profile-heading" className="flex flex-col gap-6 pb-8 pt-1">
-      <div className="overflow-hidden rounded-[28px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] shadow-[var(--fr-shadow-md)]">
+      <div className="w-full overflow-hidden rounded-[28px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] shadow-[var(--fr-shadow-md)]">
         <div className="relative flex h-40 items-center justify-center overflow-hidden bg-[var(--fr-surface-soft)]">
           <div className="absolute inset-x-8 top-9 h-px bg-[var(--fr-border-default)]" />
           <div className="absolute inset-x-14 top-20 h-px bg-[var(--fr-border-subtle)]" />
@@ -149,18 +149,21 @@ function ProfileEntry({
         </div>
       </div>
 
-      <Separator className="bg-[var(--fr-border-default)]" />
+      <Separator className="mx-4 bg-[var(--fr-border-default)] data-horizontal:w-auto sm:mx-0 sm:data-horizontal:w-full" />
 
       <PersonalAnswersSection answers={reflectionAnswers?.answers ?? []} />
 
-      <Separator className="bg-[var(--fr-border-default)]" />
+      <Separator className="mx-4 bg-[var(--fr-border-default)] data-horizontal:w-auto sm:mx-0 sm:data-horizontal:w-full" />
 
       <section aria-labelledby="profile-progress-heading" className="flex flex-col gap-3">
-        <h2 id="profile-progress-heading" className="text-2xl font-black leading-8 tracking-normal text-[var(--fr-text-primary)]">
+        <h2
+          id="profile-progress-heading"
+          className="px-4 text-2xl font-black leading-8 tracking-normal text-[var(--fr-text-primary)] sm:px-0"
+        >
           Учебный прогресс
         </h2>
         {programQuery.status === 'error' ? (
-          <p className="rounded-[18px] border border-[var(--fr-color-danger-500)]/30 bg-[var(--fr-color-danger-50)] p-3 text-sm leading-6 text-[var(--fr-color-danger-500)]">
+          <p className="w-full rounded-[18px] border border-[var(--fr-color-danger-500)]/30 bg-[var(--fr-color-danger-50)] p-3 text-sm leading-6 text-[var(--fr-color-danger-500)]">
             {programQuery.error.message}
           </p>
         ) : null}
@@ -198,7 +201,7 @@ function ProfileStatCard({ stat }: { stat: ProfileStat }) {
   const Icon = stat.Icon
 
   return (
-    <article className="min-h-28 rounded-[18px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 shadow-[var(--fr-shadow-sm)]">
+    <article className="min-h-28 w-full rounded-[18px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 shadow-[var(--fr-shadow-sm)]">
       <div className="flex items-start gap-3">
         <Icon aria-hidden="true" className="mt-1 size-6 shrink-0 text-[var(--fr-color-sky-600)]" />
         <div className="min-w-0">
@@ -211,9 +214,11 @@ function ProfileStatCard({ stat }: { stat: ProfileStat }) {
 }
 
 function PersonalAnswersSection({ answers }: { answers: ReflectionAnswer[] }) {
+  const answerGroups = groupAnswersByLesson(answers)
+
   return (
     <section aria-labelledby="personal-answers-heading" className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 px-4 sm:px-0">
         <p className="text-xs font-black uppercase leading-4 tracking-normal text-[var(--fr-color-sky-600)]">Навигатор</p>
         <h2 id="personal-answers-heading" className="text-2xl font-black leading-8 tracking-normal text-[var(--fr-text-primary)]">
           Персональный финансовый навигатор
@@ -221,13 +226,13 @@ function PersonalAnswersSection({ answers }: { answers: ReflectionAnswer[] }) {
       </div>
 
       {answers.length === 0 ? (
-        <p className="rounded-[18px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
+        <p className="w-full rounded-[18px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
           Здесь появятся ответы после заданий с рефлексией и рабочими блоками.
         </p>
       ) : (
         <div className="flex flex-col gap-3">
-          {answers.map((answer) => (
-            <PersonalAnswerItem answer={answer} key={answer.cardId} />
+          {answerGroups.map((group) => (
+            <PersonalAnswerLessonGroup group={group} key={group.key} />
           ))}
         </div>
       )}
@@ -235,35 +240,64 @@ function PersonalAnswersSection({ answers }: { answers: ReflectionAnswer[] }) {
   )
 }
 
+type PersonalAnswerGroup = {
+  key: string
+  sectionTitle: string
+  lessonTitle: string
+  answers: ReflectionAnswer[]
+}
+
+function PersonalAnswerLessonGroup({ group }: { group: PersonalAnswerGroup }) {
+  return (
+    <article className="w-full rounded-[18px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 shadow-[var(--fr-shadow-sm)]">
+      <div className="min-w-0 pb-4">
+        <p className="text-xs font-bold uppercase leading-4 tracking-normal text-[var(--fr-text-tertiary)]">
+          {stripSectionCode(group.sectionTitle)}
+        </p>
+        <h3 className="mt-1 text-lg font-black leading-7 tracking-normal text-[var(--fr-text-primary)]">
+          {group.lessonTitle} · {formatAnswerCount(group.answers.length)}
+        </h3>
+      </div>
+
+      <div className="divide-y divide-[var(--fr-border-subtle)]">
+        {group.answers.map((answer) => (
+          <PersonalAnswerItem answer={answer} key={answer.cardId} />
+        ))}
+      </div>
+    </article>
+  )
+}
+
 function PersonalAnswerItem({ answer }: { answer: ReflectionAnswer }) {
   const entries = getAnswerEntries(answer)
 
   return (
-    <article className="rounded-[18px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-4 shadow-[var(--fr-shadow-sm)]">
-      <div className="flex flex-col gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-bold uppercase leading-4 tracking-normal text-[var(--fr-text-tertiary)]">
-            {stripSectionCode(answer.sectionTitle)} · {answer.lessonTitle}
-          </p>
-          <h4 className="mt-1 text-base font-black leading-6 tracking-normal text-[var(--fr-text-primary)]">
-            {answer.cardTitle ?? (answer.cardType === 'artifact' ? 'Рабочий блок' : 'Ответ')}
-          </h4>
-          <p className="mt-2 text-sm leading-6 text-[var(--fr-text-secondary)]">{answer.prompt}</p>
-        </div>
-
-        <dl className="flex flex-col gap-2">
-          {entries.map((entry) => (
-            <div
-              className="rounded-2xl bg-[var(--fr-surface-soft)] px-3 py-2 text-sm leading-6"
-              key={`${entry.label ?? 'answer'}-${entry.value}`}
-            >
-              {entry.label ? <dt className="font-bold text-[var(--fr-text-primary)]">{entry.label}</dt> : null}
-              <dd className="whitespace-pre-wrap break-words text-[var(--fr-text-secondary)]">{entry.value}</dd>
-            </div>
-          ))}
-        </dl>
+    <div className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0">
+      <div className="min-w-0">
+        <h4 className="text-base font-black leading-6 tracking-normal text-[var(--fr-text-primary)]">
+          {answer.cardTitle ?? (answer.cardType === 'artifact' ? 'Рабочий блок' : 'Ответ')}
+        </h4>
       </div>
-    </article>
+
+      <dl className="flex flex-col gap-2">
+        {entries.map((entry, index) => (
+          <div
+            className="rounded-2xl bg-[var(--fr-surface-soft)] px-3 py-2 text-sm leading-6"
+            key={`${entry.label ?? 'answer'}-${index}-${entry.value}`}
+          >
+            {entry.label ? <dt className="font-bold text-[var(--fr-text-primary)]">{entry.label}</dt> : null}
+            <dd className="whitespace-pre-wrap break-words text-[var(--fr-text-secondary)]">{entry.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <details className="rounded-2xl bg-[var(--fr-surface-soft)] px-3 py-2 text-sm leading-6 text-[var(--fr-text-secondary)]">
+        <summary className="cursor-pointer select-none font-bold text-[var(--fr-text-primary)] marker:text-[var(--fr-color-sky-600)]">
+          Вопрос
+        </summary>
+        <p className="mt-2">{answer.prompt}</p>
+      </details>
+    </div>
   )
 }
 
@@ -294,7 +328,39 @@ function getAnswerEntries(answer: ReflectionAnswer) {
 }
 
 function stripSectionCode(title: string) {
-  return title.replace(/^\d{2}\.\d{2}\s+/, '')
+  return title.replace(/^\d{2}\.\d{2}\s+/, '').replace(/^Раздел\s+\d+\.?\s*/i, '')
+}
+
+function groupAnswersByLesson(answers: ReflectionAnswer[]): PersonalAnswerGroup[] {
+  const groups = new Map<string, PersonalAnswerGroup>()
+
+  for (const answer of answers) {
+    const key = [answer.levelSlug, answer.sectionSlug, answer.lessonSlug].join('::')
+    const group = groups.get(key)
+
+    if (group) {
+      group.answers.push(answer)
+    } else {
+      groups.set(key, {
+        key,
+        sectionTitle: answer.sectionTitle,
+        lessonTitle: answer.lessonTitle,
+        answers: [answer],
+      })
+    }
+  }
+
+  return Array.from(groups.values())
+}
+
+function formatAnswerCount(count: number) {
+  const lastTwoDigits = count % 100
+  const lastDigit = count % 10
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return `${count} ответов`
+  if (lastDigit === 1) return `${count} ответ`
+  if (lastDigit >= 2 && lastDigit <= 4) return `${count} ответа`
+  return `${count} ответов`
 }
 
 function buildProfileStats(program: Program | null, progress: ProgressResponse | null): ProfileStat[] {
@@ -368,7 +434,7 @@ function MobileAccountLogout({
   onLogout: () => Promise<void>
 }) {
   return (
-    <div className="flex flex-col gap-2 lg:hidden">
+    <div className="flex flex-col gap-2 px-4 sm:px-0 lg:hidden">
       {authError ? <p className="text-sm leading-5 text-[var(--fr-color-danger-500)]">{authError}</p> : null}
       <Button className="min-h-11 w-full rounded-[18px]" disabled={isAuthBusy} onClick={onLogout} size="lg" type="button" variant="outline">
         <LogOut data-icon="inline-start" />

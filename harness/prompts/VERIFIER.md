@@ -24,7 +24,7 @@ Verify:
   architecture;
 - publish rules were followed when commit, push, or PR work was requested;
 - JSON/content model remains valid;
-- new or changed T1 lessons follow the exact eight-screen contract and have no
+- new or changed Level 1 lessons follow the exact eight-screen contract and have no
   forbidden MVP mechanics;
 - TypeScript and build checks pass if runnable;
 - UI remains mobile-first and accessible if UI changed.

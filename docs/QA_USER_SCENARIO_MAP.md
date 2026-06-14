@@ -12,8 +12,8 @@ Out of scope remains unchanged: diagnostics, rewards, scoring, recommendations, 
 
 - Program: `/program`
 - Profile: `/profile`
-- Level: `/levels/t1-start`
-- Sections: `/levels/t1-start/sections/money-and-operations`
+- Level: `/levels/level-1-start`
+- Sections: `/levels/level-1-start/sections/money-and-operations`
 - Lessons: `/lessons/where-money-goes`, `/lessons/mandatory-and-desired`
 
 Product and methodology language uses Program -> Level -> Section -> Lesson ->
@@ -56,7 +56,7 @@ Minimum run:
 | New learner | Registers during test; no progress and no private answers. |
 | Returning learner | Existing valid session, no progress. |
 | In-progress learner | Viewed first lesson, completed cards, saved artifact/reflection answers. |
-| Completed learner | One or more current T1 lessons completed. |
+| Completed learner | One or more current Level 1 lessons completed. |
 | Expired-session learner | Progress/reflection API returns 401 during save. |
 | Second learner | Separate account for privacy boundary checks. |
 
@@ -68,7 +68,7 @@ Minimum run:
 |---|---|---|---|
 | ENTRY-01 | P0 | Open `/` without a session. | Auth screen is shown with login, password, login, and registration controls. |
 | ENTRY-02 | P0 | Open `/` with a valid session. | User is routed to `/program`; authenticated shell is available. |
-| ENTRY-03 | P0 | Refresh `/program`, `/levels/t1-start`, any current `/lessons/:lessonSlug`, and `/profile` while authenticated. | Route survives refresh; content loads from API; progress/profile data stay tied to the user. |
+| ENTRY-03 | P0 | Refresh `/program`, `/levels/level-1-start`, any current `/lessons/:lessonSlug`, and `/profile` while authenticated. | Route survives refresh; content loads from API; progress/profile data stay tied to the user. |
 | AUTH-01 | P0 | Register and login with email and username-style identifiers. | Account is created/authenticated; progress/reflection fetches run. |
 | AUTH-02 | P0 | Logout from desktop and mobile profile. | Session clears, app returns to auth screen, private state disappears, Back does not restore it. |
 | SHELL-01 | P0 | Desktop authenticated `/program`. | Fixed sidebar shows FinPulse, `Обучение`, `Профиль`, user login, and logout. |
@@ -78,8 +78,8 @@ Minimum run:
 
 | ID | Priority | Scenario | Expected Result |
 |---|---|---|---|
-| PROGRAM-01 | P0 | Open `/program` authenticated with no progress. | Level list renders; `T1 Старт` card links to `/levels/t1-start`; progress starts at zero. |
-| PATH-01 | P0 | Open `/levels/t1-start` with no progress. | The current section renders; `Куда уходят деньги` is the current lesson. |
+| PROGRAM-01 | P0 | Open `/program` authenticated with no progress. | Level list renders; `Уровень 1 · Старт` card links to `/levels/level-1-start`; progress starts at zero. |
+| PATH-01 | P0 | Open `/levels/level-1-start` with no progress. | The current section renders; `Куда уходят деньги` is the current lesson. |
 | PATH-02 | P0 | Open current lesson node dialog. | Dialog shows title, `5 мин`, and action to `/lessons/where-money-goes`. |
 | PATH-03 | P0 | Open each current section route. | Section path renders only that section's lesson list and returns to the level. |
 | PATH-04 | P1 | Open invalid or removed level/section route. | Graceful not-found or load-error state appears; no stale content renders. |
@@ -116,7 +116,7 @@ Minimum run:
 
 | ID | Priority | Scenario | Expected Result |
 |---|---|---|---|
-| API-01 | P0 | `GET /api/program`, `/api/levels/t1-start`, current `/api/sections/money-and-operations`, and all current `/api/lessons/:lessonSlug`. | Responses match shared Level/Section content schemas. |
+| API-01 | P0 | `GET /api/program`, `/api/levels/level-1-start`, current `/api/sections/money-and-operations`, and all current `/api/lessons/:lessonSlug`. | Responses match shared Level/Section content schemas. |
 | API-02 | P0 | Removed old content API calls to `/api/modules`, `/api/modules/:moduleSlug`, and `/api/units/:unitSlug`. | Old endpoints return 404. |
 | API-03 | P0 | Removed legacy content API slugs. | Old level/section/lesson slugs return 404. |
 | API-04 | P0 | Protected auth/progress/reflection endpoints without cookie. | Protected endpoints return 401; no private data is returned. |
@@ -130,7 +130,7 @@ Minimum run:
 1. Open `/` on M-390.
 2. Register a new email user.
 3. Confirm `/program` opens and authenticated mobile nav appears.
-4. Open Level `t1-start`.
+4. Open Level `level-1-start`.
 5. Open `where-money-goes` from the lesson node dialog.
 6. Complete all eight cards: subjective choice, theory, objective categorization, external example/statistics, expense artifact, reflection, 3-day rule artifact, summary.
 7. Open `/profile`.
@@ -151,7 +151,7 @@ Minimum run:
 
 1. Authenticated user opens removed level route `/levels/financial-goals`.
 2. Confirm level load error, not old content.
-3. Open `/levels/t1-start/sections/values-and-goals`.
+3. Open `/levels/level-1-start/sections/values-and-goals`.
 4. Confirm old section load fails.
 5. Open `/lessons/why-values-matter`.
 6. Confirm lesson load error and no progress write.

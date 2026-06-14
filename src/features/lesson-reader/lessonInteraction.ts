@@ -125,7 +125,7 @@ export function isArtifactAnswerFilled(card: ArtifactCard, state: ArtifactState)
   }
 
   if (hasTemplate) {
-    return state.templateValues.some((value) => value.trim().length > 0)
+    return card.template?.every((_, index) => state.templateValues[index]?.trim().length > 0) ?? false
   }
 
   return state.fallbackValue.trim().length > 0 || state.selectedVariant.trim().length > 0

@@ -1,4 +1,4 @@
-import { ArrowRight, Target } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import type { Dispatch, SetStateAction } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
@@ -14,6 +14,7 @@ import { LessonCardFrame } from './LessonCardFrame'
 import { LessonCardRenderer, type LessonCardInteractionProps } from './LessonCardRenderer'
 import { LessonFeedback } from './LessonFeedback'
 import { LessonProgressHeader } from './LessonProgressHeader'
+import { formatLessonHeaderContext } from './lessonHeaderContext'
 import type {
   ArtifactState,
   CategorizationState,
@@ -45,6 +46,8 @@ import {
   isReflectionAnswerFilled,
 } from './lessonInteraction'
 
+type LessonCardTransition = 'none' | 'forward' | 'back'
+
 export function LessonSession({
   details,
   isLessonCompleted,
@@ -63,9 +66,11 @@ export function LessonSession({
 }) {
   const cards = useMemo(() => getOrderedCards(details.lesson), [details.lesson])
   const [activeIndex, setActiveIndex] = useState(0)
+  const [cardTransition, setCardTransition] = useState<LessonCardTransition>('none')
   const [isComplete, setIsComplete] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [actionError, setActionError] = useState('')
+  const [isCompletionMascotLoaded, setCompletionMascotLoaded] = useState(false)
   const [choiceStates, setChoiceStates] = useState<Record<string, ChoiceState>>({})
   const [multiSelectStates, setMultiSelectStates] = useState<Record<string, MultiSelectState>>({})
   const [categorizationStates, setCategorizationStates] = useState<Record<string, CategorizationState>>({})
@@ -74,14 +79,18 @@ export function LessonSession({
   const [artifactStates, setArtifactStates] = useState<Record<string, ArtifactState>>({})
   const viewedCardIdsRef = useRef(new Set<string>())
   const lessonScreenRef = useRef<HTMLElement | null>(null)
+  const completionPanelRef = useRef<HTMLElement | null>(null)
   const setLessonScreenElement = useCallback((element: HTMLElement | null) => {
     lessonScreenRef.current = element
+  }, [])
+  const setCompletionPanelElement = useCallback((element: HTMLElement | null) => {
+    completionPanelRef.current = element
   }, [])
 
   const activeCard = cards[activeIndex]
   const isLastCard = activeIndex === cards.length - 1
   const currentPosition = Math.min(activeIndex + 1, cards.length)
-  const context = `${details.level.title} · ${details.section.title}`
+  const context = formatLessonHeaderContext(details.level.title, details.section.title)
   const lessonGoal = details.lesson.learningGoal
   const showLessonIntro = activeIndex === 0 && Boolean(lessonGoal)
 
@@ -93,12 +102,17 @@ export function LessonSession({
 
   useLayoutEffect(() => {
     resetLessonScreenScroll(lessonScreenRef.current)
-  }, [activeCard?.id, isComplete])
+  }, [activeCard?.id])
+
+  useLayoutEffect(() => {
+    if (!isComplete) return
+    scrollElementIntoView(completionPanelRef.current, 'nearest')
+  }, [isComplete])
 
   if (!activeCard) {
     return (
       <section
-        className="rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5"
+        className="mx-auto w-full max-w-[480px] rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5"
         ref={setLessonScreenElement}
       >
         <h1 className="text-xl font-bold text-[var(--fr-text-primary)]">В уроке пока нет карточек</h1>
@@ -157,6 +171,7 @@ export function LessonSession({
         return
       }
 
+      setCardTransition('forward')
       setActiveIndex((current) => Math.min(current + 1, cards.length - 1))
     } catch (error) {
       setActionError(getErrorMessage(error))
@@ -205,78 +220,35 @@ export function LessonSession({
     void completeAndAdvance()
   }
 
-  if (isComplete) {
-    const completionDescription = details.next
-      ? 'Один небольшой шаг пройден. Можно перейти к следующему уроку или вернуться к списку уроков.'
-      : 'Один небольшой шаг пройден. Можно вернуться к списку уроков и выбрать следующий шаг.'
+  const handleSecondaryAction = () => {
+    setActionError('')
 
-    return (
-      <div
-        className="-mx-4 -my-6 min-h-svh bg-[var(--fr-surface-canvas)] px-5 pb-8 sm:mx-0 sm:rounded-3xl"
-        ref={setLessonScreenElement}
-      >
-        <LessonProgressHeader
-          backLabel={`Вернуться к уровню ${details.level.title}`}
-          backTo={`/levels/${details.level.slug}`}
-          context={context}
-          current={cards.length}
-          isComplete
-          isSavedComplete={isLessonCompleted}
-          title={details.lesson.title}
-          total={cards.length}
-        />
-        <section className="mx-auto flex w-full max-w-[480px] flex-col gap-5 pt-8">
-          <div className="fr-completion-card-rise flex flex-col gap-5 rounded-[var(--fr-radius-xl)] border border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)] p-5 text-center shadow-[var(--fr-shadow-md)]">
-            <div className="relative mx-auto flex min-h-40 w-full max-w-[18rem] items-center justify-center">
-              <div aria-hidden="true" className="absolute size-36 rounded-full bg-[var(--fr-color-brand-100)]/70" />
-              <div aria-hidden="true" className="absolute size-24 rounded-full border border-[var(--fr-color-sky-400)]/60" />
-              <CompletionCelebrationDots />
-              <Mascot className="fr-completion-mascot-celebrate relative z-10" size="md" variant="completion" />
-            </div>
+    if (activeCard.order === 3) {
+      if (isInteractiveCategorization(activeCard)) {
+        setCategorizationStates((current) => removeCardState(current, activeCard.id))
+      }
 
-            <div className="mx-auto max-w-[21rem]">
-              <h1 className="text-[var(--fr-type-display-sm-size)] font-bold leading-[var(--fr-type-display-sm-line)] text-[var(--fr-text-primary)]">
-                Урок пройден
-              </h1>
-              <p className="mt-3 text-[var(--fr-type-body-md-size)] leading-[var(--fr-type-body-md-line)] text-[var(--fr-text-secondary)]">
-                {completionDescription}
-              </p>
-            </div>
+      if (isInteractiveMultiSelect(activeCard)) {
+        setMultiSelectStates((current) => removeCardState(current, activeCard.id))
+      }
 
-            <CompletionProgress current={cards.length} total={cards.length} />
+      if (isInteractiveChoice(activeCard) && getCorrectOption(activeCard)) {
+        setChoiceStates((current) => removeCardState(current, activeCard.id))
+      }
+    }
 
-            {details.next ? (
-              <div className="flex flex-col gap-2">
-                <Button
-                  asChild
-                  className="min-h-12 rounded-xl bg-[var(--fr-color-brand-500)] px-4 text-white hover:bg-[var(--fr-color-brand-600)]"
-                >
-                  <Link to={`/lessons/${details.next.lesson.slug}`}>
-                    К следующему уроку
-                    <ArrowRight data-icon="inline-end" />
-                  </Link>
-                </Button>
-                <Button asChild className="min-h-12 rounded-xl" variant="outline">
-                  <Link to={`/levels/${details.level.slug}`}>К списку уроков</Link>
-                </Button>
-              </div>
-            ) : (
-              <Button asChild className="min-h-12 rounded-xl">
-                <Link to={`/levels/${details.level.slug}`}>
-                  К списку уроков
-                  <ArrowRight data-icon="inline-end" />
-                </Link>
-              </Button>
-            )}
-          </div>
-        </section>
-      </div>
-    )
+    setCardTransition('back')
+    setActiveIndex((current) => Math.max(current - 1, 0))
   }
+
+  const cardTransitionClass =
+    cardTransition === 'none'
+      ? ''
+      : `fr-lesson-card-transition fr-lesson-card-transition--${cardTransition}`
 
   return (
     <article
-      className="-mx-4 -my-6 flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] px-5 sm:mx-0 sm:rounded-3xl"
+      className="flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] sm:rounded-3xl"
       ref={setLessonScreenElement}
     >
       <LessonProgressHeader
@@ -284,30 +256,53 @@ export function LessonSession({
         backTo={`/levels/${details.level.slug}`}
         context={context}
         current={currentPosition}
-        isComplete={false}
+        isComplete={isComplete}
         isSavedComplete={isLessonCompleted}
         title={details.lesson.title}
         total={cards.length}
       />
 
-      <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-4 py-4 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:py-5">
-        {showLessonIntro && lessonGoal ? <LessonGoalCard learningGoal={lessonGoal} /> : null}
+      <div
+        className={`mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-4 pt-4 sm:px-4 sm:pt-5 ${
+          isComplete ? 'pb-[calc(2rem+env(safe-area-inset-bottom))]' : 'pb-4 sm:pb-5'
+        }`}
+      >
+        <div
+          className={`flex flex-col gap-4 ${cardTransitionClass}`}
+          data-lesson-card-transition={cardTransition}
+          key={activeCard.id}
+        >
+          {showLessonIntro && lessonGoal ? <LessonGoalCard learningGoal={lessonGoal} /> : null}
 
-        <LessonCardFrame card={activeCard} current={currentPosition} total={cards.length}>
-          <LessonCardRenderer card={activeCard} interaction={interaction} showInlineFeedback={false} />
-        </LessonCardFrame>
+          <LessonCardFrame card={activeCard} current={currentPosition} total={cards.length}>
+            <LessonCardRenderer card={activeCard} interaction={interaction} showInlineFeedback={false} />
+          </LessonCardFrame>
+        </div>
+
+        {isComplete ? (
+          <InlineLessonCompletion
+            current={cards.length}
+            details={details}
+            isMascotLoaded={isCompletionMascotLoaded}
+            onMascotLoad={() => setCompletionMascotLoaded(true)}
+            rootRef={setCompletionPanelElement}
+            total={cards.length}
+          />
+        ) : null}
       </div>
 
-      <LessonBottomAction
-        feedback={actionError ? <LessonFeedback tone="retry" title="Не сохранено">{actionError}</LessonFeedback> : bottomFeedback}
-        isBusy={isSaving}
-        onPrimary={handlePrimaryAction}
-        onSecondary={activeIndex > 0 ? () => setActiveIndex((current) => Math.max(current - 1, 0)) : undefined}
-        primaryDisabled={action.disabled}
-        primaryLabel={action.label}
-        primaryTone={action.tone}
-        secondaryLabel={activeIndex > 0 ? 'Назад' : undefined}
-      />
+      {isComplete ? null : (
+        <LessonBottomAction
+          feedback={actionError ? <LessonFeedback tone="retry" title="Не сохранено">{actionError}</LessonFeedback> : bottomFeedback}
+          isBusy={isSaving}
+          onPrimary={handlePrimaryAction}
+          onSecondary={activeIndex > 0 ? handleSecondaryAction : undefined}
+          primaryDisabled={action.disabled}
+          primaryLabel={action.label}
+          primaryTone={action.tone}
+          secondaryLabel={activeIndex > 0 ? 'Назад' : undefined}
+        />
+      )}
     </article>
   )
 }
@@ -316,22 +311,12 @@ function LessonGoalCard({ learningGoal }: { learningGoal: string }) {
   return (
     <section
       aria-label="Цель урока"
-      className="relative overflow-hidden rounded-[20px] border border-[var(--fr-color-brand-200)] bg-[linear-gradient(135deg,var(--fr-color-brand-50)_0%,var(--fr-surface-card)_58%,var(--fr-color-learn-correct-50)_100%)] p-4 text-[var(--fr-text-primary)] shadow-[var(--fr-shadow-sm)]"
+      className="w-full overflow-hidden rounded-[20px] border border-[var(--fr-color-sky-500)]/35 bg-[var(--fr-surface-card)] text-[var(--fr-text-primary)] shadow-[var(--fr-shadow-sm)]"
     >
-      <div aria-hidden="true" className="absolute inset-y-4 left-0 w-1 rounded-r-full bg-[var(--fr-color-sky-500)]" />
-      <div className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3 pl-2">
-        <span className="flex size-9 items-center justify-center rounded-xl bg-[var(--fr-color-brand-500)] text-[var(--fr-text-inverse)] shadow-[var(--fr-shadow-sm)]">
-          <Target aria-hidden="true" className="size-5" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-[11px] font-bold uppercase leading-4 tracking-normal text-[var(--fr-color-sky-600)]">
-            Цель урока
-          </p>
-          <p className="mt-1 text-pretty text-[15px] font-bold leading-6 text-[var(--fr-text-primary)]">
-            {learningGoal}
-          </p>
-        </div>
+      <div className="bg-[var(--fr-color-sky-500)] px-4 py-2 text-[11px] font-black uppercase leading-4 tracking-normal text-[var(--fr-text-inverse)]">
+        Цель урока
       </div>
+      <p className="px-4 py-3 text-pretty text-[15px] font-black leading-6 text-[var(--fr-text-primary)]">{learningGoal}</p>
     </section>
   )
 }
@@ -358,6 +343,90 @@ function CompletionProgress({ current, total }: { current: number; total: number
         <div className="fr-completion-progress-fill h-full rounded-full bg-[var(--fr-color-learn-correct-500)]" />
       </div>
     </div>
+  )
+}
+
+function InlineLessonCompletion({
+  details,
+  current,
+  total,
+  isMascotLoaded,
+  onMascotLoad,
+  rootRef,
+}: {
+  details: LessonDetails
+  current: number
+  total: number
+  isMascotLoaded: boolean
+  onMascotLoad: () => void
+  rootRef: (element: HTMLElement | null) => void
+}) {
+  const completionDescription = details.next
+    ? 'Твой результат сохранён. Можно перейти к следующему уроку или вернуться к списку уроков.'
+    : 'Твой результат сохранён. Можно вернуться к списку уроков и выбрать следующий шаг.'
+
+  return (
+    <section
+      aria-labelledby="lesson-completion-title"
+      aria-live="polite"
+      className="fr-completion-card-rise flex w-full flex-col gap-5 rounded-[var(--fr-radius-xl)] border border-[var(--fr-color-learn-correct-500)]/30 bg-[var(--fr-surface-card)] p-5 text-center shadow-[var(--fr-shadow-md)]"
+      ref={rootRef}
+    >
+      <div className="relative mx-auto flex min-h-36 w-full max-w-[18rem] items-center justify-center">
+        <div aria-hidden="true" className="absolute size-32 rounded-full bg-[var(--fr-color-brand-100)]/70" />
+        <div aria-hidden="true" className="absolute size-24 rounded-full border border-[var(--fr-color-sky-400)]/60" />
+        <CompletionCelebrationDots />
+        <Mascot
+          className="fr-completion-mascot-celebrate relative z-10"
+          data-loaded={isMascotLoaded ? 'true' : 'false'}
+          loading="eager"
+          onLoad={onMascotLoad}
+          size="sm"
+          variant="completion"
+        />
+      </div>
+
+      <div className="mx-auto max-w-[21rem]">
+        <p className="text-[var(--fr-type-caption-md-size)] font-bold uppercase leading-[var(--fr-type-caption-md-line)] tracking-normal text-[var(--fr-color-learn-correct-600)]">
+          Сохранено в Навигатор
+        </p>
+        <h2
+          className="mt-2 text-[var(--fr-type-display-sm-size)] font-bold leading-[var(--fr-type-display-sm-line)] text-[var(--fr-text-primary)]"
+          id="lesson-completion-title"
+        >
+          Урок пройден
+        </h2>
+        <p className="mt-3 text-[var(--fr-type-body-md-size)] leading-[var(--fr-type-body-md-line)] text-[var(--fr-text-secondary)]">
+          {completionDescription}
+        </p>
+      </div>
+
+      <CompletionProgress current={current} total={total} />
+
+      {details.next ? (
+        <div className="flex flex-col gap-2">
+          <Button
+            asChild
+            className="min-h-12 rounded-xl bg-[var(--fr-color-brand-500)] px-4 text-white hover:bg-[var(--fr-color-brand-600)]"
+          >
+            <Link to={`/lessons/${details.next.lesson.slug}`}>
+              К следующему уроку
+              <ArrowRight data-icon="inline-end" />
+            </Link>
+          </Button>
+          <Button asChild className="min-h-12 rounded-xl" variant="outline">
+            <Link to={`/levels/${details.level.slug}`}>К списку уроков</Link>
+          </Button>
+        </div>
+      ) : (
+        <Button asChild className="min-h-12 rounded-xl">
+          <Link to={`/levels/${details.level.slug}`}>
+            К списку уроков
+            <ArrowRight data-icon="inline-end" />
+          </Link>
+        </Button>
+      )}
+    </section>
   )
 }
 
@@ -601,6 +670,14 @@ function getPersistableAnswerPayload(
   return null
 }
 
+function removeCardState<State>(stateByCardId: Record<string, State>, cardId: string) {
+  if (!(cardId in stateByCardId)) return stateByCardId
+
+  const nextState = { ...stateByCardId }
+  delete nextState[cardId]
+  return nextState
+}
+
 function getBottomFeedback(
   card: Card,
   choiceState: ChoiceState,
@@ -774,10 +851,14 @@ function scrollFeedbackIntoView(cardId: string) {
 }
 
 function resetLessonScreenScroll(element: HTMLElement | null) {
+  scrollElementIntoView(element, 'start')
+}
+
+function scrollElementIntoView(element: HTMLElement | null, block: ScrollLogicalPosition) {
   if (!element || typeof element.scrollIntoView !== 'function') return
 
   element.scrollIntoView({
-    block: 'start',
+    block,
     behavior: 'auto',
   })
 }

@@ -52,18 +52,20 @@ export function LessonFeedback({
   const config = feedbackConfig[tone]
   const Icon = config.icon
   const renderedTitle = title ?? config.title
+  const hasTitle = Boolean(renderedTitle)
 
   return (
     <div
       aria-live="polite"
       className={cn(
-        'scroll-mb-[calc(6rem+env(safe-area-inset-bottom))] flex items-start gap-3 rounded-2xl border p-4 text-sm leading-6 text-[var(--fr-text-secondary)]',
+        'scroll-mb-[calc(6rem+env(safe-area-inset-bottom))] flex gap-3 rounded-2xl border p-4 text-sm leading-6 text-[var(--fr-text-secondary)]',
+        hasTitle ? 'items-start' : 'items-center',
         config.className,
       )}
       id={id}
       role="status"
     >
-      <Icon aria-hidden="true" className={cn('mt-0.5 shrink-0', config.iconClassName)} />
+      <Icon aria-hidden="true" className={cn('size-6 shrink-0', hasTitle ? 'mt-0.5' : '', config.iconClassName)} />
       <div className="flex min-w-0 flex-col gap-1">
         {renderedTitle ? <p className="font-semibold text-[var(--fr-text-primary)]">{renderedTitle}</p> : null}
         <div className="flex flex-col gap-1 [overflow-wrap:anywhere]">{children}</div>

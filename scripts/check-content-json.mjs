@@ -232,7 +232,7 @@ function validateLesson(lesson, ctx, seen, scope = {}) {
   for (const [cardIndex, card] of cards.entries()) {
     validateCard(card, `${ctx}.cards[${cardIndex}]`, seen);
   }
-  validateT1LessonArchitecture(lesson, ctx, scope);
+  validateLevel1LessonArchitecture(lesson, ctx, scope);
 }
 
 function validateChoiceOptions(card, ctx) {
@@ -298,12 +298,12 @@ function validateCategorization(card, ctx) {
   }
 }
 
-function isT1Lesson(lesson, scope) {
+function isLevel1Lesson(lesson, scope) {
   return (
-    scope.levelSlug === 't1-start' ||
-    (Array.isArray(lesson.tags) && lesson.tags.includes('T1')) ||
-    (typeof lesson.id === 'string' && lesson.id.startsWith('lesson_t1_')) ||
-    (typeof lesson.sourceSection === 'string' && lesson.sourceSection.includes('/t1-start/'))
+    scope.levelSlug === 'level-1-start' ||
+    (Array.isArray(lesson.tags) && lesson.tags.includes('L1')) ||
+    (typeof lesson.id === 'string' && lesson.id.startsWith('lesson_l1_')) ||
+    (typeof lesson.sourceSection === 'string' && lesson.sourceSection.includes('/level-1-start/'))
   );
 }
 
@@ -311,10 +311,10 @@ function cardByOrder(cards, order) {
   return cards.find((card) => isObject(card) && card.order === order);
 }
 
-function requireT1ScreenBase(card, lessonCtx, order, type, checkability) {
+function requireLevel1ScreenBase(card, lessonCtx, order, type, checkability) {
   const screenCtx = `${lessonCtx}.cards(order=${order})`;
   if (!card) {
-    fail(`${screenCtx} is required for the T1 eight-screen architecture`);
+    fail(`${screenCtx} is required for the Level 1 eight-screen architecture`);
     return false;
   }
 
@@ -329,7 +329,7 @@ function requireT1ScreenBase(card, lessonCtx, order, type, checkability) {
     fail(`${screenCtx}.sourceSection must end with "/ Экран ${order}"`);
   }
   if (card.statistics !== undefined && order !== 4) {
-    fail(`${screenCtx}.statistics belongs on T1 screen 4`);
+    fail(`${screenCtx}.statistics belongs on Level 1 screen 4`);
   }
 
   return true;
@@ -337,13 +337,13 @@ function requireT1ScreenBase(card, lessonCtx, order, type, checkability) {
 
 function requireNoCorrectChoice(card, ctx) {
   if (card.correctOptionId !== undefined) {
-    fail(`${ctx}.correctOptionId must be omitted for a subjective T1 hook`);
+    fail(`${ctx}.correctOptionId must be omitted for a subjective Level 1 hook`);
   }
 
   const options = Array.isArray(card.options) ? card.options : [];
   for (const [optionIndex, option] of options.entries()) {
     if (isObject(option) && option.isCorrect === true) {
-      fail(`${ctx}.options[${optionIndex}].isCorrect must be omitted for a subjective T1 hook`);
+      fail(`${ctx}.options[${optionIndex}].isCorrect must be omitted for a subjective Level 1 hook`);
     }
   }
 }
@@ -360,84 +360,84 @@ function requireCustomOptionLabel(card, ctx) {
 
 function requireScenarioScreenFour(card, ctx) {
   if (!hasNonEmptyString(card, 'question')) {
-    fail(`${ctx}.question is required for T1 screen 4`);
+    fail(`${ctx}.question is required for Level 1 screen 4`);
   }
   if (!hasNonEmptyString(card, 'correctOptionId')) {
-    fail(`${ctx}.correctOptionId is required for T1 screen 4`);
+    fail(`${ctx}.correctOptionId is required for Level 1 screen 4`);
   }
   if (!hasNonEmptyString(card, 'feedback')) {
-    fail(`${ctx}.feedback is required for T1 screen 4`);
+    fail(`${ctx}.feedback is required for Level 1 screen 4`);
   }
 
   const options = Array.isArray(card.options) ? card.options : [];
   if (options.length !== 3) {
-    fail(`${ctx}.options must contain exactly 3 options for T1 screen 4`);
+    fail(`${ctx}.options must contain exactly 3 options for Level 1 screen 4`);
   }
 
   for (const [optionIndex, option] of options.entries()) {
     if (!isObject(option)) continue;
     if (!hasNonEmptyString(option, 'feedback')) {
-      fail(`${ctx}.options[${optionIndex}].feedback is required for T1 screen 4`);
+      fail(`${ctx}.options[${optionIndex}].feedback is required for Level 1 screen 4`);
     }
   }
 
   const explicitlyCorrectOptions = options.filter((option) => isObject(option) && option.isCorrect === true);
   if (explicitlyCorrectOptions.length > 0) {
     if (explicitlyCorrectOptions.length !== 1) {
-      fail(`${ctx}.options must mark at most one explicit isCorrect option for T1 screen 4`);
+      fail(`${ctx}.options must mark at most one explicit isCorrect option for Level 1 screen 4`);
     } else if (explicitlyCorrectOptions[0].id !== card.correctOptionId) {
       fail(`${ctx}.options isCorrect option must match correctOptionId`);
     }
   }
 }
 
-function validateT1LessonArchitecture(lesson, ctx, scope) {
-  if (!isT1Lesson(lesson, scope)) return;
+function validateLevel1LessonArchitecture(lesson, ctx, scope) {
+  if (!isLevel1Lesson(lesson, scope)) return;
 
   const cards = Array.isArray(lesson.cards) ? lesson.cards : [];
   if (cards.length !== 8) {
-    fail(`${ctx}.cards must contain exactly 8 cards for the T1 lesson architecture`);
+    fail(`${ctx}.cards must contain exactly 8 cards for the Level 1 lesson architecture`);
   }
 
   for (let order = 1; order <= 8; order += 1) {
     if (!cardByOrder(cards, order)) {
-      fail(`${ctx}.cards must include order ${order} for the T1 lesson architecture`);
+      fail(`${ctx}.cards must include order ${order} for the Level 1 lesson architecture`);
     }
   }
 
   const screen1 = cardByOrder(cards, 1);
-  if (requireT1ScreenBase(screen1, ctx, 1, 'single_choice', 'subjective')) {
+  if (requireLevel1ScreenBase(screen1, ctx, 1, 'single_choice', 'subjective')) {
     requireNoCorrectChoice(screen1, `${ctx}.cards(order=1)`);
   }
 
   const screen2 = cardByOrder(cards, 2);
-  if (requireT1ScreenBase(screen2, ctx, 2, 'theory', 'objective')) {
-    requireT1Screen2SourceCta(screen2, `${ctx}.cards(order=2)`);
+  if (requireLevel1ScreenBase(screen2, ctx, 2, 'theory', 'objective')) {
+    requireLevel1Screen2SourceCta(screen2, `${ctx}.cards(order=2)`);
   }
 
   const screen3 = cardByOrder(cards, 3);
-  if (requireT1ScreenBase(screen3, ctx, 3, 'categorization', 'objective') && !hasNonEmptyString(screen3, 'feedback')) {
-    fail(`${ctx}.cards(order=3).feedback is required for T1 objective practice`);
+  if (requireLevel1ScreenBase(screen3, ctx, 3, 'categorization', 'objective') && !hasNonEmptyString(screen3, 'feedback')) {
+    fail(`${ctx}.cards(order=3).feedback is required for Level 1 objective practice`);
   }
 
   const screen4 = cardByOrder(cards, 4);
-  if (requireT1ScreenBase(screen4, ctx, 4, 'scenario', 'objective')) {
+  if (requireLevel1ScreenBase(screen4, ctx, 4, 'scenario', 'objective')) {
     requireScenarioScreenFour(screen4, `${ctx}.cards(order=4)`);
   }
 
-  requireT1ScreenBase(cardByOrder(cards, 5), ctx, 5, 'artifact', 'mixed');
+  requireLevel1ScreenBase(cardByOrder(cards, 5), ctx, 5, 'artifact', 'mixed');
 
   const screen6 = cardByOrder(cards, 6);
-  if (requireT1ScreenBase(screen6, ctx, 6, 'reflection', 'subjective')) {
+  if (requireLevel1ScreenBase(screen6, ctx, 6, 'reflection', 'subjective')) {
     const options = Array.isArray(screen6.options) ? screen6.options : [];
     if (options.length === 0) {
-      fail(`${ctx}.cards(order=6).options is required for T1 personal reflection`);
+      fail(`${ctx}.cards(order=6).options is required for Level 1 personal reflection`);
     }
     requireCustomOptionLabel(screen6, `${ctx}.cards(order=6)`);
   }
 
   const screen7 = cardByOrder(cards, 7);
-  if (requireT1ScreenBase(screen7, ctx, 7, 'artifact', 'mixed')) {
+  if (requireLevel1ScreenBase(screen7, ctx, 7, 'artifact', 'mixed')) {
     const variants = Array.isArray(screen7.variants) ? screen7.variants : [];
     if (variants.length !== 2) {
       fail(`${ctx}.cards(order=7).variants must contain exactly 2 ready formulations`);
@@ -445,7 +445,7 @@ function validateT1LessonArchitecture(lesson, ctx, scope) {
     requireCustomOptionLabel(screen7, `${ctx}.cards(order=7)`);
   }
 
-  requireT1ScreenBase(cardByOrder(cards, 8), ctx, 8, 'summary', 'subjective');
+  requireLevel1ScreenBase(cardByOrder(cards, 8), ctx, 8, 'summary', 'subjective');
 }
 
 const sourceScreenStatisticsCache = new Map();
@@ -513,7 +513,7 @@ function getSourceScreenCtaLabel(sourceSection) {
   return null;
 }
 
-function requireT1Screen2SourceCta(card, ctx) {
+function requireLevel1Screen2SourceCta(card, ctx) {
   const sourceCtaLabel = getSourceScreenCtaLabel(card.sourceSection);
   if (!sourceCtaLabel) return;
 

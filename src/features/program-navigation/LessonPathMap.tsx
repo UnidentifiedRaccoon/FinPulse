@@ -114,7 +114,7 @@ export function LevelTransitionCard({ isComplete, nextLevel }: { isComplete: boo
   const description = nextLevel?.title ?? 'Вернитесь к списку уровней и выберите следующий шаг.'
 
   return (
-    <section className="rounded-[28px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 text-center shadow-[var(--fr-shadow-sm)]">
+    <section className="w-full rounded-[28px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 text-center shadow-[var(--fr-shadow-sm)]">
       <div className="mx-auto flex max-w-[340px] flex-col items-center gap-4">
         <div className="flex flex-col gap-2">
           <h2 className="text-2xl font-bold leading-8 tracking-normal text-[var(--fr-text-primary)]">{title}</h2>
@@ -152,7 +152,7 @@ function PathSection({
       id={`path-section-${section.id}`}
       aria-labelledby={`section-${section.id}`}
     >
-      <div className="grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-3">
+      <div className="grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-3 px-4">
         <span className="h-px bg-[var(--fr-border-default)]" />
         <div className="min-w-0 text-center">
           <h2
@@ -313,7 +313,7 @@ function LessonNode({
 
 function EmptyPathState() {
   return (
-    <section className="rounded-[24px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 text-center">
+    <section className="w-full rounded-[24px] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-5 text-center">
       <h2 className="text-xl font-bold leading-7 tracking-normal text-[var(--fr-text-primary)]">
         В тире пока нет уроков
       </h2>

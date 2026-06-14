@@ -75,7 +75,7 @@ export function LessonPage({
 
 function PageState({ title, description }: { title: string; description?: string }) {
   return (
-    <section className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4 text-card-foreground">
+    <section className="flex w-full flex-col gap-2 rounded-lg border border-border bg-card p-4 text-card-foreground">
       <h1 className="text-xl font-semibold">{title}</h1>
       {description ? <p className="text-sm leading-6 text-muted-foreground">{description}</p> : null}
     </section>
