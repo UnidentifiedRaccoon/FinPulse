@@ -26,6 +26,7 @@ Included:
 - Stage 2 simple learner registration/login for saved progress;
 - Stage 2 persisted viewed/completed progress for lessons/cards;
 - Stage 2 private saved answers for authenticated reflection/artifact cards as a personal artifact;
+- internal read-only curator progress board accepted by ADR-0010;
 - responsive mobile-first design;
 - JSON as content source.
 
@@ -34,7 +35,7 @@ Excluded:
 - diagnostics/tests as a product system;
 - rewards/gamification;
 - analytics dashboards;
-- admin panel/CMS;
+- admin panel/CMS for content editing or learner-facing product management;
 - payments;
 - production financial operations;
 - personalized recommendations.
@@ -59,6 +60,17 @@ Excluded:
 - No hidden complexity disguised as MVP.
 - Accessible by default.
 - Architecture should not block later expansion into accounts, diagnostics, analytics, or richer backend content delivery, but those must stay behind explicit decisions.
+
+## Internal admin exception
+
+ADR-0010 accepts a separate internal Next.js admin surface for the first curator progress board. ADR-0011 accepts deploying it as a separate internal production surface, not as part of the learner SPA. It is read-only and separate from the learner app. It shows user login/email and progress aggregates, but does not show reflection/artifact answer text by default.
+
+Still out of scope:
+- organizations and RBAC;
+- answer-text review;
+- analytics dashboards;
+- content editing/CMS;
+- learner app migration to Next.js.
 
 ## Initial routes
 

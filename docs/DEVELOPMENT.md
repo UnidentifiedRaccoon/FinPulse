@@ -72,6 +72,59 @@ npm run start
 
 The Dockerfile mirrors this flow and sets `FINPULSE_API_HOST=0.0.0.0` and `FINPULSE_STATIC_ROOT=/app/dist` for Yandex Serverless Containers. The platform supplies `PORT`.
 
+## Internal admin
+
+ADR-0010 adds a separate Next.js admin surface under `apps/admin`. ADR-0011 deploys it as a separate Yandex Serverless Container. The learner app remains the Vite SPA.
+
+Configure the single admin through environment variables. Store a bcrypt hash, not a plaintext password:
+
+```bash
+node --import tsx -e "import { hashPassword } from './server/lib/password.ts'; console.log(await hashPassword('replace-with-admin-password'))"
+```
+
+Required local env:
+
+```bash
+FINPULSE_ADMIN_LOGIN=admin@example.com
+FINPULSE_ADMIN_PASSWORD_HASH=<bcrypt hash>
+FINPULSE_ADMIN_SESSION_SECRET=<long random secret>
+FINPULSE_ADMIN_API_BASE_URL=http://127.0.0.1:3001
+```
+
+Run the backend and admin app in separate terminals:
+
+```bash
+npm run dev:server
+npm run dev:admin
+```
+
+Open `http://localhost:3002`. The admin app rewrites `/api/**` to the local Fastify backend so the `finpulse_admin_session` cookie remains same-origin for the browser. Admin data routes are under `/api/admin/**` and are separate from learner routes.
+
+Production admin build:
+
+```bash
+FINPULSE_ADMIN_API_BASE_URL=https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net npm run build:admin
+PORT=3002 FINPULSE_ADMIN_API_BASE_URL=https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net npm run start:admin
+```
+
+Production container build:
+
+```bash
+docker build \
+  --file Dockerfile.admin \
+  --build-arg FINPULSE_ADMIN_API_BASE_URL=https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net \
+  --tag finpulse-admin:local .
+```
+
+The admin container serves only the Next.js app. It does not read PostgreSQL and does not own admin auth. Backend production deploy must configure `FINPULSE_ADMIN_LOGIN`, `FINPULSE_ADMIN_PASSWORD_HASH`, and `FINPULSE_ADMIN_SESSION_SECRET`; the admin container only needs `FINPULSE_ADMIN_API_BASE_URL`.
+
+Current admin limitations:
+- one env-configured admin;
+- read-only progress board;
+- global all-user visibility;
+- no organizations/RBAC;
+- no reflection/artifact answer text in default responses.
+
 ## Local backend database
 
 The Stage 2 backend uses PostgreSQL for learner identity, sessions, progress, and private reflection/artifact answers. JSON files remain the source-of-truth for educational content.

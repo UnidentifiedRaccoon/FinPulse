@@ -322,3 +322,124 @@ Revisit when:
 - richer practice interactions are needed beyond category assignment and multiple-correct selection;
 - answer attempts need to be persisted for a deliberately scoped product reason;
 - accessibility testing supports a drag-and-drop implementation that does not degrade mobile or keyboard use.
+
+## ADR-0010 — Add a separate Next.js internal admin surface
+
+Status: Accepted
+
+Decision: Add the first curator-facing admin board as a separate internal Next.js app under `apps/admin`, while keeping the learner application as the existing Vite React SPA.
+
+This amends the earlier MVP rule that admin panels and Next.js/SSR are out of scope only for the learner application. The learner app remains:
+- Vite React SPA;
+- mobile-first;
+- backed by the existing Fastify + PostgreSQL API;
+- served from the current same-origin production container;
+- based on the approved educational hierarchy `Program -> Level -> Section -> Lesson -> Card`.
+
+The new admin surface is not a migration path for the learner app and must not reintroduce the old `Module -> Unit` architecture.
+
+Rationale:
+- curators need a private read-only view of learner progress before a full organization/RBAC model exists;
+- progress is already stored in PostgreSQL, so the first admin board can be a read model over existing learner-owned state;
+- Next.js is useful for the internal admin surface because it can evolve separately from the learner SPA and later support internal deployment/routing choices without changing learner routes;
+- keeping admin in `apps/admin` makes the boundary explicit and avoids mixing curator screens into the learner bundle.
+
+Initial scope:
+- local development surface only;
+- one configured admin user;
+- admin login separate from learner login;
+- read-only curator board;
+- user list with login/email visibility;
+- aggregate progress counts and per-user lesson/card progress summaries;
+- detail view with lesson viewed/completed statuses and timestamps;
+- no reflection/artifact answer text in default admin responses or UI.
+
+Initial admin auth:
+- admin credentials are configured through environment variables and must not be committed;
+- successful admin login creates a separate httpOnly admin session cookie;
+- admin routes and learner routes use separate cookies and route prefixes;
+- admin API routes live under `/api/admin/**` and must not be exposed through public learner API routes;
+- this first stage does not implement organizations, roles, permissions, invitations, or seat management.
+
+Admin read model:
+- backend-owned Fastify endpoints expose curator data from PostgreSQL;
+- route handlers must authenticate the admin session before reading any learner progress;
+- responses may include learner `id`, `login`, and `createdAt`;
+- responses may include aggregate progress fields, lesson/card timestamps, current lesson, last activity, and derived `stuckDays`;
+- responses must not include `reflection_answers.answer_json`, prompt answer text, or other private answer payloads by default.
+
+Future compatibility:
+- read model and API contracts may include explicit placeholders/notes for organization filtering and curator access, but organization filtering is not active in this stage;
+- future multi-tenant/RBAC work must add a new ADR before exposing organization-scoped production access;
+- deployment beyond local development is deferred. The likely future target is a Yandex-hosted internal admin deployment, but exact domain/path, cookie topology, and access controls remain TBD.
+
+Out of scope:
+- organizations and RBAC;
+- answer-text review;
+- analytics dashboards;
+- content editing/CMS;
+- learner-app migration to Next.js;
+- production financial operations or personalized recommendations.
+
+Risks:
+- cross-origin local development can break cookies if the admin app and API use different hostnames; local setup should use consistent `localhost` origins or an intentional proxy;
+- env-configured single-admin auth is deliberately limited and must be replaced or extended before broader curator access;
+- a global all-users board is acceptable only before organization-scoped access exists.
+
+Revisit when:
+- organizations, roles, or curator access policies are introduced;
+- production deployment topology for admin is selected;
+- answer review becomes an explicit product requirement;
+- admin writes or CMS capabilities are requested.
+
+## ADR-0011 — Deploy internal admin as a separate Yandex container
+
+Status: Accepted
+
+Decision: Deploy the Next.js admin surface as a separate Yandex Serverless Container, while keeping the learner application and Fastify API in the existing production container.
+
+This supersedes only the ADR-0010 note that admin deployment beyond local development was deferred. The learner app remains a Vite SPA served by the existing Fastify container and is not migrated to Next.js.
+
+Production topology:
+- learner/backend container: serves the Vite learner app, `/api/**`, and the protected `/api/admin/**` backend read model;
+- admin container: serves the `apps/admin` Next.js app only;
+- admin browser requests use the admin container origin;
+- the admin Next.js app rewrites `/api/**` server-side to the production backend origin through `FINPULSE_ADMIN_API_BASE_URL`;
+- the backend sets the `finpulse_admin_session` httpOnly cookie through the proxied admin origin, so admin browser sessions stay same-origin with the admin app.
+
+Rationale:
+- keeps the learner deployment artifact stable and avoids mixing Next.js server/runtime concerns into the learner container;
+- avoids exposing `/admin` routes from the learner SPA;
+- lets the admin app evolve, scale, and be restricted independently from the learner site;
+- uses the existing backend admin API and PostgreSQL read model without adding a second data access path.
+
+Production admin auth:
+- the backend production container must receive `FINPULSE_ADMIN_LOGIN`, `FINPULSE_ADMIN_PASSWORD_HASH`, and `FINPULSE_ADMIN_SESSION_SECRET` as secrets;
+- the admin container must receive `FINPULSE_ADMIN_API_BASE_URL` pointing at the production backend origin;
+- the first production stage still has one env-configured admin user only;
+- learner sessions do not authorize admin API routes, and admin sessions do not authorize learner-owned progress/reflection routes.
+
+Deployment contract:
+- `Dockerfile.admin` builds and runs only the Next.js admin app;
+- `.github/workflows/deploy.yml` deploys the learner/backend container and smoke-tests that `/api/admin/auth/me` returns `401 admin_unauthenticated` rather than `503 admin_not_configured`;
+- `.github/workflows/deploy-admin.yml` is a manual workflow for the separate admin container and smoke-tests the admin frontend, API proxy health, and admin auth boundary;
+- Yandex resource ids for the admin container are environment-specific repository variables, not hard-coded until the resource exists.
+
+Out of scope:
+- creating organizations, roles, permissions, invitations, or seat management;
+- exposing reflection/artifact answer text;
+- analytics dashboards;
+- content editing/CMS;
+- deploying admin as a route inside the learner SPA;
+- replacing the env-configured single admin with a full user-management model.
+
+Risks:
+- the admin container cannot work until the separate Yandex Serverless Container exists and GitHub variables/secrets are configured;
+- the admin API base URL is part of the Next.js build/deploy configuration, so retargeting environments requires rebuilding or redeploying the admin image;
+- this is still a global all-users board and must not be opened to broader curator access before organization/RBAC work lands.
+
+Revisit when:
+- organizations/RBAC are introduced;
+- admin needs a custom domain, private network-only access, or IP allowlisting;
+- more than one admin user is required;
+- admin writes, answer review, or CMS capabilities are requested.

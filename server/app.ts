@@ -8,8 +8,10 @@ import fastify, { type FastifyBaseLogger, type FastifyInstance, type FastifyRepl
 import { ZodError } from 'zod'
 
 import { openDatabase, type AppDatabase } from './db/connection'
+import type { AdminAuthConfigInput } from './lib/adminSession'
 import { sendError } from './lib/http'
 import { clearSessionCookie, destroySession, SESSION_COOKIE_NAME, type SessionCookieOptions } from './lib/sessions'
+import { registerAdminRoutes } from './modules/admin/routes'
 import { registerAuthRoutes } from './modules/auth/routes'
 import { createContentService } from './modules/content/contentService'
 import { registerContentRoutes } from './modules/content/routes'
@@ -26,6 +28,7 @@ export type CreateAppOptions = {
   staticRoot?: string | false
   cookieSecure?: boolean
   corsOrigin?: string | string[] | false
+  adminAuth?: AdminAuthConfigInput
   logger?: boolean | FastifyBaseLogger
 }
 
@@ -101,6 +104,10 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
   registerContentRoutes(app, content)
   registerProgressRoutes(app, db, content)
   registerReflectionRoutes(app, db, content)
+  registerAdminRoutes(app, db, content, {
+    auth: options.adminAuth,
+    cookie: sessionCookieOptions,
+  })
 
   app.addHook('onClose', async () => {
     await db.close()
