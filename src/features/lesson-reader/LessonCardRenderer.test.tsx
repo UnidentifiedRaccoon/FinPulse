@@ -77,7 +77,299 @@ describe('LessonSession', () => {
     expect(screen.queryByText('Описание урока.')).not.toBeInTheDocument()
   })
 
-  it('renders theory explanation with the selected calculation pattern and no decorative icon', () => {
+  it('renders Markdown-enabled theory body as rich text and preserves no-break amounts', () => {
+    renderSession([
+      {
+        id: 'card-theory-rich-text',
+        type: 'theory',
+        order: 1,
+        title: 'Rich теория',
+        body: 'Тут есть **жирным**, *курсивом*, <u>подчёркиванием</u> и [ссылкой](https://example.com).\n\nСумма 30 000 ₽ в месяц остаётся цельной.',
+      },
+    ])
+
+    const card = getLessonCardByHeading('Rich теория')
+    const lessonCard = within(card)
+
+    expect(lessonCard.getByText('жирным').tagName).toBe('STRONG')
+    expect(lessonCard.getByText('курсивом').tagName).toBe('EM')
+    expect(lessonCard.getByText('подчёркиванием').tagName).toBe('U')
+    expect(lessonCard.getByRole('link', { name: 'ссылкой' })).toHaveAttribute('href', 'https://example.com')
+    expect(lessonCard.getByRole('link', { name: 'ссылкой' })).toHaveAttribute('target', '_blank')
+    expect(lessonCard.getByRole('link', { name: 'ссылкой' })).toHaveAttribute('rel', 'noreferrer')
+    expect(lessonCard.getByText('30 000 ₽ в месяц')).toHaveClass('whitespace-nowrap')
+    expectNoVisibleMarkdownMarkers(card)
+  })
+
+  it('renders single-choice question and option feedback as rich text while keeping option labels plain', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-choice-rich-text',
+        type: 'single_choice',
+        order: 1,
+        title: 'Граница выбора',
+        question: 'Что **важнее** отметить?',
+        options: [
+          {
+            id: 'raw-label',
+            label: '**Оставить как есть**',
+            feedback: 'Это **персональный** фидбек с <u>акцентом</u>.',
+          },
+          {
+            id: 'plain-label',
+            label: 'Обычный вариант',
+            feedback: 'Можно двигаться дальше.',
+          },
+        ],
+      },
+    ])
+
+    const card = getLessonCardByHeading('Граница выбора')
+    expect(within(card).getByText('важнее').tagName).toBe('STRONG')
+
+    const rawLabelOption = screen.getByRole('radio', { name: '**Оставить как есть**' })
+    const rawLabel = rawLabelOption.closest('label')
+    expect(rawLabel).not.toBeNull()
+    expect(rawLabel).toHaveTextContent('**Оставить как есть**')
+    expect(rawLabel?.querySelector('strong')).toBeNull()
+
+    await user.click(rawLabelOption)
+
+    const feedback = await screen.findByRole('status')
+    expect(within(feedback).getByText('персональный').tagName).toBe('STRONG')
+    expect(within(feedback).getByText('акцентом').tagName).toBe('U')
+    expectNoVisibleMarkdownMarkers(feedback)
+  })
+
+  it('renders Markdown-enabled choice question paragraphs without collapsing line breaks', () => {
+    renderSession([
+      {
+        id: 'card-choice-paragraphs',
+        type: 'single_choice',
+        order: 1,
+        title: 'Абзацы вопроса',
+        question: 'Первый абзац вопроса.\n\nВторой **важный** абзац.',
+        options: [
+          { id: 'first', label: 'Первый вариант' },
+          { id: 'second', label: 'Второй вариант' },
+        ],
+      },
+    ])
+
+    const card = getLessonCardByHeading('Абзацы вопроса')
+    expect(getParagraphTexts(card)).toEqual(expect.arrayContaining([
+      'Первый абзац вопроса.',
+      'Второй важный абзац.',
+    ]))
+    expect(within(card).getByText('важный').tagName).toBe('STRONG')
+    expectNoVisibleMarkdownMarkers(card)
+  })
+
+  it('renders bottom feedback paragraphs without collapsing line breaks', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-feedback-paragraphs',
+        type: 'single_choice',
+        order: 1,
+        title: 'Абзацы фидбека',
+        question: 'Что выберешь?',
+        options: [
+          {
+            id: 'selected',
+            label: 'Выбрать',
+            feedback: 'Первый абзац фидбека.\n\nВторой **важный** абзац фидбека.',
+          },
+          {
+            id: 'other',
+            label: 'Другой вариант',
+          },
+        ],
+        feedback: 'Общий абзац.\n\nЕщё один общий абзац.',
+      },
+    ])
+
+    await user.click(screen.getByRole('radio', { name: 'Выбрать' }))
+
+    const feedback = await screen.findByRole('status')
+    expect(getParagraphTexts(feedback)).toEqual(expect.arrayContaining([
+      'Первый абзац фидбека.',
+      'Второй важный абзац фидбека.',
+      'Общий абзац.',
+      'Ещё один общий абзац.',
+    ]))
+    expect(within(feedback).getByText('важный').tagName).toBe('STRONG')
+    expectNoVisibleMarkdownMarkers(feedback)
+  })
+
+  it('renders scenario body, feedback, statistics labels, and statistics sources as rich text', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-scenario-rich-text',
+        type: 'scenario',
+        order: 1,
+        title: 'Сценарий с источниками',
+        body: 'Аня **заметила**, что подписки стали незаметной статьёй расходов.',
+        question: 'Что <u>сначала</u> проверить?',
+        options: [
+          { id: 'ignore', label: 'Не смотреть подписки', feedback: 'Так можно *упустить* повторные списания.' },
+          {
+            id: 'check',
+            label: 'Проверить активные подписки',
+            isCorrect: true,
+            feedback: 'Верно: **сначала видим список**.',
+          },
+        ],
+        correctOptionId: 'check',
+        feedback: 'Общее правило: **сначала увидеть**, потом решить.',
+        statistics: {
+          title: 'Статистика',
+          items: [
+            {
+              value: '68%',
+              label: 'людей **замечают** лишние подписки только после проверки.',
+            },
+          ],
+          sources: ['[Банк России](https://example.com/source)'],
+        },
+      },
+    ])
+
+    const card = getLessonCardByHeading('Сценарий с источниками')
+    const lessonCard = within(card)
+    expect(lessonCard.getByText('заметила').tagName).toBe('STRONG')
+    expect(lessonCard.getByText('сначала').tagName).toBe('U')
+    expect(lessonCard.getByText('замечают').tagName).toBe('STRONG')
+    expect(lessonCard.getByRole('link', { name: 'Банк России' })).toHaveAttribute(
+      'href',
+      'https://example.com/source',
+    )
+
+    await user.click(screen.getByRole('radio', { name: 'Проверить активные подписки' }))
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+
+    const feedback = screen.getByRole('status')
+    expect(within(feedback).getByText('сначала видим список').tagName).toBe('STRONG')
+    expect(within(feedback).getByText('сначала увидеть').tagName).toBe('STRONG')
+    expectNoVisibleMarkdownMarkers(feedback)
+  })
+
+  it('renders artifact template Markdown but keeps artifact variants plain', () => {
+    renderSession([
+      {
+        id: 'card-artifact-rich-text',
+        type: 'artifact',
+        order: 1,
+        title: 'Рабочий блок',
+        body: 'Собери **мини-правило** для проверки трат.',
+        variants: ['**Готовое правило**', 'Обычный вариант'],
+        customOption: {
+          label: 'Свой вариант',
+          placeholder: 'Напиши свой вариант',
+        },
+        template: ['*Первая строка*', '<u>Вторая строка</u>'],
+      },
+    ])
+
+    const card = getLessonCardByHeading('Рабочий блок')
+    const lessonCard = within(card)
+    expect(lessonCard.getByText('мини-правило').tagName).toBe('STRONG')
+    expect(lessonCard.getByText('Первая строка').tagName).toBe('EM')
+    expect(lessonCard.getByText('Вторая строка').tagName).toBe('U')
+    expect(lessonCard.getByRole('textbox', { name: 'Первая строка' })).toBeInTheDocument()
+    expect(lessonCard.getByRole('textbox', { name: 'Вторая строка' })).toBeInTheDocument()
+
+    const rawVariantOption = screen.getByRole('radio', { name: '**Готовое правило**' })
+    const rawVariantLabel = rawVariantOption.closest('label')
+    expect(rawVariantLabel).not.toBeNull()
+    expect(rawVariantLabel).toHaveTextContent('**Готовое правило**')
+    expect(rawVariantLabel?.querySelector('strong')).toBeNull()
+  })
+
+  it('renders summary body, points, and next step as rich text', () => {
+    renderSession([
+      {
+        id: 'card-summary-rich-text',
+        type: 'summary',
+        order: 1,
+        title: 'Rich итог',
+        body: 'Готово: **итоговый акцент**.\n\nВторой абзац итога.',
+        points: ['<u>Вижу свободу выбора</u>\n\nВторой абзац пункта.', 'Проверяю [источник](https://example.com/summary).'],
+        nextStep: 'Дальше *собрать план* без спешки.\n\nЗатем вернуться к правилу.',
+      },
+    ])
+
+    const card = getLessonCardByHeading('Rich итог')
+    const lessonCard = within(card)
+    expect(lessonCard.getByText('итоговый акцент').tagName).toBe('STRONG')
+    expect(lessonCard.getByText('Вижу свободу выбора').tagName).toBe('U')
+    expect(lessonCard.getByRole('link', { name: 'источник' })).toHaveAttribute(
+      'href',
+      'https://example.com/summary',
+    )
+    expect(lessonCard.getByText('собрать план').tagName).toBe('EM')
+    expect(card).toHaveTextContent('Второй абзац итога.')
+    expect(card).toHaveTextContent('Второй абзац пункта.')
+    expect(card).toHaveTextContent('Затем вернуться к правилу.')
+    expectNoVisibleMarkdownMarkers(card)
+  })
+
+  it('renders reflection prompt and guidance paragraphs as rich text', () => {
+    renderSession([
+      {
+        id: 'card-reflection-paragraphs',
+        type: 'reflection',
+        order: 1,
+        title: 'Абзацы рефлексии',
+        prompt: 'Первый абзац промпта.\n\nВторой **личный** абзац промпта.',
+        inputType: 'freeform',
+        guidance: 'Первый абзац подсказки.\n\nВторой <u>важный</u> абзац подсказки.',
+      },
+    ])
+
+    const card = getLessonCardByHeading('Абзацы рефлексии')
+    expect(getParagraphTexts(card)).toEqual(expect.arrayContaining([
+      'Первый абзац промпта.',
+      'Второй личный абзац промпта.',
+      'Первый абзац подсказки.',
+      'Второй важный абзац подсказки.',
+    ]))
+    expect(within(card).getByText('личный').tagName).toBe('STRONG')
+    expect(within(card).getByText('важный').tagName).toBe('U')
+    expectNoVisibleMarkdownMarkers(card)
+  })
+
+  it('renders artifact body and template paragraphs as rich text', () => {
+    renderSession([
+      {
+        id: 'card-artifact-paragraphs',
+        type: 'artifact',
+        order: 1,
+        title: 'Абзацы артефакта',
+        body: 'Первый абзац задания.\n\nВторой **важный** абзац задания.',
+        template: ['Первый абзац шаблона.\n\nВторой <u>шаблонный</u> абзац.'],
+      },
+    ])
+
+    const card = getLessonCardByHeading('Абзацы артефакта')
+    expect(getParagraphTexts(card)).toEqual(expect.arrayContaining([
+      'Первый абзац задания.',
+      'Второй важный абзац задания.',
+    ]))
+    expect(card).toHaveTextContent('Первый абзац шаблона.')
+    expect(card).toHaveTextContent('Второй шаблонный абзац.')
+    expect(within(card).getByText('важный').tagName).toBe('STRONG')
+    expect(within(card).getByText('шаблонный').tagName).toBe('U')
+    expect(screen.getByRole('textbox', { name: 'Первый абзац шаблона. Второй шаблонный абзац.' })).toBeInTheDocument()
+    expectNoVisibleMarkdownMarkers(card)
+  })
+
+  it('renders fact-like theory paragraphs as plain text without calculation panels', () => {
     renderSession([
       {
         id: 'card-theory-calc',
@@ -93,22 +385,21 @@ describe('LessonSession', () => {
     expect(card).not.toBeNull()
 
     const lessonCard = within(card as HTMLElement)
-    expect(lessonCard.getByText('Расчёт')).toBeInTheDocument()
-    expect(lessonCard.getByText('5 трат')).toBeInTheDocument()
-    expect(lessonCard.getByText('200 ₽')).toBeInTheDocument()
-    expect(lessonCard.getByText('30 дней')).toBeInTheDocument()
-    expect(lessonCard.getByText('30 000 ₽')).toBeInTheDocument()
-    expect(lessonCard.getByText('По отдельности незаметно, в сумме ощутимо.')).toBeInTheDocument()
+    expect(lessonCard.queryByText('Расчёт')).not.toBeInTheDocument()
+    expect(lessonCard.getByText(/200 ₽/)).toBeInTheDocument()
+    expect(lessonCard.getByText(/30 000 ₽/)).toBeInTheDocument()
     expect(lessonCard.getByText('Кофе навынос')).toBeInTheDocument()
-    expect(card?.querySelector('.fr-calculation-container')).toHaveAttribute('data-step-count', '4')
+    expect(card?.querySelector('.fr-calculation-container')).toBeNull()
     expect(card?.querySelector('[class*="sm:grid"]')).toBeNull()
-    expect(card).toHaveTextContent('5 трат×200 ₽×30 дней=30 000 ₽')
+    expect(card).toHaveTextContent(
+      'Факт из сценария урока: 5 трат по 200 ₽ в день — это 30 000 ₽ в месяц. По отдельности незаметно, в сумме ощутимо.',
+    )
     expect(card?.textContent).not.toContain('××')
     expect(card?.textContent).not.toContain('==')
     expect(card?.querySelector('svg')).toBeNull()
   })
 
-  it('formats every fact-like paragraph in passive theory cards', () => {
+  it('does not infer formula or example surfaces from passive theory copy', () => {
     renderSession([
       {
         id: 'card-theory-formula-example',
@@ -123,18 +414,18 @@ describe('LessonSession', () => {
     expect(card).not.toBeNull()
 
     const lessonCard = within(card as HTMLElement)
-    expect(lessonCard.getByText('Формула')).toBeInTheDocument()
-    expect(lessonCard.getByText('обязательные расходы')).toBeInTheDocument()
-    expect(lessonCard.getByText('3-6 месяцев')).toBeInTheDocument()
-    expect(lessonCard.getByText('подушка')).toBeInTheDocument()
-    expect(card?.querySelector('.fr-calculation-container')).toHaveAttribute('data-step-count', '3')
+    expect(lessonCard.queryByText('Формула')).not.toBeInTheDocument()
+    expect(lessonCard.queryByText('Пример')).not.toBeInTheDocument()
+    expect(lessonCard.queryByRole('heading', { name: 'Формула' })).not.toBeInTheDocument()
+    expect(lessonCard.queryByRole('heading', { name: 'Пример' })).not.toBeInTheDocument()
+    expect(lessonCard.queryByRole('heading', { name: 'Расчёт' })).not.toBeInTheDocument()
+    expect(card?.querySelector('.fr-calculation-container')).toBeNull()
     expect(card?.querySelector('[class*="sm:grid"]')).toBeNull()
-    expect(card).toHaveTextContent('обязательные расходы×3-6 месяцев=подушка')
+    expect(card).toHaveTextContent('Формула простая: подушка = месячные обязательные расходы × 3–6.')
     expect(card?.textContent).not.toContain('××')
     expect(card?.textContent).not.toContain('==')
-    expect(lessonCard.getByText('Пример')).toBeInTheDocument()
     expect(card).toHaveTextContent(
-      'Если обязательные расходы — 40 000 ₽ в месяц, то подушка на 3 месяца — 120 000 ₽, а на 6 месяцев — 240 000 ₽.',
+      'Пример из сценария: Если обязательные расходы — 40 000 ₽ в месяц, то подушка на 3 месяца — 120 000 ₽, а на 6 месяцев — 240 000 ₽.',
     )
     expect(lessonCard.getByText('40 000 ₽ в месяц')).toHaveClass('whitespace-nowrap')
     expect(lessonCard.getByText('120 000 ₽')).toHaveClass('whitespace-nowrap')
@@ -547,6 +838,28 @@ describe('LessonSession', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Внезапная поломка техники: Подушка помогает' })).toBeInTheDocument(),
     )
+    const resultMatrix = screen.getByRole('region', { name: 'Итоговая таблица распределения' })
+    const pinnedColumnShadow = 'shadow-[8px_0_14px_-14px_rgba(15,23,42,0.6)]'
+    expect(resultMatrix).toHaveClass('max-h-[min(56svh,28rem)]', 'overflow-auto', 'overscroll-contain')
+    const firstHeaderCell = within(resultMatrix).getByText('Пункт')
+    expect(firstHeaderCell).toHaveClass('sticky', 'left-0', 'top-0', 'z-30')
+    expect(firstHeaderCell).not.toHaveClass(pinnedColumnShadow)
+    expect(within(resultMatrix).getByText('Подушка помогает')).toHaveClass('sticky', 'top-0', 'z-20')
+    const firstItemCell = within(resultMatrix).getByText('Внезапная поломка техники').closest('div')
+    expect(firstItemCell).not.toBeNull()
+    expect(firstItemCell).toHaveClass('sticky', 'left-0')
+    expect(firstItemCell).not.toHaveClass(pinnedColumnShadow)
+
+    resultMatrix.scrollLeft = 24
+    fireEvent.scroll(resultMatrix)
+    await waitFor(() => expect(firstHeaderCell).toHaveClass(pinnedColumnShadow))
+    expect(firstItemCell).toHaveClass(pinnedColumnShadow)
+
+    resultMatrix.scrollLeft = 0
+    fireEvent.scroll(resultMatrix)
+    await waitFor(() => expect(firstHeaderCell).not.toHaveClass(pinnedColumnShadow))
+    expect(firstItemCell).not.toHaveClass(pinnedColumnShadow)
+
     expect(screen.getByRole('button', { name: 'Внезапная поломка техники: Не для подушки' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -1100,6 +1413,28 @@ function LocationProbe({ onChange }: { onChange: (location: Location) => void })
   }, [location, onChange])
 
   return null
+}
+
+function getLessonCardByHeading(name: string) {
+  const card = screen.getByRole('heading', { name }).closest('section')
+  expect(card).toBeInstanceOf(HTMLElement)
+  return card as HTMLElement
+}
+
+function expectNoVisibleMarkdownMarkers(container: HTMLElement) {
+  const text = container.textContent ?? ''
+
+  expect(text).not.toContain('**')
+  expect(text).not.toMatch(/\*\S[^*]*\*/)
+  expect(text).not.toContain('<u>')
+  expect(text).not.toContain('</u>')
+  expect(text).not.toContain('](')
+}
+
+function getParagraphTexts(container: HTMLElement) {
+  return Array.from(container.querySelectorAll('p'))
+    .map((paragraph) => paragraph.textContent?.trim())
+    .filter((text): text is string => Boolean(text))
 }
 
 function mockElementScrollIntoView() {

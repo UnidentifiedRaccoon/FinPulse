@@ -1,6 +1,6 @@
 # QA User Scenario Map — FinPulse
 
-Last updated: 2026-06-13
+Last updated: 2026-06-15
 
 ## Purpose
 
@@ -14,7 +14,7 @@ Out of scope remains unchanged: diagnostics, rewards, scoring, recommendations, 
 - Profile: `/profile`
 - Level: `/levels/level-1-start`
 - Sections: `/levels/level-1-start/sections/money-and-operations`
-- Lessons: `/lessons/where-money-goes`, `/lessons/mandatory-and-desired`
+- Lessons: `/lessons/where-money-goes`, `/lessons/mandatory-and-desired`, `/lessons/safe-payment`, `/lessons/digital-footprint-and-protection`
 
 Product and methodology language uses Program -> Level -> Section -> Lesson ->
 Card. Old `/modules/**` browser routes and old `/api/modules*` /
@@ -24,6 +24,8 @@ Current runtime lesson set:
 
 - `where-money-goes`
 - `mandatory-and-desired`
+- `safe-payment`
+- `digital-footprint-and-protection`
 
 Removed legacy content must return 404 through content API and graceful load errors in the UI:
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState, type UIEvent } from 'react'
 
 import { LessonFeedback } from '@/features/lesson-reader/LessonFeedback'
 import type {
@@ -12,7 +12,7 @@ import {
 } from '@/features/lesson-reader/lessonInteraction'
 import { cn } from '@/lib/utils'
 
-import { NoBreakText, SelectableOption } from './shared'
+import { NoBreakText, RichTextParagraphs, SelectableOption } from './shared'
 
 export function CategorizationCard({
   card,
@@ -31,9 +31,10 @@ export function CategorizationCard({
   if (card.readOnly) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]">
-          <NoBreakText text={card.question} />
-        </p>
+        <RichTextParagraphs
+          paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+          text={card.question}
+        />
         <ul className="flex flex-col gap-3">
           {card.items.map((item) => (
             <li
@@ -50,9 +51,10 @@ export function CategorizationCard({
           ))}
         </ul>
         {card.feedback ? (
-          <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">
-            <NoBreakText text={card.feedback} />
-          </p>
+          <RichTextParagraphs
+            paragraphClassName="text-sm leading-6 text-[var(--fr-text-secondary)]"
+            text={card.feedback}
+          />
         ) : null}
       </div>
     )
@@ -60,9 +62,10 @@ export function CategorizationCard({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]">
-        <NoBreakText text={card.question} />
-      </p>
+      <RichTextParagraphs
+        paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+        text={card.question}
+      />
       {useAutoFlow ? (
         <AutoCategorizationFlow card={card} feedbackId={feedbackId} onSelect={onSelect} state={state} />
       ) : (
@@ -316,71 +319,99 @@ function CategorizationResultMatrix({
   onSelect: (itemId: string, categoryId: string) => void
   state: CategorizationState
 }) {
-  const gridTemplateColumns = `minmax(7.5rem,1fr) repeat(${card.categories.length}, minmax(4.5rem,4.75rem))`
+  const [hasHorizontalScrollOffset, setHasHorizontalScrollOffset] = useState(false)
+  const gridTemplateColumns = `minmax(8rem,1fr) repeat(${card.categories.length}, minmax(max-content,1fr))`
+  const pinnedColumnShadow = 'shadow-[8px_0_14px_-14px_rgba(15,23,42,0.6)]'
+
+  function handleMatrixScroll(event: UIEvent<HTMLDivElement>) {
+    const nextHasOffset = event.currentTarget.scrollLeft > 1
+    setHasHorizontalScrollOffset((current) => (current === nextHasOffset ? current : nextHasOffset))
+  }
 
   return (
     <div className="overflow-hidden rounded-[var(--fr-radius-lg)] border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)]">
       <div
-        className="grid border-b border-[var(--fr-border-subtle)] bg-[var(--fr-surface-soft)] text-[length:var(--fr-type-caption-md-size)] font-bold leading-[var(--fr-type-caption-md-line)] text-[var(--fr-text-tertiary)]"
-        style={{ gridTemplateColumns }}
+        aria-label="Итоговая таблица распределения"
+        className="max-h-[min(56svh,28rem)] overflow-auto overscroll-contain [scrollbar-width:thin]"
+        onScroll={handleMatrixScroll}
+        role="region"
       >
-        <span className="px-[var(--fr-space-3)] py-[var(--fr-space-2)]">Пункт</span>
-        {card.categories.map((category) => (
-          <span
-            className="px-1.5 py-[var(--fr-space-2)] text-center text-[length:var(--fr-type-caption-sm-size)] leading-[var(--fr-type-caption-sm-line)] [hyphens:none] [overflow-wrap:normal] [word-break:normal]"
-            key={category.id}
-          >
-            {category.label}
-          </span>
-        ))}
-      </div>
-
-      {card.items.map((item) => (
         <div
-          className="grid border-b border-[var(--fr-border-subtle)] last:border-b-0"
-          key={item.id}
+          className="grid min-w-full text-[length:var(--fr-type-caption-md-size)] font-bold leading-[var(--fr-type-caption-md-line)] text-[var(--fr-text-tertiary)]"
           style={{ gridTemplateColumns }}
         >
-          <div className="min-w-0 px-[var(--fr-space-3)] py-[var(--fr-space-3)]">
-            <span className="min-w-0 text-pretty text-[length:var(--fr-type-body-sm-size)] font-bold leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-primary)]">
-              <NoBreakText text={item.label} />
+          <span
+            className={cn(
+              'sticky left-0 top-0 z-30 border-b border-r border-[var(--fr-border-subtle)] bg-[var(--fr-surface-soft)] px-[var(--fr-space-3)] py-[var(--fr-space-2)]',
+              hasHorizontalScrollOffset && pinnedColumnShadow,
+            )}
+          >
+            Пункт
+          </span>
+          {card.categories.map((category) => (
+            <span
+              className="sticky top-0 z-20 flex min-h-10 items-center justify-center border-b border-[var(--fr-border-subtle)] bg-[var(--fr-surface-soft)] px-[var(--fr-space-2)] py-[var(--fr-space-2)] text-center text-[length:var(--fr-type-caption-sm-size)] leading-[var(--fr-type-caption-sm-line)] whitespace-nowrap"
+              key={category.id}
+            >
+              {category.label}
             </span>
-          </div>
+          ))}
 
-          {card.categories.map((category) => {
-            const selectedCategoryId = state.selectedCategoryIdsByItemId[item.id] ?? ''
-            const isSelected = selectedCategoryId === category.id
-            const cellState = getResultCellState({
-              categoryId: category.id,
-              correctCategoryId: item.correctCategoryId,
-              isChecked: state.isChecked,
-              isSelected,
-            })
+          {card.items.map((item, itemIndex) => {
+            const isLastRow = itemIndex === card.items.length - 1
 
             return (
-              <button
-                aria-describedby={state.isChecked ? feedbackId : undefined}
-                aria-label={`${item.label}: ${category.label}`}
-                aria-pressed={isSelected}
-                className={cn(
-                  'flex min-h-12 items-center justify-center border-l border-[var(--fr-border-subtle)] px-[var(--fr-space-1)] text-[length:var(--fr-type-body-sm-size)] font-bold leading-[var(--fr-type-body-sm-line)] transition-[background-color,border-color,color,box-shadow] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--fr-color-sky-500)]',
-                  cellState === 'selected' && 'bg-[var(--fr-color-brand-50)] text-[var(--fr-color-sky-600)]',
-                  cellState === 'correct' &&
-                    'bg-[var(--fr-color-learn-correct-50)] text-[var(--fr-color-learn-correct-500)]',
-                  cellState === 'retry' &&
-                    'bg-[var(--fr-color-learn-almost-50)] text-[var(--fr-color-learn-almost-500)]',
-                  cellState === 'default' && 'text-[var(--fr-text-tertiary)] hover:bg-[var(--fr-surface-soft)]',
-                )}
-                key={category.id}
-                onClick={() => onSelect(item.id, category.id)}
-                type="button"
-              >
-                {isSelected ? '✓' : '—'}
-              </button>
+              <Fragment key={item.id}>
+                <div
+                  className={cn(
+                    'sticky left-0 z-10 min-w-0 border-r border-[var(--fr-border-subtle)] bg-[var(--fr-surface-card)] px-[var(--fr-space-3)] py-[var(--fr-space-3)]',
+                    !isLastRow && 'border-b border-[var(--fr-border-subtle)]',
+                    hasHorizontalScrollOffset && pinnedColumnShadow,
+                  )}
+                >
+                  <span className="min-w-0 text-pretty text-[length:var(--fr-type-body-sm-size)] font-bold leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-primary)] [overflow-wrap:anywhere]">
+                    <NoBreakText text={item.label} />
+                  </span>
+                </div>
+
+                {card.categories.map((category) => {
+                  const selectedCategoryId = state.selectedCategoryIdsByItemId[item.id] ?? ''
+                  const isSelected = selectedCategoryId === category.id
+                  const cellState = getResultCellState({
+                    categoryId: category.id,
+                    correctCategoryId: item.correctCategoryId,
+                    isChecked: state.isChecked,
+                    isSelected,
+                  })
+
+                  return (
+                    <button
+                      aria-describedby={state.isChecked ? feedbackId : undefined}
+                      aria-label={`${item.label}: ${category.label}`}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        'flex min-h-12 items-center justify-center px-[var(--fr-space-1)] text-[length:var(--fr-type-body-sm-size)] font-bold leading-[var(--fr-type-body-sm-line)] transition-[background-color,border-color,color,box-shadow] focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--fr-color-sky-500)]',
+                        !isLastRow && 'border-b border-[var(--fr-border-subtle)]',
+                        cellState === 'selected' && 'bg-[var(--fr-color-brand-50)] text-[var(--fr-color-sky-600)]',
+                        cellState === 'correct' &&
+                          'bg-[var(--fr-color-learn-correct-50)] text-[var(--fr-color-learn-correct-500)]',
+                        cellState === 'retry' &&
+                          'bg-[var(--fr-color-learn-almost-50)] text-[var(--fr-color-learn-almost-500)]',
+                        cellState === 'default' && 'text-[var(--fr-text-tertiary)] hover:bg-[var(--fr-surface-soft)]',
+                      )}
+                      key={`${item.id}-${category.id}`}
+                      onClick={() => onSelect(item.id, category.id)}
+                      type="button"
+                    >
+                      {isSelected ? '✓' : '—'}
+                    </button>
+                  )
+                })}
+              </Fragment>
             )
           })}
         </div>
-      ))}
+      </div>
     </div>
   )
 }
@@ -469,7 +500,7 @@ function CategorizationFeedback({
   if (isCorrect) {
     return (
       <LessonFeedback id={id} tone="correct">
-        {card.feedback ? <p><NoBreakText text={card.feedback} /></p> : null}
+        {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!card.feedback ? <p>Все элементы распределены по подходящим группам.</p> : null}
       </LessonFeedback>
     )
@@ -486,8 +517,8 @@ function CategorizationFeedback({
         </p>
       ))}
       {incorrectItems.length > 3 ? <p>И ещё {incorrectItems.length - 3} пункт(а) стоит пересмотреть.</p> : null}
-      {incorrectItems.map((item) => (item.feedback ? <p key={`${item.id}-feedback`}><NoBreakText text={item.feedback} /></p> : null))}
-      {card.feedback ? <p><NoBreakText text={card.feedback} /></p> : null}
+      {incorrectItems.map((item) => (item.feedback ? <RichTextParagraphs key={`${item.id}-feedback`} text={item.feedback} /> : null))}
+      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
       {!incorrectItems.length && !card.feedback ? <p>Проверь распределение ещё раз.</p> : null}
     </LessonFeedback>
   )

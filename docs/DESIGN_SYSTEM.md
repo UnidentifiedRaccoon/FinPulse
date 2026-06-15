@@ -507,18 +507,25 @@ Theory should be short and applicable:
 - no lecture tone;
 - explain complex terms immediately.
 
-### 9.3.1. Explanatory Calculation Block
+### 9.3.1. Passive Text Blocks
 
-Use this pattern for passive educational cards that explain a concept or show a small financial fact: `theory`, `callout`, `summary`, read-only `scenario`, and read-only `single_choice`.
+Passive educational cards such as `theory`, `callout`, `summary`, read-only
+`scenario`, and read-only `single_choice` render author text as ordinary
+paragraphs for now. Do not infer special surfaces from plain-text prefixes such
+as `Факт`, `Формула`, `Пример`, or `Простой тест`.
 
 Structure:
-1. Card frame title as the only main heading. Do not add a leading decorative icon inside the explanatory block.
-2. One short supporting paragraph in `body.lg` / `text.secondary`.
-3. If the copy contains a fact, formula, simple test, or scenario example, move that sentence into a soft calculation surface: `surface.soft`, `border.default`, `radius.lg`, `space.4`, no heavy shadow.
-4. In calculation surfaces, show tabular-number steps when the formula is clear: vertical `step -> operator -> step -> result` stacks by default, compact horizontal formulas only when the calculation container is at least `36rem` wide, then one short caption. Give regular step cells a light neutral border so they stay legible on the soft calculation surface. Use a restrained brand blue result treatment for the result cell; reserve `learn.correct.*` tokens for checked-answer feedback.
-5. Continue with the remaining explanation, then examples as quiet rounded chips using `surface.soft`.
+1. Card frame title as the only main heading.
+2. Short paragraphs in `body.lg` / `text.secondary`.
+3. Facts, formulas, examples, and simple tests stay inside the relevant
+   Markdown-enabled text field as normal prose until a dedicated rich-text
+   renderer introduces explicit supported components.
+4. Examples may continue as quiet rounded chips when the card uses the
+   `examples` array.
 
-Do not use this pattern for interactive answer rows, reflection inputs, artifact fields, or primary feedback states. Those keep their own selectable/input/feedback components.
+Do not use this pattern for interactive answer rows, reflection inputs,
+artifact fields, or primary feedback states. Those keep their own
+selectable/input/feedback components.
 
 ### 9.4. Practice Block
 

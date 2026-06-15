@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 
-FROM node:24-alpine AS deps
+ARG NODE_VERSION=24
+
+FROM node:${NODE_VERSION}-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -11,7 +13,7 @@ COPY . .
 RUN npm run build:container
 RUN npm prune --omit=dev
 
-FROM node:24-alpine AS runtime
+FROM node:${NODE_VERSION}-alpine AS runtime
 ENV NODE_ENV=production \
     PORT=8080 \
     FINPULSE_API_HOST=0.0.0.0 \

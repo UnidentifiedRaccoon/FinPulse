@@ -1,8 +1,10 @@
-import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
+import { Fragment, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { Check, CheckCircle2, Circle } from 'lucide-react'
 
 import type { Card } from '@/content/program'
 import { cn } from '@/lib/utils'
+
+import { parseRichText, splitRichTextParagraphs } from './richText'
 
 type CardStatistics = NonNullable<Card['statistics']>
 
@@ -25,6 +27,98 @@ export function NoBreakText({ text }: { text: string }) {
       )}
     </>
   )
+}
+
+export function RichText({ text }: { text: string }) {
+  const segments = parseRichText(text)
+
+  return (
+    <>
+      {segments.map((segment, index) => {
+        const key = `${segment.kind}-${index}-${segment.text}`
+
+        if (segment.kind === 'text') {
+          return (
+            <Fragment key={key}>
+              <NoBreakText text={segment.text} />
+            </Fragment>
+          )
+        }
+
+        if (segment.kind === 'strong') {
+          return (
+            <strong className="font-semibold" key={key}>
+              <NoBreakText text={segment.text} />
+            </strong>
+          )
+        }
+
+        if (segment.kind === 'emphasis') {
+          return (
+            <em className="italic" key={key}>
+              <NoBreakText text={segment.text} />
+            </em>
+          )
+        }
+
+        if (segment.kind === 'underline') {
+          return (
+            <u className="underline underline-offset-2" key={key}>
+              <NoBreakText text={segment.text} />
+            </u>
+          )
+        }
+
+        if (segment.kind === 'link') {
+          return (
+            <a
+              className="font-semibold text-[var(--fr-color-sky-600)] underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--fr-color-sky-500)]"
+              href={segment.href}
+              key={key}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <NoBreakText text={segment.text} />
+            </a>
+          )
+        }
+
+        return null
+      })}
+    </>
+  )
+}
+
+export function RichTextParagraphs({
+  text,
+  as = 'p',
+  className,
+  paragraphClassName,
+}: {
+  text: string
+  as?: 'p' | 'span' | 'div'
+  className?: string
+  paragraphClassName?: string
+}) {
+  const paragraphs = splitRichTextParagraphs(text)
+  const Component = as
+  const renderedParagraphs = paragraphs.flatMap((paragraph, index) => [
+    <Component
+      className={cn(as === 'span' && 'block', paragraphClassName)}
+      key={`${index}-${paragraph}`}
+    >
+      <RichText text={paragraph} />
+    </Component>,
+    as === 'span' && index < paragraphs.length - 1 ? <Fragment key={`${index}-separator`}> </Fragment> : null,
+  ])
+
+  if (!renderedParagraphs.length) return null
+
+  if (className) {
+    return <div className={className}>{renderedParagraphs}</div>
+  }
+
+  return <>{renderedParagraphs}</>
 }
 
 function splitNoBreakNumberUnits(text: string) {
@@ -68,15 +162,16 @@ export function StatisticsPanel({ statistics }: { statistics: CardStatistics }) 
               <NoBreakText text={item.value} />
             </dt>
             <dd className="min-w-0 text-pretty text-[length:var(--fr-type-body-sm-size)] leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-secondary)]">
-              <NoBreakText text={item.label} />
+              <RichTextParagraphs text={item.label} />
             </dd>
           </div>
         ))}
       </dl>
       {statistics.sources?.length ? (
-        <p className="mt-[var(--fr-space-3)] text-pretty text-[length:var(--fr-type-caption-md-size)] leading-[var(--fr-type-caption-md-line)] text-[var(--fr-text-tertiary)]">
-          <NoBreakText text={`Источники: ${statistics.sources.join('; ')}.`} />
-        </p>
+        <RichTextParagraphs
+          paragraphClassName="mt-[var(--fr-space-3)] text-pretty text-[length:var(--fr-type-caption-md-size)] leading-[var(--fr-type-caption-md-line)] text-[var(--fr-text-tertiary)]"
+          text={`Источники: ${statistics.sources.join('; ')}.`}
+        />
       ) : null}
     </aside>
   )
@@ -97,7 +192,15 @@ export function PillList({ items }: { items: string[] }) {
   )
 }
 
-export function StaticChecklist({ items, checked = false }: { items: string[]; checked?: boolean }) {
+export function StaticChecklist({
+  items,
+  checked = false,
+  richText = false,
+}: {
+  items: string[]
+  checked?: boolean
+  richText?: boolean
+}) {
   return (
     <ul className="flex flex-col gap-[var(--fr-space-2)]">
       {items.map((item) => (
@@ -111,7 +214,15 @@ export function StaticChecklist({ items, checked = false }: { items: string[]; c
             <Circle aria-hidden="true" className="shrink-0 text-[var(--fr-text-tertiary)]" />
           )}
           <span>
-            <NoBreakText text={item} />
+            {richText ? (
+              <RichTextParagraphs
+                as="span"
+                className="flex min-w-0 flex-col gap-[var(--fr-space-1)]"
+                text={item}
+              />
+            ) : (
+              <NoBreakText text={item} />
+            )}
           </span>
         </li>
       ))}

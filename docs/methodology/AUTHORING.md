@@ -1,172 +1,588 @@
-# Authoring Framework — FinPulse Target Methodology
+# Регламент подготовки уроков ФинПульс
 
-This is the working instruction for agents and editors turning methodologist
-source material into current FinPulse MVP runtime JSON.
+Источник: https://docs.google.com/document/d/1_4re7hJvNt4Ife70a4_PIvBZA04F4pc3/edit
 
-Use together with:
+Этот файл является операционным регламентом для методистов, редакторов и ИИ-агентов, которые готовят уроки Уровня 1 к загрузке в приложение. Общая стратегия и научные основания живут в `docs/methodology/METHODOLOGY.md`; техническая истина для runtime JSON живёт в `docs/CONTENT_MODEL.md`, `harness/schemas/content.schema.json`, `src/content/program.ts` и `scripts/check-content-json.mjs`.
 
-- `docs/methodology/METHODOLOGY.md` — central target methodology;
-- `docs/CONTENT_MODEL.md` — runtime JSON schema authority;
-- `docs/PRODUCT.md` and `docs/ARCHITECTURE.md` — MVP boundaries and data flow;
-- `docs/methodology/CONTENT_BACKLOG.md` — current runtime coverage and gaps.
+## Граница ответственности
 
-## Source Of Truth
+ИИ-методист делает:
 
-`docs/methodology/METHODOLOGY.md` is the active methodology source. Previous
-Finzdorov, AI-assisted, and personal-experience lesson sources are no longer
-active authoring sources for runtime content.
+- берёт утверждённую тему урока и сохранённый Markdown-источник;
+- заполняет lesson design brief;
+- собирает ровно восемь экранов Уровня 1;
+- для каждого экрана выдаёт человеческое описание и один валидный объект карточки для `lesson.cards`;
+- проходит QA-чек-листы перед передачей в разработку.
 
-When a methodologist provides a scripted lesson, preserve it as local Markdown
-under `docs/levels/<level>/sections/<section>/` before adapting it to JSON.
-Runtime JSON must reference the local source path.
+ИИ-методист не делает:
 
-## Current MVP Filter
+- не проектирует входную диагностику, психотипирование, B2B-аналитику, челленджи, напоминания или механику привычек;
+- не меняет программу уровней и разделов;
+- не вводит скоринг, диагнозы, ярлыки, персональные рекомендации или аналитику;
+- не добавляет новые runtime-механики без отдельного решения.
 
-The target methodology is wider than the MVP. Current runtime may include:
+## Терминология и иерархия
 
-- static educational content;
-- short 3-5 minute lessons;
-- simple learner auth for progress;
-- viewed/completed lesson and card progress;
-- private persisted `reflection` and `artifact` answers for authenticated
-  learners only;
-- current supported card types from `docs/CONTENT_MODEL.md`.
-
-Do not add without a separate decision:
-
-- diagnostics, scores, levels, inferred traits, or labels;
-- personalized recommendations or individual financial advice;
-- rewards, streaks, coins, shops, or gamification loops;
-- reminders, adaptive spaced repetition, psychotype-based UI adaptation, or B2B
-  analytics;
-- new runtime interactions beyond the accepted objective `multi_select` and
-  `categorization` practice cards, such as matching, calculators, hotspots,
-  branching dialogues, scored tests, or expense-diary schemas.
-
-## Educational Hierarchy
-
-The approved methodical hierarchy is:
+Используется только принятая иерархия:
 
 ```text
-Program -> Level -> Section -> Lesson -> Card
+Программа -> Уровень -> Раздел -> Урок -> Карточка
 ```
 
-Use these names in methodology, source briefs, lesson authoring, QA, and agent
-handoffs. Runtime JSON, validators, TypeScript types, API payloads, frontend
-routes, and persistence context use Level and Section directly.
-
-Example:
-
-```text
-Уровень 1 · Старт -> level `level-1-start`
-Раздел 1. Деньги и операции -> section `money-and-operations`
-У1.1 Куда уходят деньги -> lesson `where-money-goes`
-```
-
-## Card Adaptation Rules
-
-The general runtime model currently supports these card types:
-
-- `theory`
-- `callout`
-- `single_choice`
-- `multi_select`
-- `categorization`
-- `reflection`
-- `scenario`
-- `artifact`
-- `checklist`
-- `summary`
-- `video` only when a real playable `src` is available
-
-For new Level 1 lessons, do not treat the full list above as free choice. Use the
-accepted eight-screen Level 1 architecture below and only the card types named in
-that table. In particular, do not introduce `callout`, `multi_select`,
-`checklist`, matching, calculators, diary schemas, branching dialogue, scoring,
-diagnostics, reminders, gamification, psychotype adaptation, analytics, or
-personalized recommendations in a Level 1 runtime lesson.
-
-Adapt target-only screens safely:
-
-| Target pattern | MVP adaptation |
+| Уровень | Что это |
 |---|---|
-| Sorting into named categories | `categorization` when the answer is objective and all target categories are known |
-| Multiple correct choices | For non-Level 1 content, `multi_select` when the source asks to mark several objectively correct options. For Level 1 screen 3, rewrite as `categorization`. |
-| Expense diary | `artifact.template` or `reflection.inputType: "table"` |
-| `Блок статистики` / `Статистика по теме` inside a source screen | `card.statistics` on the same runtime card; preserve values and sources |
-| Reminder setup | `artifact.variants` or `summary.nextStep`; do not schedule reminders |
-| Psychotype-specific feedback | Preserve in source or neutral guidance; do not infer psychotype |
-| Navigator save | Persist only neutral `reflection`/`artifact` answers allowed by ADR-0007 |
-| Video placeholder | Keep as text in `theory`; add `video` only after a real URL exists |
+| Программа | Весь курс ФинПульс. |
+| Уровень | Ступень владения: Старт, Опора, Уверенный, Стратег, Наставник. |
+| Раздел | Тематический блок уроков внутри уровня. |
+| Урок | Единица обучения на 3-5 минут. Для Уровня 1 это восемь карточек. |
+| Карточка | Один экран урока и один объект в `lesson.cards`. |
 
-When adapting a scripted lesson, scan every source screen for `Блок статистики`
-or `Статистика по теме`. If the block exists, it must become `statistics` on
-the runtime card whose `sourceSection` references that screen. Do not drop it
-because the main screen is an `artifact`, `scenario`, or `single_choice`.
+Правила:
 
-## Required Level 1 Lesson Architecture
+- ссылка на урок даётся через уровень, раздел, номер и название;
+- source Markdown сохраняется под `docs/levels/<level>/sections/<section>/` до адаптации в JSON;
+- `sourceSection` каждой карточки указывает на сохранённый Markdown и заканчивается на `/ Экран N`;
+- технические slugs и ids берутся из текущих правил проекта и должны быть стабильными.
 
-Create every new Level 1 lesson as exactly eight screens. One screen is one runtime
-card and one user action. The lesson should take 3-5 minutes and move from a
-recognizable situation to a personal action and saved result.
+## Приоритет источников
 
-| Order | Screen | Type | Checkability | Required shape |
-|---:|---|---|---|---|
-| 1 | Зацепка | `single_choice` | `subjective` | Recognizable life situation. No correct answer; any option is accepted. Do not set `correctOptionId` or `isCorrect`. |
-| 2 | Мини-теория | `theory` | `objective` | One main idea, with an optional short example or fact. Mention video only as text unless there is a real playable URL. |
-| 3 | Объективная практика | `categorization` | `objective` | Sort examples into known categories that train the lesson's main distinction. Include feedback. Never use `single_choice` or `multi_select` here. |
-| 4 | Внешний пример / Real World A | `scenario` | `objective` | Short external life example, not the learner's personal data. Exactly three options, one correct answer, and feedback for correct and incorrect answers. Put source statistics in `card.statistics` when present. |
-| 5 | Личное применение / Real World B | `artifact` | `mixed` | Small draft on the learner's data: expenses, markup, possible situation, amount, first step, or similar personal artifact. Do not check personal data as right/wrong. |
-| 6 | Личная рефлексия | `reflection` | `subjective` | Options plus `customOption` labelled `Свой вариант`. No correct or incorrect answer. |
-| 7 | Микро-правило / первый шаг | `artifact` | `mixed` | Exactly two ready rule/first-step formulations plus `customOption` labelled `Свой вариант`. Do not create real reminders, schedules, or habit mechanics. |
-| 8 | Итог / Навигатор | `summary` | `subjective` | Briefly list what is saved in the Navigator and bridge to the next lesson. |
+- `METHODOLOGY.md` задаёт целевую стратегию и научные основания.
+- Этот регламент задаёт операционную сборку уроков Уровня 1.
+- `CONTENT_MODEL.md`, JSON schema и валидатор задают окончательные runtime-ограничения.
+- Если целевая методология шире MVP, применяется MVP-фильтр из этого регламента и технического content model.
 
-For JSON, every Level 1 card must have a stable `id`, `order` from 1 to 8, `type`,
-`sourceSection` ending with `Экран N`, and the required `checkability`. Objective
-screens 3 and 4 must include feedback. If the source practice is written as a
-choice list, adapt it into screen-3 category sorting. If the source contains
-`Блок статистики` or `Статистика по теме`, attach it to screen 4 as
-`card.statistics`; do not make statistics a separate card.
+## MVP-фильтр
 
-## Lesson Quality Checklist
+В текущем MVP допустимы:
 
-A runtime lesson is ready when:
+- статический образовательный контент;
+- уроки на 3-5 минут;
+- простая авторизация для прогресса;
+- viewed/completed progress по урокам и карточкам;
+- приватные ответы пользователя только для `reflection` и `artifact` карточек;
+- поддержанные типы карточек из `CONTENT_MODEL.md`.
 
-- it follows the ladder from situation/action to rule or artifact;
-- it has one main idea and fits 3-5 minutes;
-- it has at least one interaction in the first 30-60 seconds when practical;
-- objective answers have feedback;
-- subjective answers are never marked as wrong;
-- volatile financial values are framed as source examples or lookup skills, not
-  timeless facts;
-- it does not require schema, UI, persistence, or product scope that the MVP does
-  not have.
+Не добавлять без отдельного решения:
 
-## Runtime JSON Checklist
+- диагностику, баллы, уровни пользователя, ярлыки, inferred traits;
+- персональные финансовые рекомендации;
+- награды, streak, coins, shops, челленджи или геймификационные петли;
+- реальные напоминания, адаптивные spaced-повторы, психотип-адаптацию интерфейса, B2B-аналитику;
+- новые взаимодействия вроде matching, калькуляторов, branching dialogue, scored tests, отдельной схемы дневника расходов.
 
-Before calling a content task done:
+Видео-карточки не используются в текущих уроках Уровня 1. Техническая поддержка `video` в content model остаётся только для будущих материалов с реальным playable source и отдельным решением по применению.
 
-- level/section/lesson/card IDs and slugs are stable and unique at the
-  educational level;
-- paths are normalized relative JSON paths;
-- arrays are sorted by `order`;
-- `correctOptionId` values match option IDs;
-- `reflection` and `artifact` cards that should save user work have meaningful
-  titles/prompts/templates;
-- every source `Блок статистики` / `Статистика по теме` is represented as
-  `card.statistics` with `items` and, when present in source, `sources`;
-- source table `Кнопка` microcopy is preserved as card `ctaLabel` when it is a
-  meaningful continue action; remove decorative arrows from the stored text;
-- content validates with `npm run check:content`;
-- app/backend tests are updated for new slugs and titles.
+## Поток работы
 
-## Result Packet
+Подготовка одного урока идёт строго по шагам:
 
-For every methodology/runtime content task, record:
+1. Получить вход: тему, место в программе, сохранённый Markdown-источник и связь с соседними уроками.
+2. Заполнить lesson design brief.
+3. Разложить урок на восемь экранов по фиксированной последовательности.
+4. Для каждого экрана подготовить описание и один объект карточки.
+5. Собрать карточки в `lesson.cards` в порядке `order` от 1 до 8.
+6. Сверить `id`, `sourceSection`, `checkability`, статистику, пользовательские варианты и CTA.
+7. Пройти QA-чек-листы и заменить все плейсхолдеры реальными данными.
 
-- source documents preserved;
-- runtime files changed;
-- card types used;
-- target-methodology features deferred because of MVP scope;
-- checks run;
-- risks and follow-up decisions.
+Главные ограничения:
+
+- урок занимает 3-5 минут;
+- одна главная мысль на урок;
+- одно действие пользователя на экран;
+- Уровень 1 всегда содержит ровно восемь экранов;
+- экран 3 всегда `categorization`;
+- экран 4 всегда внешний `scenario`, а не личные данные пользователя;
+- личные ответы на экранах 5 и 6 не оцениваются как верные или неверные;
+- если в таблице экрана есть поле `Кнопка`, текст перехода хранится в `ctaLabel` на карточках 1-7;
+- Markdown-разметка допустима только в утверждённых текстовых полях карточек;
+- экран 7 содержит ровно две готовые формулировки и `customOption.label: "Свой вариант"`.
+
+## Lesson design brief
+
+Перед сборкой восьми экранов методист заполняет brief. Он не попадает в runtime JSON, но предотвращает механическое заполнение шаблона.
+
+Brief должен содержать:
+
+- место урока: уровень, раздел, номер урока, связь с предыдущим и следующим уроком;
+- цель на 3-5 минут: что пользователь сможет понять, различить или сделать после урока;
+- главное различие урока: одна идея или навык, который тренирует экран 3;
+- типичная ошибка или риск непонимания: какой ошибочный ход должен исправить feedback;
+- Real World A: внешний пример, официальный источник или жизненная ситуация для экрана 4; указать, нужна ли статистика;
+- Real World B: маленький личный артефакт на данных пользователя для экрана 5, без оценки как верно/неверно;
+- личная рефлексия: безопасный вопрос для экрана 6 и набор вариантов плюс `Свой вариант`;
+- микро-правило: один конкретный первый шаг; на экране 7 будут ровно две готовые формулировки плюс `Свой вариант`;
+- поведенческий мостик: зачем сохранённый результат пригодится в следующем уроке или разделе.
+
+## Восемь экранов урока Уровня 1
+
+### Экран 1. Зацепка
+
+| Параметр | Содержание |
+|---|---|
+| Назначение | Втянуть в тему через узнаваемую жизненную ситуацию и снять тревогу. Это точка входа, а не проверка. |
+| Тип взаимодействия | Мягкий одиночный выбор без правильного ответа. Любой вариант принимается. |
+| Обязательные элементы | Заголовок; короткая ситуация-крючок; 2-4 равнозначных варианта; отдельный `feedback` на каждый вариант; continue CTA. |
+| Markdown-поля | `question`; `options[].feedback`. |
+| Чего нельзя делать | Нельзя задавать тест, давать теорию, стыдить или намекать, что вариант неправильный. Нельзя выносить один общий `feedback` на карточку вместо feedback у каждого варианта. |
+
+Мини-пример: «Зарплата пришла 5-го, а к 20-му денег нет. Что чаще всего съедает остаток?» Варианты: кафе и доставка; подписки; спонтанные покупки; не знаю.
+
+### Экран 2. Мини-теория
+
+| Параметр | Содержание |
+|---|---|
+| Назначение | Дать ровно одну главную мысль урока. |
+| Тип взаимодействия | Чтение без выбора и без проверки. |
+| Обязательные элементы | Заголовок главной мысли; 3-5 коротких строк; один пример или факт как часть `body`; при необходимости один термин; continue CTA. |
+| Markdown-поля | `body`. |
+| Чего нельзя делать | Нельзя давать вторую идею, заучивать быстро меняющиеся цифры или превращать экран в лонгрид. |
+
+Мини-пример: «Обязательные расходы — это то, без чего месяц не прожить». Теория подаётся текстом.
+
+### Экран 3. Объективная практика
+
+| Параметр | Содержание |
+|---|---|
+| Назначение | Закрепить главное различие урока действием. |
+| Тип взаимодействия | Только `categorization`: разложить примеры по 2-3 известным категориям. |
+| Обязательные элементы | Заголовок-задание; категории; 4-8 примеров; верная раскладка; feedback по карточкам; системная кнопка `Проверить`, затем continue CTA из `ctaLabel`. |
+| Markdown-поля | `question`; `items[].feedback`; `feedback`. |
+| Чего нельзя делать | Нельзя делать одиночным или множественным выбором; нельзя вводить новый материал. |
+
+Если исходная практика написана как список вариантов, её нужно переписать в сортировку по категориям.
+
+### Экран 4. Внешний пример / Real World A
+
+| Параметр | Содержание |
+|---|---|
+| Назначение | Связать тему с реальной финансовой средой, продуктами, договорами, ставками или правами. |
+| Тип взаимодействия | Проверяемый `scenario`: короткий сценарий, ровно 3 варианта, 1 верный. |
+| Обязательные элементы | Заголовок; внешний сценарий; 3 варианта; `correctOptionId`; feedback на карточке и у каждого варианта; статистика при наличии источника. |
+| Markdown-поля | `body`; `question`; `options[].feedback`; `feedback`; `statistics.items[].label`; `statistics.sources[]`. |
+| Чего нельзя делать | Нельзя заменять этим экраном личную работу; нельзя приводить статистику без источника; нельзя давать индивидуальные рекомендации. |
+
+Статистика из источника хранится на этой же карточке в `statistics`. Она не становится отдельной карточкой.
+
+### Экран 5. Личное применение / Real World B
+
+| Параметр | Содержание |
+|---|---|
+| Назначение | Перенести идею на собственные данные пользователя как маленький личный черновик. |
+| Тип взаимодействия | `artifact`: ввод, набросок, список или шаблон на своих данных. |
+| Обязательные элементы | Заголовок-приглашение; поля или template; пример заполнения; сохранение как личный артефакт; continue CTA. |
+| Markdown-поля | `body`; `template[]` только для inline-акцентов в подписях полей. |
+| Чего нельзя делать | Нельзя оценивать личный ответ как верный/неверный, требовать лишние чувствительные данные или пропускать сохранение. |
+
+Фраза про Навигатор означает только личный артефакт в рамках существующего сохранения `reflection`/`artifact` ответов. Это не скоринг и не рекомендация.
+
+### Экран 6. Личная рефлексия
+
+| Параметр | Содержание |
+|---|---|
+| Назначение | Безопасно осмыслить тему применительно к себе. |
+| Тип взаимодействия | `reflection` с субъективным выбором и обязательным custom option. |
+| Обязательные элементы | Вопрос-рефлексия; 2-4 варианта; `customOption.label: "Свой вариант"`; поддерживающая guidance; continue CTA. |
+| Markdown-поля | `prompt`; `guidance`. |
+| Чего нельзя делать | Нельзя помечать ответы как верные/неверные, давить, стыдить или превращать в тест. |
+
+### Экран 7. Микро-правило / первый шаг
+
+| Параметр | Содержание |
+|---|---|
+| Назначение | Перевести знание в одно маленькое правило поведения или первый шаг. |
+| Тип взаимодействия | `artifact` с выбором одной готовой формулировки или своим вариантом. |
+| Обязательные элементы | Заголовок; ровно две готовые `variants`; `customOption.label: "Свой вариант"`; сохранение выбранного правила; continue CTA. |
+| Markdown-поля | `body`. `variants[]` остаются plain text, потому что выбранная строка сохраняется как личный артефакт пользователя. |
+| Чего нельзя делать | Нельзя предлагать больше двух готовых вариантов, заставлять выбирать несколько правил, формулировать абстрактно или создавать реальные напоминания. |
+
+Формулировки должны быть конкретными: «Если..., то...» или «Я буду...». Итогом сохраняется один выбранный или написанный первый шаг.
+
+### Экран 8. Итог / Навигатор
+
+| Параметр | Содержание |
+|---|---|
+| Назначение | Зафиксировать результат, показать ценность и перекинуть мостик к следующему уроку. |
+| Тип взаимодействия | `summary`: итоговый экран, кнопка завершения. |
+| Обязательные элементы | Что сохранилось; зачем это пригодится; мостик к следующему уроку или разделу; финальный CTA. |
+| Markdown-поля | `body`; `points[]`; `nextStep`. |
+| Чего нельзя делать | Нельзя вводить новый материал, завершать без сохранённого результата или обрывать без следующего шага. |
+
+Упоминание возврата через 7/30 дней допустимо только как методический мостик в тексте. Оно не создаёт реальное напоминание или адаптивный повтор в MVP.
+
+## Формат выдачи экрана
+
+Для каждого экрана методист готовит два блока подряд:
+
+1. Человеческое описание экрана.
+2. Валидный объект карточки для массива `lesson.cards`.
+
+JSON должен быть валидным: без комментариев, trailing comma и лишних ключей. Markdown допустим только в перечисленных ниже строковых полях; остальные поля остаются plain text. Плейсхолдеры заменяются реальными данными урока до передачи в разработку.
+
+Обязательные правила:
+
+- `id` стабилен и уникален;
+- `order` строго от 1 до 8;
+- `sourceSection` заканчивается на `/ Экран N`;
+- `checkability` совпадает с типом экрана;
+- `ctaLabel` на экранах 1-7 хранит чистый текст переходной кнопки из строки `Кнопка` в source table, без декоративных стрелок и кавычек;
+- если строка `Кнопка` содержит цепочку вроде `Проверить -> Дальше`, в `ctaLabel` попадает только текст перехода после проверки: `Дальше`;
+- system actions `Проверить`, `Ответить` и финальное `Завершить` не записываются как `ctaLabel`;
+- экран 8 не требует `ctaLabel`, потому что финальная кнопка завершения принадлежит reader-у;
+- `statistics` ставится только на экран 4 и только при наличии статистики в источнике;
+- `customOption.label` на экранах 6 и 7 всегда ровно `Свой вариант`;
+- экран 7 содержит ровно две готовые `variants` плюс `customOption`.
+
+### Markdown-разметка в текстовых полях
+
+Цель Markdown-разметки — сохранить смысловое форматирование из DOCX-источника: жирный, курсив, подчёркивание, переносы абзацев и ссылки. Это авторский контракт для подготовки уроков; runtime-поддержка рендера внедряется отдельной задачей.
+
+Допустимое подмножество:
+
+- абзацы через `\n\n`;
+- жирный `**текст**`;
+- курсив `*текст*`;
+- подчёркивание через безопасный inline-тег `<u>текст</u>` или согласованный renderer-эквивалент;
+- ссылки в формате `[текст](https://example.com)`;
+- без произвольного HTML, встроенных таблиц, заголовков Markdown и списков внутри JSON-строк, если отдельное решение не расширит контракт.
+
+Markdown-enabled поля для Уровня 1:
+
+| Экран | Тип карточки | Поля |
+|---:|---|---|
+| 1 | `single_choice` | `question`, `options[].feedback` |
+| 2 | `theory` | `body` |
+| 3 | `categorization` | `question`, `items[].feedback`, `feedback` |
+| 4 | `scenario` | `body`, `question`, `options[].feedback`, `feedback`, `statistics.items[].label`, `statistics.sources[]` |
+| 5 | `artifact` | `body`, `template[]` |
+| 6 | `reflection` | `prompt`, `guidance` |
+| 7 | `artifact` | `body` |
+| 8 | `summary` | `body`, `points[]`, `nextStep` |
+
+Plain-text поля, где Markdown не используется: `title`, `ctaLabel`, `options[].label`, `categories[].label`, `items[].label`, `variants[]`, `customOption.label`, `customOption.placeholder`, `statistics.value`, `id`, `sourceSection`, `saveKey`, slugs и технические ключи.
+
+Не нужно создавать отдельную техническую структуру через префиксы `Факт:`, `Формула:`, `Пример:` или `Простой тест:` ради будущего renderer-а. Если в исходной таблице есть факт-иллюстрация, пример, формула или простой тест, он переносится обычным абзацем в соответствующее Markdown-enabled поле, чаще всего в `theory.body`.
+
+### Экран 1 — `single_choice`
+
+```json
+{
+  "id": "card_l1s1l3_01_hook",
+  "type": "single_choice",
+  "order": 1,
+  "title": "Зацепка",
+  "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 1",
+  "thinkingType": "understanding",
+  "develops": "psychology",
+  "checkability": "subjective",
+  "question": "**Короткий крючок:** знакомая жизненная ситуация.\n\nФинальный вопрос из этой ситуации?",
+  "options": [
+    {
+      "id": "option-a",
+      "label": "Первый узнаваемый ответ",
+      "feedback": "Принято: **это нормальная стартовая точка**."
+    },
+    {
+      "id": "option-b",
+      "label": "Второй узнаваемый ответ",
+      "feedback": "Принято: дальше разберёмся *на примерах*."
+    },
+    {
+      "id": "option-c",
+      "label": "Третий узнаваемый ответ",
+      "feedback": "Принято: здесь <u>нет неправильного ответа</u>."
+    }
+  ],
+  "ctaLabel": "Дальше"
+}
+```
+
+### Экран 2 — `theory`
+
+```json
+{
+  "id": "card_l1s1l3_02_theory",
+  "type": "theory",
+  "order": 2,
+  "title": "Мини-теория",
+  "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 2",
+  "thinkingType": "memory",
+  "develops": "hard skills",
+  "checkability": "objective",
+  "body": "**Одна главная мысль** урока.\n\nКороткий пример или факт как обычный абзац, без служебного префикса для renderer-а.\n\nТеория подаётся текстом; мультимедийные карточки в текущих уроках Уровня 1 не используются.",
+  "ctaLabel": "Понятно, дальше"
+}
+```
+
+### Экран 3 — `categorization`
+
+```json
+{
+  "id": "card_l1s1l3_03_practice",
+  "type": "categorization",
+  "order": 3,
+  "title": "Практика понимания",
+  "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 3",
+  "thinkingType": "application",
+  "develops": "hard skills",
+  "checkability": "objective",
+  "question": "Разложи примеры по **двум категориям**.",
+  "categories": [
+    {
+      "id": "category-a",
+      "label": "Категория A"
+    },
+    {
+      "id": "category-b",
+      "label": "Категория B"
+    }
+  ],
+  "items": [
+    {
+      "id": "item-1",
+      "label": "Пример 1",
+      "correctCategoryId": "category-a",
+      "feedback": "Почему это относится к **категории A**."
+    },
+    {
+      "id": "item-2",
+      "label": "Пример 2",
+      "correctCategoryId": "category-b",
+      "feedback": "Почему это относится к **категории B**."
+    }
+  ],
+  "feedback": "Общее пояснение после проверки: **как отличать категории**.",
+  "ctaLabel": "Дальше"
+}
+```
+
+### Экран 4 — `scenario`
+
+```json
+{
+  "id": "card_l1s1l3_04_real_world",
+  "type": "scenario",
+  "order": 4,
+  "title": "Внешний пример",
+  "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 4",
+  "thinkingType": "real world A",
+  "develops": "hard skills",
+  "checkability": "objective",
+  "body": "Короткий внешний пример из жизни другого человека или рыночной ситуации. Важную деталь можно выделить **жирным**.",
+  "question": "Какой вариант *лучше всего* подходит к ситуации?",
+  "options": [
+    {
+      "id": "wrong-too-small",
+      "label": "Неверный, но правдоподобный вариант",
+      "feedback": "Почему этот вариант **не решает задачу**."
+    },
+    {
+      "id": "correct-balanced",
+      "label": "Верный вариант",
+      "isCorrect": true,
+      "feedback": "Почему этот вариант работает: **назван главный принцип**."
+    },
+    {
+      "id": "wrong-too-broad",
+      "label": "Ещё один неверный вариант",
+      "feedback": "Почему этот вариант избыточен или *не по теме*."
+    }
+  ],
+  "correctOptionId": "correct-balanced",
+  "feedback": "Общее пояснение: какой **принцип** нужно забрать из внешнего примера.",
+  "ctaLabel": "Применить к себе",
+  "statistics": {
+    "title": "Статистика по теме",
+    "items": [
+      {
+        "value": "число из источника",
+        "label": "что именно показывает **число**"
+      }
+    ],
+    "sources": [
+      "[название источника](https://example.com)"
+    ]
+  }
+}
+```
+
+Если статистики в источнике нет, ключ `statistics` не добавляется.
+
+### Экран 5 — `artifact`
+
+```json
+{
+  "id": "card_l1s1l3_05_personal_artifact",
+  "type": "artifact",
+  "order": 5,
+  "title": "Личное применение",
+  "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 5",
+  "thinkingType": "personal world",
+  "develops": "soft skills",
+  "checkability": "mixed",
+  "body": "Собери маленький черновик **на своих данных**.\n\nЭто не тест: личный ответ не оценивается как верный или неверный.",
+  "ctaLabel": "Сохранить и продолжить",
+  "template": [
+    "Поле 1: **что пользователь вспоминает, считает или выбирает**",
+    "Поле 2: личный пример, сумма, ситуация или пометка",
+    "Поле 3: вывод или следующий ориентир"
+  ]
+}
+```
+
+### Экран 6 — `reflection`
+
+```json
+{
+  "id": "card_l1s1l3_06_reflection",
+  "type": "reflection",
+  "order": 6,
+  "title": "Личная рефлексия",
+  "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 6",
+  "thinkingType": "personal world",
+  "develops": "psychology",
+  "checkability": "subjective",
+  "prompt": "Что ты заметил(а) у себя **после этого шага**?",
+  "inputType": "single_select",
+  "options": [
+    "Вариант личного ответа 1",
+    "Вариант личного ответа 2",
+    "Вариант личного ответа 3"
+  ],
+  "customOption": {
+    "label": "Свой вариант",
+    "placeholder": "Напиши свой вариант"
+  },
+  "saveKey": "lesson-reflection",
+  "guidance": "Выбери ближайший вариант или напиши свой. Здесь **нет правильного ответа**.",
+  "ctaLabel": "Дальше"
+}
+```
+
+### Экран 7 — `artifact`
+
+```json
+{
+  "id": "card_l1s1l3_07_micro_rule",
+  "type": "artifact",
+  "order": 7,
+  "title": "Микро-правило",
+  "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 7",
+  "thinkingType": "habit",
+  "develops": "habits",
+  "checkability": "mixed",
+  "body": "Выбери **маленькое правило** или первый шаг, который можно применить без сложной настройки.",
+  "ctaLabel": "Сделать моим правилом",
+  "variants": [
+    "Готовая формулировка правила 1",
+    "Готовая формулировка правила 2"
+  ],
+  "customOption": {
+    "label": "Свой вариант",
+    "placeholder": "Напиши свой вариант"
+  }
+}
+```
+
+### Экран 8 — `summary`
+
+```json
+{
+  "id": "card_l1s1l3_08_summary",
+  "type": "summary",
+  "order": 8,
+  "title": "Итог",
+  "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 8",
+  "thinkingType": "artifact",
+  "develops": "habits",
+  "checkability": "subjective",
+  "body": "Короткий **итог урока** и связь с сохранённым личным результатом.",
+  "points": [
+    "Что пользователь теперь **различает или понимает**",
+    "Какой личный черновик или выбор появился",
+    "Какое микро-правило или первый шаг выбран"
+  ],
+  "nextStep": "Мостик к следующему уроку: зачем этот результат пригодится **дальше**."
+}
+```
+
+## Допустимые форматы карточек для Уровня 1
+
+| Экран | Тип карточки | Что допустимо |
+|---:|---|---|
+| 1 | `single_choice` | Зацепка: мягкий выбор без правильного ответа. |
+| 2 | `theory` | Одна идея текстом, короткий пример или факт. |
+| 3 | `categorization` | Только сортировка по категориям. |
+| 4 | `scenario` | Внешний пример: 3 варианта, 1 верный; статистика при наличии источника. |
+| 5 | `artifact` | Личный черновик на данных пользователя, не оценивается. |
+| 6 | `reflection` | Субъективный ответ плюс `Свой вариант`. |
+| 7 | `artifact` | Микро-правило: ровно две plain-text `variants` плюс `Свой вариант`. |
+| 8 | `summary` | Итог, перечень артефактов, мостик к следующему уроку. |
+
+Смысл недоступных механик адаптируется в существующие форматы:
+
+- расчёт или дневник расходов → `artifact.template`;
+- внешний кейс → `scenario`;
+- личное наблюдение → `reflection`;
+- будущий шаг без реального reminder → `summary.nextStep` или `artifact.variants`;
+- статистика → `statistics` на экране 4.
+
+## QA-чек-листы перед загрузкой
+
+### Базовый чек-лист урока
+
+- Экранов ровно 8, порядок не нарушен.
+- Урок занимает 3-5 минут.
+- Есть одна главная мысль.
+- Нет длинных лекций.
+- Взаимодействие есть в первые 30-60 секунд, если это уместно по теме.
+- Экран 1 содержит `feedback` на каждом варианте, а не один общий feedback карточки.
+- Экран 3 реализован как `categorization`, а не как выбор варианта.
+- Экран 4 содержит ровно 3 варианта, один верный ответ и feedback.
+- Статистика со ссылкой на источник добавлена на экран 4, если она есть в источнике.
+- Экраны 5 и 6 не оценивают личные ответы.
+- На экране 6 есть `customOption.label: "Свой вариант"`.
+- Экран 7 содержит ровно две готовые `variants` плюс `customOption.label: "Свой вариант"`.
+- Экран 8 называет сохранённые результаты и даёт мостик к следующему шагу.
+- `ctaLabel` на экранах 1-7 совпадает с переходной кнопкой из source table; для `Проверить -> Дальше` хранится только `Дальше`.
+- Markdown используется только в утверждённых Markdown-enabled полях; plain-text поля не содержат `**`, `<u>`, ссылок и другой разметки.
+- Все `sourceSection` указывают на сохранённый Markdown-источник и заканчиваются на `/ Экран N`.
+- Все ids уникальны и не содержат плейсхолдеров.
+
+### Чек-лист внешних финансовых данных
+
+- Быстро меняющиеся числа не зашиты как вечные факты.
+- Пользователь учится находить актуальный источник.
+- Источник указан или встроен в задание.
+- Для тем кредитов, инвестиций, безопасности есть предупреждения о риске.
+- Нет индивидуальной финансовой рекомендации там, где нужна личная оценка.
+
+### Чек-лист личных ответов
+
+- Личный ответ не помечается как хороший, плохой, верный или неверный.
+- Вопросы не требуют лишних чувствительных данных.
+- Пользователь может выбрать готовую безопасную формулировку.
+- `Свой вариант` доступен там, где он обязателен.
+- Сохранённый результат описан как личный артефакт, не как диагностика или рекомендация.
+
+### Чек-лист JSON перед разработкой
+
+- JSON валиден и не содержит комментариев.
+- Нет trailing comma.
+- Нет плейсхолдеров в ids, slugs, source paths, titles, options, feedback.
+- Markdown-разметка встречается только в разрешённых текстовых полях и не используется в `ctaLabel`, option/category/item labels, `variants[]` и технических ключах.
+- `correctOptionId` совпадает с id верного варианта на экране 4.
+- Все `correctCategoryId` на экране 3 совпадают с существующими category ids.
+- `ctaLabel` есть на экранах 1-7, если в source table есть строка `Кнопка`, и не содержит декоративных стрелок.
+- Экран 8 не хранит `ctaLabel` для финального `Завершить`: это system action reader-а.
+- `npm run check:content` проходит после переноса в runtime JSON.
+
+## Result packet для content task
+
+Каждая задача по методологии или runtime-контенту должна вернуть:
+
+- какие источники сохранены;
+- какие runtime/source files изменены;
+- какие типы карточек использованы;
+- какие целевые функции методологии отложены из-за MVP scope;
+- какие проверки выполнены;
+- риски и последующие решения.

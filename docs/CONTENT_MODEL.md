@@ -188,13 +188,16 @@ System actions such as `Проверить` and final `Завершить` overr
 Every card may also include a source-backed statistics block:
 
 ```ts
+export type MarkdownText = string
+export type PlainText = string
+
 export type CardStatistics = {
-  title?: string
+  title?: PlainText
   items: Array<{
-    value: string
-    label: string
+    value: PlainText
+    label: MarkdownText
   }>
-  sources?: string[]
+  sources?: MarkdownText[]
 }
 ```
 
@@ -204,6 +207,51 @@ It is card-level metadata, not a separate card type, because statistics may supp
 do not convert them into diagnostics, scores, analytics, labels, recommendations, or personal financial advice.
 If a runtime card's `sourceSection` points to a Markdown screen containing `Блок статистики`, the content validator
 requires `card.statistics`.
+
+## Markdown text contract
+
+Runtime JSON distinguishes between plain text fields and Markdown-enabled text
+fields. This preserves rich formatting from DOCX/source documents without
+turning every string into markup.
+
+The learner UI renders this subset through a dedicated safe renderer. Plain-text
+fields are still rendered as plain text and must not opt into Markdown.
+
+Approved Markdown subset:
+
+- paragraphs separated with `\n\n`;
+- bold `**text**`;
+- italic `*text*`;
+- underline through the safe inline tag `<u>text</u>`;
+- links as `[text](https://example.com)`;
+- no arbitrary HTML, Markdown headings, Markdown lists, Markdown tables, scripts,
+  iframes, or embedded media in JSON strings.
+
+Plain-text fields must not contain Markdown markers. This includes `title`,
+`ctaLabel`, option/category/item labels, `variants[]`, `customOption.label`,
+`customOption.placeholder`, `statistics.items[].value`, ids, slugs,
+`sourceSection`, `saveKey`, paths, and other technical keys.
+
+Markdown-enabled lesson fields:
+
+| Card type | Fields |
+|---|---|
+| `theory` | `body` |
+| `callout` | `body` |
+| `single_choice` | `question`, `options[].feedback`, `feedback` |
+| `multi_select` | `question`, `options[].feedback`, `feedback` |
+| `categorization` | `question`, `items[].feedback`, `feedback` |
+| `reflection` | `prompt`, `guidance` |
+| `scenario` | `body`, `question`, `options[].feedback`, `feedback` |
+| `artifact` | `body`, `template[]` |
+| `checklist` | `body` |
+| `summary` | `body`, `points[]`, `nextStep` |
+| `statistics` | `items[].label`, `sources[]` |
+
+Do not create renderer-specific structures from prefixes such as `Факт:`,
+`Формула:`, `Пример:`, or `Простой тест:`. If the source has a fact,
+formula, example, or simple test, keep it as a normal paragraph in the relevant
+Markdown-enabled field.
 
 `readOnly: true` means the reader must force static rendering even when that card type supports interaction.
 If `readOnly` is omitted or `false`, the card is eligible for the reader's interactive behavior.
@@ -281,8 +329,10 @@ Supplemental material should stay out of the primary reader unless a future cont
 - Every `slug` must be URL-safe and unique across Levels, Sections, and lessons.
 - Card ids must be unique across the program.
 - `order` defines display order; arrays should also be sorted by order.
-- Do not store arbitrary HTML in JSON for MVP.
-- Use semantic cards instead of raw markdown/HTML.
+- Do not store arbitrary HTML in JSON; only `<u>...</u>` is allowed inside
+  Markdown-enabled fields for underline.
+- Use semantic cards for structure. Use Markdown only in the approved text
+  fields above, and keep labels/technical fields plain text.
 - All video cards need a title and source URL.
 - Quickly changing financial values should be taught as lookup skills, not stored as eternal facts.
 

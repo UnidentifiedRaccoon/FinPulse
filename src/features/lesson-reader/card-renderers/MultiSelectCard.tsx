@@ -9,7 +9,8 @@ import {
 import { cn } from '@/lib/utils'
 
 import { PracticeCardFlow, type PracticeCardFlowDotState } from './PracticeCardFlow'
-import { NoBreakText, SelectableOption, StaticChoiceList } from './shared'
+import { richTextToPlainText } from './richText'
+import { NoBreakText, RichTextParagraphs, SelectableOption, StaticChoiceList } from './shared'
 
 export function MultiSelectCard({
   card,
@@ -28,18 +29,21 @@ export function MultiSelectCard({
   const safeActiveIndex = Math.min(activeIndex, Math.max(0, card.options.length - 1))
   const activeOption = card.options[safeActiveIndex]
   const usePracticeFlow = card.order === 3
+  const plainQuestion = richTextToPlainText(card.question)
 
   if (card.readOnly) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]">
-          <NoBreakText text={card.question} />
-        </p>
+        <RichTextParagraphs
+          paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+          text={card.question}
+        />
         <StaticChoiceList options={card.options} />
         {card.feedback ? (
-          <p className="text-sm leading-6 text-[var(--fr-text-secondary)]">
-            <NoBreakText text={card.feedback} />
-          </p>
+          <RichTextParagraphs
+            paragraphClassName="text-sm leading-6 text-[var(--fr-text-secondary)]"
+            text={card.feedback}
+          />
         ) : null}
       </div>
     )
@@ -47,12 +51,13 @@ export function MultiSelectCard({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]">
-        <NoBreakText text={card.question} />
-      </p>
+      <RichTextParagraphs
+        paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+        text={card.question}
+      />
       {usePracticeFlow && activeOption ? (
         <fieldset>
-          <legend className="sr-only">{card.question}</legend>
+          <legend className="sr-only">{plainQuestion}</legend>
           <PracticeCardFlow
             activeIndex={safeActiveIndex}
             getDotState={(index) =>
@@ -87,7 +92,7 @@ export function MultiSelectCard({
         </fieldset>
       ) : (
         <fieldset className="flex flex-col gap-3">
-          <legend className="sr-only">{card.question}</legend>
+          <legend className="sr-only">{plainQuestion}</legend>
           <ul className="flex flex-col gap-3">
             {card.options.map((option) => {
               const isSelected = state.selectedOptionIds.includes(option.id)
@@ -250,7 +255,7 @@ function MultiSelectFeedback({
   if (isCorrect) {
     return (
       <LessonFeedback id={id} tone="correct">
-        {card.feedback ? <p><NoBreakText text={card.feedback} /></p> : null}
+        {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!card.feedback ? <p>Все подходящие варианты отмечены.</p> : null}
       </LessonFeedback>
     )
@@ -269,9 +274,9 @@ function MultiSelectFeedback({
         </p>
       ) : null}
       {optionFeedback.map((feedback) => (
-        <p key={feedback}><NoBreakText text={feedback} /></p>
+        <RichTextParagraphs key={feedback} text={feedback} />
       ))}
-      {card.feedback ? <p><NoBreakText text={card.feedback} /></p> : null}
+      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
       {!missingOptions.length && !extraOptions.length && !card.feedback && !optionFeedback.length ? (
         <p>Проверь, все ли подходящие варианты отмечены.</p>
       ) : null}

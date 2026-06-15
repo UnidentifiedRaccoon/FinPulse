@@ -3,6 +3,47 @@ import { describe, expect, it } from 'vitest'
 import { cardSchema } from './program'
 
 describe('cardSchema practice cards', () => {
+  it('accepts approved Markdown in Markdown-enabled card fields', () => {
+    expect(
+      cardSchema.safeParse({
+        id: 'card-markdown-choice',
+        type: 'single_choice',
+        order: 1,
+        question: '**Выбери** вариант и проверь [источник](https://example.com).',
+        options: [
+          { id: 'first', label: 'Первый вариант', feedback: 'Принято: <u>это безопасный старт</u>.' },
+          { id: 'second', label: 'Второй вариант', feedback: 'Принято: *двигаемся дальше*.' },
+        ],
+      }).success,
+    ).toBe(true)
+  })
+
+  it('rejects Markdown in plain-text labels', () => {
+    expect(
+      cardSchema.safeParse({
+        id: 'card-markdown-label',
+        type: 'single_choice',
+        order: 1,
+        question: 'Выбери вариант.',
+        options: [
+          { id: 'first', label: '**Первый вариант**' },
+          { id: 'second', label: 'Второй вариант' },
+        ],
+      }).success,
+    ).toBe(false)
+  })
+
+  it('rejects arbitrary HTML in Markdown-enabled fields', () => {
+    expect(
+      cardSchema.safeParse({
+        id: 'card-html-body',
+        type: 'theory',
+        order: 1,
+        body: '<strong>Важная мысль</strong>',
+      }).success,
+    ).toBe(false)
+  })
+
   it('accepts objective multi-select cards with correct and incorrect options', () => {
     expect(
       cardSchema.safeParse({

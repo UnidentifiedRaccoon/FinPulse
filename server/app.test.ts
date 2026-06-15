@@ -733,7 +733,7 @@ describe('backend API', () => {
         },
         totals: {
           totalUsers: 1,
-          totalLessons: 2,
+          totalLessons: 4,
           completedLessons: 1,
           completedCards: 1,
           stuckUsers: 1,
@@ -755,8 +755,8 @@ describe('backend API', () => {
           total: 1,
         },
         totals: {
-          totalLessons: 2,
-          totalCards: 16,
+          totalLessons: 4,
+          totalCards: 32,
         },
         users: [
           {
@@ -765,7 +765,7 @@ describe('backend API', () => {
             progress: {
               viewedLessons: 2,
               completedLessons: 1,
-              totalLessons: 2,
+              totalLessons: 4,
               completedCards: 1,
               currentLesson: {
                 lessonSlug: 'mandatory-and-desired',
@@ -807,7 +807,7 @@ describe('backend API', () => {
           id: learner.id,
           login: 'learner.email@example.com',
         },
-        lessons: [
+        lessons: expect.arrayContaining([
           expect.objectContaining({
             lessonSlug: 'where-money-goes',
             status: 'completed',
@@ -825,7 +825,7 @@ describe('backend API', () => {
             viewedAt: expect.any(String),
             completedAt: null,
           }),
-        ],
+        ]),
       })
       expectNoPrivateAnswerLeak(detailWithoutAnswersResponse.json())
     } finally {
@@ -1218,6 +1218,8 @@ describe('backend API', () => {
       const targetSectionResponse = await app.inject('/api/sections/money-and-operations')
       const lessonResponse = await app.inject('/api/lessons/where-money-goes')
       const mandatoryLessonResponse = await app.inject('/api/lessons/mandatory-and-desired')
+      const safePaymentLessonResponse = await app.inject('/api/lessons/safe-payment')
+      const digitalFootprintLessonResponse = await app.inject('/api/lessons/digital-footprint-and-protection')
       const targetSectionLessons = targetSectionResponse.json().section.lessons.map((lesson: { slug: string }) => lesson.slug)
 
       expect(targetLevelResponse.statusCode).toBe(200)
@@ -1230,7 +1232,12 @@ describe('backend API', () => {
         ],
       })
       expect(targetSectionResponse.statusCode).toBe(200)
-      expect(targetSectionLessons).toEqual(['where-money-goes', 'mandatory-and-desired'])
+      expect(targetSectionLessons).toEqual([
+        'where-money-goes',
+        'mandatory-and-desired',
+        'safe-payment',
+        'digital-footprint-and-protection',
+      ])
       expect(lessonResponse.statusCode).toBe(200)
       expect(lessonResponse.json()).toMatchObject({
         level: expect.objectContaining({ slug: 'level-1-start' }),
@@ -1260,6 +1267,40 @@ describe('backend API', () => {
           title: 'Обязательное и желаемое',
           cards: expect.arrayContaining([
             expect.objectContaining({ id: 'card_l1s1l2_03_sorting_choice', type: 'categorization' }),
+          ]),
+        }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'safe-payment' }),
+        }),
+      })
+      expect(safePaymentLessonResponse.statusCode).toBe(200)
+      expect(safePaymentLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'mandatory-and-desired' }),
+        }),
+        lesson: expect.objectContaining({
+          slug: 'safe-payment',
+          title: 'Безопасный платёж',
+          cards: expect.arrayContaining([
+            expect.objectContaining({ id: 'card_l1s1l3_03_practice', type: 'categorization' }),
+            expect.objectContaining({ id: 'card_l1s1l3_04_real_world', type: 'scenario' }),
+          ]),
+        }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'digital-footprint-and-protection' }),
+        }),
+      })
+      expect(digitalFootprintLessonResponse.statusCode).toBe(200)
+      expect(digitalFootprintLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'safe-payment' }),
+        }),
+        lesson: expect.objectContaining({
+          slug: 'digital-footprint-and-protection',
+          title: 'Цифровой след и защита',
+          cards: expect.arrayContaining([
+            expect.objectContaining({ id: 'card_l1s1l4_03_practice', type: 'categorization' }),
+            expect.objectContaining({ id: 'card_l1s1l4_04_real_world', type: 'scenario' }),
           ]),
         }),
         next: null,

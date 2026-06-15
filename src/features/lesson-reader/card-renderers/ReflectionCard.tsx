@@ -4,7 +4,8 @@ import {
   type ReflectionState,
 } from '@/features/lesson-reader/lessonInteraction'
 
-import { CustomOptionTextarea, NoBreakText, PillList, SelectableOption } from './shared'
+import { richTextToPlainText } from './richText'
+import { CustomOptionTextarea, PillList, RichTextParagraphs, SelectableOption } from './shared'
 
 export function ReflectionCard({
   card,
@@ -19,18 +20,23 @@ export function ReflectionCard({
   const guidanceId = card.guidance ? `${card.id}-guidance` : undefined
   const statusId = `${card.id}-local-status`
   const displayOptions = card.customOption ? [...(card.options ?? []), card.customOption.label] : card.options
+  const plainPrompt = richTextToPlainText(card.prompt)
 
   if (card.readOnly) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">
-          <NoBreakText text={card.prompt} />
-        </p>
+        <RichTextParagraphs
+          paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-primary)]"
+          text={card.prompt}
+        />
         {displayOptions ? <PillList items={displayOptions} /> : null}
         {card.guidance ? (
-          <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
-            <NoBreakText text={card.guidance} />
-          </p>
+          <div className="flex flex-col gap-2" id={guidanceId}>
+            <RichTextParagraphs
+              paragraphClassName="text-sm leading-6 text-[var(--fr-text-secondary)]"
+              text={card.guidance}
+            />
+          </div>
         ) : null}
       </div>
     )
@@ -43,11 +49,12 @@ export function ReflectionCard({
 
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">
-          <NoBreakText text={card.prompt} />
-        </p>
+        <RichTextParagraphs
+          paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-primary)]"
+          text={card.prompt}
+        />
         <fieldset className="flex flex-col gap-3">
-          <legend className="sr-only">{card.prompt}</legend>
+          <legend className="sr-only">{plainPrompt}</legend>
           <ul className="flex flex-col gap-3">
             {options.map((option) => (
               <li key={option}>
@@ -107,9 +114,12 @@ export function ReflectionCard({
           text={isCustomSelected ? 'Свой вариант заполнен.' : 'Выбор отмечен.'}
         />
         {card.guidance ? (
-          <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
-            <NoBreakText text={card.guidance} />
-          </p>
+          <div className="flex flex-col gap-2" id={guidanceId}>
+            <RichTextParagraphs
+              paragraphClassName="text-sm leading-6 text-[var(--fr-text-secondary)]"
+              text={card.guidance}
+            />
+          </div>
         ) : null}
       </div>
     )
@@ -118,11 +128,12 @@ export function ReflectionCard({
   if (inputType === 'multi_select' && card.options?.length) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">
-          <NoBreakText text={card.prompt} />
-        </p>
+        <RichTextParagraphs
+          paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-primary)]"
+          text={card.prompt}
+        />
         <fieldset className="flex flex-col gap-3">
-          <legend className="sr-only">{card.prompt}</legend>
+          <legend className="sr-only">{plainPrompt}</legend>
           <ul className="flex flex-col gap-3">
             {card.options.map((option) => {
               const isChecked = state.multiValues.includes(option)
@@ -159,9 +170,12 @@ export function ReflectionCard({
           text={`Выбрано: ${state.multiValues.length}.`}
         />
         {card.guidance ? (
-          <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
-            <NoBreakText text={card.guidance} />
-          </p>
+          <div className="flex flex-col gap-2" id={guidanceId}>
+            <RichTextParagraphs
+              paragraphClassName="text-sm leading-6 text-[var(--fr-text-secondary)]"
+              text={card.guidance}
+            />
+          </div>
         ) : null}
       </div>
     )
@@ -169,9 +183,10 @@ export function ReflectionCard({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-base leading-6 text-pretty text-[var(--fr-text-primary)]">
-        <NoBreakText text={card.prompt} />
-      </p>
+      <RichTextParagraphs
+        paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-primary)]"
+        text={card.prompt}
+      />
       <label className="sr-only" htmlFor={`${card.id}-textarea`}>
         {inputType === 'table' ? 'Заполнить таблицу' : 'Ответ'}
       </label>
@@ -190,9 +205,12 @@ export function ReflectionCard({
         text="Черновик заполнен."
       />
       {card.guidance ? (
-        <p className="text-sm leading-6 text-[var(--fr-text-secondary)]" id={guidanceId}>
-          <NoBreakText text={card.guidance} />
-        </p>
+        <div className="flex flex-col gap-2" id={guidanceId}>
+          <RichTextParagraphs
+            paragraphClassName="text-sm leading-6 text-[var(--fr-text-secondary)]"
+            text={card.guidance}
+          />
+        </div>
       ) : null}
     </div>
   )

@@ -1,7 +1,7 @@
 import type { ChecklistCard as ChecklistCardType, ChecklistState } from '@/features/lesson-reader/lessonInteraction'
 import { cn } from '@/lib/utils'
 
-import { NoBreakText, SelectableOption } from './shared'
+import { RichTextParagraphs, SelectableOption } from './shared'
 
 export function ChecklistCard({
   card,
@@ -17,9 +17,10 @@ export function ChecklistCard({
   return (
     <div className="flex flex-col gap-4">
       {card.body ? (
-        <p className="text-base leading-6 text-pretty text-[var(--fr-text-secondary)]">
-          <NoBreakText text={card.body} />
-        </p>
+        <RichTextParagraphs
+          paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-secondary)]"
+          text={card.body}
+        />
       ) : null}
       <fieldset className="flex flex-col gap-3">
         <legend className="sr-only">{card.title ?? 'Чеклист'}</legend>

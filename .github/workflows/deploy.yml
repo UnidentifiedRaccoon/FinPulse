@@ -15,7 +15,6 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: 24
   YC_CLOUD_ID: b1gmnnjgdcc1b7qhjmlk
   YC_FOLDER_ID: b1gpl04msqva2tsff46k
   YC_REGISTRY_ID: crp5j8penr0hui0ttaum
@@ -63,7 +62,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies

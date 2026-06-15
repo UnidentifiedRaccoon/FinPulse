@@ -1,50 +1,82 @@
 import { z } from 'zod'
 
 const slugSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+const markdownMarkerPattern = /(\*\*|\*[^*\n]+\*|__|`|\[[^\]\n]+\]\([^)]+\)|<\/?u>)/iu
+const markdownHeadingPattern = /^\s{0,3}#{1,6}\s/um
+const markdownListPattern = /^\s*(?:[-*+]|\d+[.)])\s+/um
+const unsupportedHtmlTagPattern = /<\/?(?!u\b)[a-z][^>]*>/iu
+const unsafeUnderlineTagPattern = /<u\s+[^>]*>/iu
+
+function isPlainText(value: string) {
+  return !markdownMarkerPattern.test(value) && !markdownHeadingPattern.test(value) && !markdownListPattern.test(value)
+}
+
+function isSupportedMarkdownText(value: string) {
+  return (
+    !unsupportedHtmlTagPattern.test(value) &&
+    !unsafeUnderlineTagPattern.test(value) &&
+    !markdownHeadingPattern.test(value) &&
+    !markdownListPattern.test(value)
+  )
+}
+
+const plainStringSchema = z.string().refine(isPlainText, 'Markdown is not supported in this plain-text field')
+const markdownStringSchema = z.string().refine(
+  isSupportedMarkdownText,
+  'Markdown text supports paragraphs, inline emphasis, links, and <u> only; headings, lists, and arbitrary HTML are not supported',
+)
+const nonEmptyPlainTextSchema = plainStringSchema.min(1)
+const nonEmptyMarkdownTextSchema = markdownStringSchema.min(1)
+const optionalPlainTextSchema = plainStringSchema.optional()
+const optionalMarkdownTextSchema = markdownStringSchema.optional()
 const checkabilitySchema = z.enum(['objective', 'subjective', 'mixed'])
+
+export type MarkdownText = string
+export type PlainText = string
+
 const choiceOptionSchema = z.object({
-  id: z.string().min(1),
-  label: z.string().min(1),
+  id: nonEmptyPlainTextSchema,
+  label: nonEmptyPlainTextSchema,
   isCorrect: z.boolean().optional(),
-  feedback: z.string().optional(),
+  feedback: optionalMarkdownTextSchema,
 }).strict()
 
 const categorySchema = z.object({
-  id: z.string().min(1),
-  label: z.string().min(1),
+  id: nonEmptyPlainTextSchema,
+  label: nonEmptyPlainTextSchema,
 }).strict()
 
 const categorizationItemSchema = z.object({
-  id: z.string().min(1),
-  label: z.string().min(1),
-  correctCategoryId: z.string().min(1),
-  feedback: z.string().optional(),
+  id: nonEmptyPlainTextSchema,
+  label: nonEmptyPlainTextSchema,
+  correctCategoryId: nonEmptyPlainTextSchema,
+  feedback: optionalMarkdownTextSchema,
 }).strict()
 
 const customOptionSchema = z.object({
-  label: z.string().min(1),
-  placeholder: z.string().min(1).optional(),
+  label: nonEmptyPlainTextSchema,
+  placeholder: nonEmptyPlainTextSchema.optional(),
 }).strict()
 
 const statisticItemSchema = z.object({
-  value: z.string().min(1),
-  label: z.string().min(1),
+  value: nonEmptyPlainTextSchema,
+  label: nonEmptyMarkdownTextSchema,
 }).strict()
 
 const cardStatisticsSchema = z.object({
-  title: z.string().min(1).optional(),
+  title: nonEmptyPlainTextSchema.optional(),
   items: z.array(statisticItemSchema).min(1),
-  sources: z.array(z.string().min(1)).optional(),
+  sources: z.array(nonEmptyMarkdownTextSchema).optional(),
 }).strict()
 
 const cardBaseSchema = z.object({
-  id: z.string().min(1),
+  id: nonEmptyPlainTextSchema,
   order: z.number().int().nonnegative(),
-  title: z.string().optional(),
-  sourceSection: z.string().optional(),
-  ctaLabel: z.string().min(1).optional(),
-  thinkingType: z.string().optional(),
-  develops: z.string().optional(),
+  title: optionalPlainTextSchema,
+  sourceSection: optionalPlainTextSchema,
+  ctaLabel: nonEmptyPlainTextSchema.optional(),
+  thinkingType: optionalPlainTextSchema,
+  develops: optionalPlainTextSchema,
   checkability: checkabilitySchema.optional(),
   statistics: cardStatisticsSchema.optional(),
 }).strict()
@@ -52,20 +84,20 @@ const cardBaseSchema = z.object({
 export const cardSchema = z.discriminatedUnion('type', [
   cardBaseSchema.extend({
     type: z.literal('theory'),
-    body: z.string().min(1),
-    examples: z.array(z.string().min(1)).optional(),
+    body: nonEmptyMarkdownTextSchema,
+    examples: z.array(nonEmptyPlainTextSchema).optional(),
   }).strict(),
   cardBaseSchema.extend({
     type: z.literal('video'),
-    title: z.string().min(1),
-    src: z.string().min(1),
-    provider: z.string().optional(),
-    transcript: z.string().optional(),
+    title: nonEmptyPlainTextSchema,
+    src: nonEmptyPlainTextSchema,
+    provider: optionalPlainTextSchema,
+    transcript: optionalMarkdownTextSchema,
     timecodes: z
       .array(
         z.object({
-          time: z.string().min(1),
-          label: z.string().min(1),
+          time: nonEmptyPlainTextSchema,
+          label: nonEmptyPlainTextSchema,
         }).strict(),
       )
       .optional(),
@@ -73,68 +105,68 @@ export const cardSchema = z.discriminatedUnion('type', [
   cardBaseSchema.extend({
     type: z.literal('callout'),
     tone: z.enum(['info', 'warning', 'success', 'reflection']).optional(),
-    body: z.string().min(1),
+    body: nonEmptyMarkdownTextSchema,
   }).strict(),
   cardBaseSchema.extend({
     type: z.literal('single_choice'),
-    question: z.string().min(1),
+    question: nonEmptyMarkdownTextSchema,
     options: z.array(choiceOptionSchema).min(2),
-    correctOptionId: z.string().optional(),
-    feedback: z.string().optional(),
+    correctOptionId: optionalPlainTextSchema,
+    feedback: optionalMarkdownTextSchema,
     readOnly: z.boolean().optional(),
   }).strict(),
   cardBaseSchema.extend({
     type: z.literal('multi_select'),
-    question: z.string().min(1),
+    question: nonEmptyMarkdownTextSchema,
     options: z.array(choiceOptionSchema).min(2),
-    feedback: z.string().optional(),
+    feedback: optionalMarkdownTextSchema,
     readOnly: z.boolean().optional(),
   }).strict(),
   cardBaseSchema.extend({
     type: z.literal('categorization'),
-    question: z.string().min(1),
+    question: nonEmptyMarkdownTextSchema,
     categories: z.array(categorySchema).min(2),
     items: z.array(categorizationItemSchema).min(2),
-    feedback: z.string().optional(),
+    feedback: optionalMarkdownTextSchema,
     readOnly: z.boolean().optional(),
   }).strict(),
   cardBaseSchema.extend({
     type: z.literal('reflection'),
-    prompt: z.string().min(1),
+    prompt: nonEmptyMarkdownTextSchema,
     inputType: z.enum(['text', 'single_select', 'multi_select', 'table', 'freeform']).optional(),
-    options: z.array(z.string().min(1)).optional(),
+    options: z.array(nonEmptyPlainTextSchema).optional(),
     customOption: customOptionSchema.optional(),
-    saveKey: z.string().optional(),
-    guidance: z.string().optional(),
+    saveKey: optionalPlainTextSchema,
+    guidance: optionalMarkdownTextSchema,
     readOnly: z.boolean().optional(),
   }).strict(),
   cardBaseSchema.extend({
     type: z.literal('scenario'),
-    body: z.string().min(1),
-    question: z.string().optional(),
+    body: nonEmptyMarkdownTextSchema,
+    question: optionalMarkdownTextSchema,
     options: z.array(choiceOptionSchema).optional(),
-    correctOptionId: z.string().optional(),
-    feedback: z.string().optional(),
+    correctOptionId: optionalPlainTextSchema,
+    feedback: optionalMarkdownTextSchema,
     readOnly: z.boolean().optional(),
   }).strict(),
   cardBaseSchema.extend({
     type: z.literal('artifact'),
-    body: z.string().min(1),
-    template: z.array(z.string().min(1)).optional(),
-    variants: z.array(z.string().min(1)).optional(),
+    body: nonEmptyMarkdownTextSchema,
+    template: z.array(nonEmptyMarkdownTextSchema).optional(),
+    variants: z.array(nonEmptyPlainTextSchema).optional(),
     customOption: customOptionSchema.optional(),
     readOnly: z.boolean().optional(),
   }).strict(),
   cardBaseSchema.extend({
     type: z.literal('checklist'),
-    body: z.string().optional(),
-    items: z.array(z.string().min(1)).min(1),
+    body: optionalMarkdownTextSchema,
+    items: z.array(nonEmptyPlainTextSchema).min(1),
   }).strict(),
   cardBaseSchema.extend({
     type: z.literal('summary'),
-    body: z.string().optional(),
-    points: z.array(z.string().min(1)).min(1),
-    nextStep: z.string().optional(),
+    body: optionalMarkdownTextSchema,
+    points: z.array(nonEmptyMarkdownTextSchema).min(1),
+    nextStep: optionalMarkdownTextSchema,
   }).strict(),
 ]).superRefine((card, ctx) => {
   if (card.type === 'reflection' && card.customOption && card.inputType !== 'single_select') {
@@ -229,97 +261,97 @@ export const cardSchema = z.discriminatedUnion('type', [
 })
 
 export const lessonSchema = z.object({
-  id: z.string().min(1),
+  id: nonEmptyPlainTextSchema,
   slug: slugSchema,
-  title: z.string().min(1),
-  subtitle: z.string().optional(),
-  description: z.string().optional(),
+  title: nonEmptyPlainTextSchema,
+  subtitle: optionalPlainTextSchema,
+  description: optionalPlainTextSchema,
   order: z.number().int().nonnegative(),
   estimatedMinutes: z.number().int().positive().optional(),
-  learningGoal: z.string().optional(),
-  mainSkill: z.string().optional(),
-  tags: z.array(z.string().min(1)).optional(),
-  sourceSection: z.string().optional(),
+  learningGoal: optionalPlainTextSchema,
+  mainSkill: optionalPlainTextSchema,
+  tags: z.array(nonEmptyPlainTextSchema).optional(),
+  sourceSection: optionalPlainTextSchema,
   cards: z.array(cardSchema).min(1),
 }).strict()
 
 const supplementalItemSchema = z.object({
-  id: z.string().min(1),
-  title: z.string().min(1),
-  sourceSection: z.string().optional(),
-  type: z.string().optional(),
-  summary: z.string().min(1),
-  content: z.array(z.string().min(1)).optional(),
+  id: nonEmptyPlainTextSchema,
+  title: nonEmptyPlainTextSchema,
+  sourceSection: optionalPlainTextSchema,
+  type: optionalPlainTextSchema,
+  summary: nonEmptyPlainTextSchema,
+  content: z.array(nonEmptyPlainTextSchema).optional(),
 }).strict()
 
 const supplementalSchema = z
   .object({
-    strategy: z.string().optional(),
-    sourceFiles: z.array(z.string().min(1)).optional(),
+    strategy: optionalPlainTextSchema,
+    sourceFiles: z.array(nonEmptyPlainTextSchema).optional(),
     trainings: z.array(supplementalItemSchema).optional(),
     spacedRepetition: z.array(supplementalItemSchema).optional(),
     expansionScenarios: z.array(supplementalItemSchema).optional(),
-    editorialRules: z.array(z.string().min(1)).optional(),
+    editorialRules: z.array(nonEmptyPlainTextSchema).optional(),
     glossary: z
       .array(
         z.object({
-          term: z.string().min(1),
-          definition: z.string().min(1),
+          term: nonEmptyPlainTextSchema,
+          definition: nonEmptyPlainTextSchema,
         }).strict(),
       )
       .optional(),
-    outcome: z.array(z.string().min(1)).optional(),
+    outcome: z.array(nonEmptyPlainTextSchema).optional(),
   })
   .strict()
   .optional()
 
 export const sectionFileSchema = z.object({
   schemaVersion: z.literal(1),
-  id: z.string().min(1),
+  id: nonEmptyPlainTextSchema,
   slug: slugSchema,
-  title: z.string().min(1),
-  description: z.string().optional(),
+  title: nonEmptyPlainTextSchema,
+  description: optionalPlainTextSchema,
   order: z.number().int().nonnegative(),
-  source: z.string().min(1),
+  source: nonEmptyPlainTextSchema,
   lessons: z.array(lessonSchema).min(1),
   supplemental: supplementalSchema,
 }).strict()
 
 const sectionRefSchema = z.object({
-  id: z.string().min(1),
+  id: nonEmptyPlainTextSchema,
   slug: slugSchema,
-  title: z.string().min(1),
-  description: z.string().optional(),
+  title: nonEmptyPlainTextSchema,
+  description: optionalPlainTextSchema,
   order: z.number().int().nonnegative(),
-  path: z.string().min(1),
+  path: nonEmptyPlainTextSchema,
 }).strict()
 
 const levelFileSchema = z.object({
   schemaVersion: z.literal(1),
-  id: z.string().min(1),
+  id: nonEmptyPlainTextSchema,
   slug: slugSchema,
-  title: z.string().min(1),
-  description: z.string().optional(),
+  title: nonEmptyPlainTextSchema,
+  description: optionalPlainTextSchema,
   order: z.number().int().nonnegative(),
-  source: z.string().optional(),
+  source: optionalPlainTextSchema,
   sections: z.array(sectionRefSchema).min(1),
 }).strict()
 
 const levelRefSchema = z.object({
-  id: z.string().min(1),
+  id: nonEmptyPlainTextSchema,
   slug: slugSchema,
-  title: z.string().min(1),
-  description: z.string().optional(),
+  title: nonEmptyPlainTextSchema,
+  description: optionalPlainTextSchema,
   order: z.number().int().nonnegative(),
-  path: z.string().min(1),
+  path: nonEmptyPlainTextSchema,
 }).strict()
 
 const programManifestSchema = z.object({
   schemaVersion: z.literal(1),
-  id: z.string().min(1),
+  id: nonEmptyPlainTextSchema,
   slug: slugSchema,
-  title: z.string().min(1),
-  description: z.string().optional(),
+  title: nonEmptyPlainTextSchema,
+  description: optionalPlainTextSchema,
   levels: z.array(levelRefSchema).min(1),
 }).strict()
 
