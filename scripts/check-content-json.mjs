@@ -20,6 +20,11 @@ const allowedCardTypes = new Set([
 ]);
 const allowedCheckability = new Set(['objective', 'subjective', 'mixed']);
 const allowedInputTypes = new Set(['text', 'single_select', 'multi_select', 'table', 'freeform']);
+const markdownMarkerPattern = /(\*\*|\*[^*\n]+\*|__|`|\[[^\]\n]+\]\([^)]+\)|<\/?u>)/iu;
+const markdownHeadingPattern = /^\s{0,3}#{1,6}\s/um;
+const markdownListPattern = /^\s*(?:[-*+]|\d+[.)])\s+/um;
+const unsupportedHtmlTagPattern = /<\/?(?!u\b)[a-z][^>]*>/iu;
+const unsafeUnderlineTagPattern = /<u\s+[^>]*>/iu;
 
 function fail(message) {
   console.error(`[content] ${message}`);
@@ -82,6 +87,50 @@ function requireOptionalString(obj, key, ctx) {
   }
 }
 
+function containsMarkdownSyntax(value) {
+  return markdownMarkerPattern.test(value) || markdownHeadingPattern.test(value) || markdownListPattern.test(value);
+}
+
+function validatePlainTextValue(value, ctx) {
+  if (typeof value !== 'string') return;
+  if (containsMarkdownSyntax(value)) {
+    fail(`${ctx} must be plain text and must not contain Markdown markup`);
+  }
+}
+
+function validateMarkdownTextValue(value, ctx) {
+  if (typeof value !== 'string') return;
+  if (unsupportedHtmlTagPattern.test(value) || unsafeUnderlineTagPattern.test(value)) {
+    fail(`${ctx} may contain Markdown, but arbitrary HTML is not supported; use only <u>...</u> for underline`);
+  }
+  if (markdownHeadingPattern.test(value)) {
+    fail(`${ctx} may contain inline Markdown, but Markdown headings are not supported in JSON strings`);
+  }
+  if (markdownListPattern.test(value)) {
+    fail(`${ctx} may contain inline Markdown, but Markdown lists are not supported in JSON strings`);
+  }
+}
+
+function validatePlainTextField(obj, key, ctx) {
+  if (typeof obj?.[key] === 'string') validatePlainTextValue(obj[key], `${ctx}.${key}`);
+}
+
+function validateMarkdownTextField(obj, key, ctx) {
+  if (typeof obj?.[key] === 'string') validateMarkdownTextValue(obj[key], `${ctx}.${key}`);
+}
+
+function validateStringArrayKind(obj, key, ctx, kind) {
+  if (!Array.isArray(obj?.[key])) return;
+  for (const [itemIndex, item] of obj[key].entries()) {
+    const itemCtx = `${ctx}.${key}[${itemIndex}]`;
+    if (kind === 'markdown') {
+      validateMarkdownTextValue(item, itemCtx);
+    } else {
+      validatePlainTextValue(item, itemCtx);
+    }
+  }
+}
+
 function requireSlug(obj, key, ctx) {
   if (!isSlug(obj[key])) {
     fail(`${ctx}.${key} must be a URL-safe slug: lowercase words separated by hyphens`);
@@ -109,6 +158,8 @@ function requireCustomOption(obj, key, ctx) {
   requireOnlyKeys(customOption, ['label', 'placeholder'], optionCtx);
   requireString(customOption, 'label', optionCtx);
   requireOptionalString(customOption, 'placeholder', optionCtx);
+  validatePlainTextField(customOption, 'label', optionCtx);
+  validatePlainTextField(customOption, 'placeholder', optionCtx);
 }
 
 function requireStatistics(obj, key, ctx) {
@@ -119,6 +170,7 @@ function requireStatistics(obj, key, ctx) {
 
   requireOnlyKeys(statistics, ['title', 'items', 'sources'], statisticsCtx);
   requireOptionalString(statistics, 'title', statisticsCtx);
+  validatePlainTextField(statistics, 'title', statisticsCtx);
 
   const items = requireArray(statistics, 'items', statisticsCtx, 1);
   for (const [itemIndex, item] of items.entries()) {
@@ -127,9 +179,12 @@ function requireStatistics(obj, key, ctx) {
     requireOnlyKeys(item, ['value', 'label'], itemCtx);
     requireString(item, 'value', itemCtx);
     requireString(item, 'label', itemCtx);
+    validatePlainTextField(item, 'value', itemCtx);
+    validateMarkdownTextField(item, 'label', itemCtx);
   }
 
   requireStringArray(statistics, 'sources', statisticsCtx);
+  validateStringArrayKind(statistics, 'sources', statisticsCtx, 'markdown');
 }
 
 function hasNonEmptyString(obj, key) {
@@ -206,6 +261,10 @@ function validateRefShape(ref, ctx) {
   requireOptionalString(ref, 'description', ctx);
   requireOrder(ref, ctx);
   requireString(ref, 'path', ctx);
+  validatePlainTextField(ref, 'id', ctx);
+  validatePlainTextField(ref, 'title', ctx);
+  validatePlainTextField(ref, 'description', ctx);
+  validatePlainTextField(ref, 'path', ctx);
 }
 
 function validateLesson(lesson, ctx, seen, scope = {}) {
@@ -224,6 +283,10 @@ function validateLesson(lesson, ctx, seen, scope = {}) {
   requireOptionalString(lesson, 'mainSkill', ctx);
   requireOptionalString(lesson, 'sourceSection', ctx);
   requireStringArray(lesson, 'tags', ctx);
+  for (const key of ['id', 'title', 'subtitle', 'description', 'learningGoal', 'mainSkill', 'sourceSection']) {
+    validatePlainTextField(lesson, key, ctx);
+  }
+  validateStringArrayKind(lesson, 'tags', ctx, 'plain');
   checkUnique(lesson.id, seen.lessonIds, 'lesson id');
   checkUnique(lesson.slug, seen.lessonSlugs, 'lesson slug');
 
@@ -245,6 +308,9 @@ function validateChoiceOptions(card, ctx) {
     requireString(option, 'id', optionCtx);
     requireString(option, 'label', optionCtx);
     requireOptionalString(option, 'feedback', optionCtx);
+    validatePlainTextField(option, 'id', optionCtx);
+    validatePlainTextField(option, 'label', optionCtx);
+    validateMarkdownTextField(option, 'feedback', optionCtx);
     if (option.isCorrect !== undefined && typeof option.isCorrect !== 'boolean') {
       fail(`${optionCtx}.isCorrect must be a boolean when present`);
     }
@@ -278,6 +344,8 @@ function validateCategorization(card, ctx) {
     requireOnlyKeys(category, ['id', 'label'], categoryCtx);
     requireString(category, 'id', categoryCtx);
     requireString(category, 'label', categoryCtx);
+    validatePlainTextField(category, 'id', categoryCtx);
+    validatePlainTextField(category, 'label', categoryCtx);
     checkUnique(category.id, categoryIds, `${ctx} category id`);
   }
 
@@ -291,6 +359,10 @@ function validateCategorization(card, ctx) {
     requireString(item, 'label', itemCtx);
     requireString(item, 'correctCategoryId', itemCtx);
     requireOptionalString(item, 'feedback', itemCtx);
+    validatePlainTextField(item, 'id', itemCtx);
+    validatePlainTextField(item, 'label', itemCtx);
+    validatePlainTextField(item, 'correctCategoryId', itemCtx);
+    validateMarkdownTextField(item, 'feedback', itemCtx);
     checkUnique(item.id, itemIds, `${ctx} item id`);
     if (typeof item.correctCategoryId === 'string' && !categoryIds.has(item.correctCategoryId)) {
       fail(`${itemCtx}.correctCategoryId must match one of the category ids`);
@@ -344,6 +416,20 @@ function requireNoCorrectChoice(card, ctx) {
   for (const [optionIndex, option] of options.entries()) {
     if (isObject(option) && option.isCorrect === true) {
       fail(`${ctx}.options[${optionIndex}].isCorrect must be omitted for a subjective Level 1 hook`);
+    }
+  }
+}
+
+function requireScreenOneOptionFeedback(card, ctx) {
+  if (hasNonEmptyString(card, 'feedback')) {
+    fail(`${ctx}.feedback must be omitted for Level 1 screen 1; put feedback on each option instead`);
+  }
+
+  const options = Array.isArray(card.options) ? card.options : [];
+  for (const [optionIndex, option] of options.entries()) {
+    if (!isObject(option)) continue;
+    if (!hasNonEmptyString(option, 'feedback')) {
+      fail(`${ctx}.options[${optionIndex}].feedback is required for Level 1 screen 1`);
     }
   }
 }
@@ -408,24 +494,33 @@ function validateLevel1LessonArchitecture(lesson, ctx, scope) {
   const screen1 = cardByOrder(cards, 1);
   if (requireLevel1ScreenBase(screen1, ctx, 1, 'single_choice', 'subjective')) {
     requireNoCorrectChoice(screen1, `${ctx}.cards(order=1)`);
+    requireScreenOneOptionFeedback(screen1, `${ctx}.cards(order=1)`);
+    requireLevel1SourceCta(screen1, `${ctx}.cards(order=1)`);
   }
 
   const screen2 = cardByOrder(cards, 2);
   if (requireLevel1ScreenBase(screen2, ctx, 2, 'theory', 'objective')) {
-    requireLevel1Screen2SourceCta(screen2, `${ctx}.cards(order=2)`);
+    requireLevel1SourceCta(screen2, `${ctx}.cards(order=2)`);
   }
 
   const screen3 = cardByOrder(cards, 3);
-  if (requireLevel1ScreenBase(screen3, ctx, 3, 'categorization', 'objective') && !hasNonEmptyString(screen3, 'feedback')) {
-    fail(`${ctx}.cards(order=3).feedback is required for Level 1 objective practice`);
+  if (requireLevel1ScreenBase(screen3, ctx, 3, 'categorization', 'objective')) {
+    if (!hasNonEmptyString(screen3, 'feedback')) {
+      fail(`${ctx}.cards(order=3).feedback is required for Level 1 objective practice`);
+    }
+    requireLevel1SourceCta(screen3, `${ctx}.cards(order=3)`);
   }
 
   const screen4 = cardByOrder(cards, 4);
   if (requireLevel1ScreenBase(screen4, ctx, 4, 'scenario', 'objective')) {
     requireScenarioScreenFour(screen4, `${ctx}.cards(order=4)`);
+    requireLevel1SourceCta(screen4, `${ctx}.cards(order=4)`);
   }
 
-  requireLevel1ScreenBase(cardByOrder(cards, 5), ctx, 5, 'artifact', 'mixed');
+  const screen5 = cardByOrder(cards, 5);
+  if (requireLevel1ScreenBase(screen5, ctx, 5, 'artifact', 'mixed')) {
+    requireLevel1SourceCta(screen5, `${ctx}.cards(order=5)`);
+  }
 
   const screen6 = cardByOrder(cards, 6);
   if (requireLevel1ScreenBase(screen6, ctx, 6, 'reflection', 'subjective')) {
@@ -434,6 +529,7 @@ function validateLevel1LessonArchitecture(lesson, ctx, scope) {
       fail(`${ctx}.cards(order=6).options is required for Level 1 personal reflection`);
     }
     requireCustomOptionLabel(screen6, `${ctx}.cards(order=6)`);
+    requireLevel1SourceCta(screen6, `${ctx}.cards(order=6)`);
   }
 
   const screen7 = cardByOrder(cards, 7);
@@ -443,6 +539,7 @@ function validateLevel1LessonArchitecture(lesson, ctx, scope) {
       fail(`${ctx}.cards(order=7).variants must contain exactly 2 ready formulations`);
     }
     requireCustomOptionLabel(screen7, `${ctx}.cards(order=7)`);
+    requireLevel1SourceCta(screen7, `${ctx}.cards(order=7)`);
   }
 
   requireLevel1ScreenBase(cardByOrder(cards, 8), ctx, 8, 'summary', 'subjective');
@@ -494,26 +591,36 @@ function normalizeSourceCtaLabel(value) {
     .trim();
 }
 
+function getAdvanceSourceCtaLabel(value) {
+  const segments = value
+    .split(/(?:→|->|➡)/gu)
+    .map((segment) => normalizeSourceCtaLabel(segment))
+    .filter(Boolean);
+  const label = segments.at(-1) ?? normalizeSourceCtaLabel(value);
+  const systemOnlyLabels = new Set(['Проверить', 'Ответить', 'Завершить', 'Завершить урок']);
+  return systemOnlyLabels.has(label) ? null : label;
+}
+
 function getSourceScreenCtaLabel(sourceSection) {
   const screenText = getSourceScreenText(sourceSection);
   if (!screenText) return null;
 
   const tableMatch = /^\s*\|\s*Кнопка\s*\|\s*([^|\n]+?)\s*\|/imu.exec(screenText);
   if (tableMatch) {
-    const label = normalizeSourceCtaLabel(tableMatch[1]);
+    const label = getAdvanceSourceCtaLabel(tableMatch[1]);
     return label || null;
   }
 
   const microcopyMatch = /(?:^|\n)\s*Микро-копирайт\s*\n\s*([^\n]+)/iu.exec(screenText);
   if (microcopyMatch) {
-    const label = normalizeSourceCtaLabel(microcopyMatch[1]);
+    const label = getAdvanceSourceCtaLabel(microcopyMatch[1]);
     return label || null;
   }
 
   return null;
 }
 
-function requireLevel1Screen2SourceCta(card, ctx) {
+function requireLevel1SourceCta(card, ctx) {
   const sourceCtaLabel = getSourceScreenCtaLabel(card.sourceSection);
   if (!sourceCtaLabel) return;
 
@@ -537,6 +644,9 @@ function validateCard(card, ctx, seen) {
   requireOptionalString(card, 'ctaLabel', ctx);
   requireOptionalString(card, 'thinkingType', ctx);
   requireOptionalString(card, 'develops', ctx);
+  for (const key of ['id', 'title', 'sourceSection', 'ctaLabel', 'thinkingType', 'develops']) {
+    validatePlainTextField(card, key, ctx);
+  }
   if (!allowedCardTypes.has(card.type)) {
     fail(`${ctx}.type has unsupported value: ${card.type}`);
     return;
@@ -568,12 +678,18 @@ function validateCard(card, ctx, seen) {
   if (card.type === 'theory') {
     requireString(card, 'body', ctx);
     requireStringArray(card, 'examples', ctx);
+    validateMarkdownTextField(card, 'body', ctx);
+    validateStringArrayKind(card, 'examples', ctx, 'plain');
   }
   if (card.type === 'video') {
     requireString(card, 'title', ctx);
     requireString(card, 'src', ctx);
     requireOptionalString(card, 'provider', ctx);
     requireOptionalString(card, 'transcript', ctx);
+    validatePlainTextField(card, 'title', ctx);
+    validatePlainTextField(card, 'src', ctx);
+    validatePlainTextField(card, 'provider', ctx);
+    validateMarkdownTextField(card, 'transcript', ctx);
     if (card.timecodes !== undefined) {
       const timecodes = requireArray(card, 'timecodes', ctx);
       for (const [timecodeIndex, timecode] of timecodes.entries()) {
@@ -582,61 +698,82 @@ function validateCard(card, ctx, seen) {
         requireOnlyKeys(timecode, ['time', 'label'], timecodeCtx);
         requireString(timecode, 'time', timecodeCtx);
         requireString(timecode, 'label', timecodeCtx);
+        validatePlainTextField(timecode, 'time', timecodeCtx);
+        validatePlainTextField(timecode, 'label', timecodeCtx);
       }
     }
   }
   if (card.type === 'callout') {
     requireString(card, 'body', ctx);
+    validateMarkdownTextField(card, 'body', ctx);
     if (card.tone !== undefined && !['info', 'warning', 'success', 'reflection'].includes(card.tone)) {
       fail(`${ctx}.tone has unsupported value: ${card.tone}`);
     }
   }
   if (card.type === 'single_choice') {
     requireString(card, 'question', ctx);
+    validateMarkdownTextField(card, 'question', ctx);
     validateChoiceOptions(card, ctx);
     requireOptionalString(card, 'correctOptionId', ctx);
     requireOptionalString(card, 'feedback', ctx);
+    validatePlainTextField(card, 'correctOptionId', ctx);
+    validateMarkdownTextField(card, 'feedback', ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'multi_select') {
     requireString(card, 'question', ctx);
+    validateMarkdownTextField(card, 'question', ctx);
     validateMultiSelectOptions(card, ctx);
     requireOptionalString(card, 'feedback', ctx);
+    validateMarkdownTextField(card, 'feedback', ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'categorization') {
     requireString(card, 'question', ctx);
+    validateMarkdownTextField(card, 'question', ctx);
     validateCategorization(card, ctx);
     requireOptionalString(card, 'feedback', ctx);
+    validateMarkdownTextField(card, 'feedback', ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'reflection') {
     requireString(card, 'prompt', ctx);
+    validateMarkdownTextField(card, 'prompt', ctx);
     if (card.inputType !== undefined && !allowedInputTypes.has(card.inputType)) fail(`${ctx}.inputType has unsupported value: ${card.inputType}`);
     requireStringArray(card, 'options', ctx);
+    validateStringArrayKind(card, 'options', ctx, 'plain');
     requireCustomOption(card, 'customOption', ctx);
     if (card.customOption !== undefined && card.inputType !== 'single_select') {
       fail(`${ctx}.customOption is only supported for inputType single_select`);
     }
     requireOptionalString(card, 'saveKey', ctx);
     requireOptionalString(card, 'guidance', ctx);
+    validatePlainTextField(card, 'saveKey', ctx);
+    validateMarkdownTextField(card, 'guidance', ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'scenario') {
     requireString(card, 'body', ctx);
+    validateMarkdownTextField(card, 'body', ctx);
     requireOptionalString(card, 'question', ctx);
+    validateMarkdownTextField(card, 'question', ctx);
     if (card.options !== undefined) validateChoiceOptions(card, ctx);
     if (card.correctOptionId !== undefined && card.options === undefined) {
       fail(`${ctx}.correctOptionId requires options`);
     }
     requireOptionalString(card, 'correctOptionId', ctx);
     requireOptionalString(card, 'feedback', ctx);
+    validatePlainTextField(card, 'correctOptionId', ctx);
+    validateMarkdownTextField(card, 'feedback', ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'artifact') {
     requireString(card, 'body', ctx);
+    validateMarkdownTextField(card, 'body', ctx);
     requireStringArray(card, 'template', ctx);
     requireStringArray(card, 'variants', ctx);
+    validateStringArrayKind(card, 'template', ctx, 'markdown');
+    validateStringArrayKind(card, 'variants', ctx, 'plain');
     requireCustomOption(card, 'customOption', ctx);
     if (card.customOption !== undefined && (!Array.isArray(card.variants) || card.variants.length === 0)) {
       fail(`${ctx}.customOption requires variants`);
@@ -645,12 +782,17 @@ function validateCard(card, ctx, seen) {
   }
   if (card.type === 'checklist') {
     requireOptionalString(card, 'body', ctx);
+    validateMarkdownTextField(card, 'body', ctx);
     requireStringArray(card, 'items', ctx, 1);
+    validateStringArrayKind(card, 'items', ctx, 'plain');
   }
   if (card.type === 'summary') {
     requireOptionalString(card, 'body', ctx);
+    validateMarkdownTextField(card, 'body', ctx);
     requireStringArray(card, 'points', ctx, 1);
+    validateStringArrayKind(card, 'points', ctx, 'markdown');
     requireOptionalString(card, 'nextStep', ctx);
+    validateMarkdownTextField(card, 'nextStep', ctx);
   }
 }
 
@@ -660,7 +802,9 @@ function validateSupplemental(section, ctx) {
   if (!requireObject(supplemental, `${ctx}.supplemental`)) return;
   requireOnlyKeys(supplemental, ['strategy', 'sourceFiles', 'trainings', 'spacedRepetition', 'expansionScenarios', 'editorialRules', 'glossary', 'outcome'], `${ctx}.supplemental`);
   requireOptionalString(supplemental, 'strategy', `${ctx}.supplemental`);
+  validatePlainTextField(supplemental, 'strategy', `${ctx}.supplemental`);
   requireStringArray(supplemental, 'sourceFiles', `${ctx}.supplemental`);
+  validateStringArrayKind(supplemental, 'sourceFiles', `${ctx}.supplemental`, 'plain');
   for (const key of ['trainings', 'spacedRepetition', 'expansionScenarios']) {
     if (supplemental[key] === undefined) continue;
     const items = requireArray(supplemental, key, `${ctx}.supplemental`);
@@ -674,10 +818,16 @@ function validateSupplemental(section, ctx) {
       requireOptionalString(item, 'type', itemCtx);
       requireString(item, 'summary', itemCtx);
       requireStringArray(item, 'content', itemCtx);
+      for (const field of ['id', 'title', 'sourceSection', 'type', 'summary']) {
+        validatePlainTextField(item, field, itemCtx);
+      }
+      validateStringArrayKind(item, 'content', itemCtx, 'plain');
     }
   }
   requireStringArray(supplemental, 'editorialRules', `${ctx}.supplemental`);
+  validateStringArrayKind(supplemental, 'editorialRules', `${ctx}.supplemental`, 'plain');
   requireStringArray(supplemental, 'outcome', `${ctx}.supplemental`);
+  validateStringArrayKind(supplemental, 'outcome', `${ctx}.supplemental`, 'plain');
   if (supplemental.glossary !== undefined) {
     const terms = requireArray(supplemental, 'glossary', `${ctx}.supplemental`);
     for (const [termIndex, term] of terms.entries()) {
@@ -686,6 +836,8 @@ function validateSupplemental(section, ctx) {
       requireOnlyKeys(term, ['term', 'definition'], termCtx);
       requireString(term, 'term', termCtx);
       requireString(term, 'definition', termCtx);
+      validatePlainTextField(term, 'term', termCtx);
+      validatePlainTextField(term, 'definition', termCtx);
     }
   }
 }
@@ -709,6 +861,9 @@ function validateProgramGraph(programFile, contentRoot) {
   requireSlug(program, 'slug', 'program');
   requireString(program, 'title', 'program');
   requireOptionalString(program, 'description', 'program');
+  for (const key of ['id', 'title', 'description']) {
+    validatePlainTextField(program, key, 'program');
+  }
 
   const levelRefs = requireArray(program, 'levels', 'program', 1);
   validateOrderSequence(levelRefs, 'program.levels');
@@ -735,6 +890,9 @@ function validateProgramGraph(programFile, contentRoot) {
     requireOptionalString(level, 'description', levelCtx);
     requireOptionalString(level, 'source', levelCtx);
     requireOrder(level, levelCtx);
+    for (const key of ['id', 'title', 'description', 'source']) {
+      validatePlainTextField(level, key, levelCtx);
+    }
 
     for (const key of ['id', 'slug', 'title', 'order']) {
       if (levelRef[key] !== level[key]) {
@@ -771,6 +929,9 @@ function validateProgramGraph(programFile, contentRoot) {
       requireOptionalString(section, 'description', sectionCtx);
       requireOrder(section, sectionCtx);
       requireString(section, 'source', sectionCtx);
+      for (const key of ['id', 'title', 'description', 'source']) {
+        validatePlainTextField(section, key, sectionCtx);
+      }
 
       for (const key of ['id', 'slug', 'title', 'order']) {
         if (sectionRef[key] !== section[key]) {

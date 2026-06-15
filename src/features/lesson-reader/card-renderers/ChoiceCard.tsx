@@ -6,7 +6,8 @@ import { getChoiceOptions, getChoiceQuestion, getCorrectOption } from '@/feature
 import { cn } from '@/lib/utils'
 
 import { PracticeCardFlow, type PracticeCardFlowDotState } from './PracticeCardFlow'
-import { NoBreakText, SelectableOption } from './shared'
+import { richTextToPlainText } from './richText'
+import { NoBreakText, RichTextParagraphs, SelectableOption } from './shared'
 
 export function ChoiceCard({
   card,
@@ -21,6 +22,7 @@ export function ChoiceCard({
 }) {
   const options = getChoiceOptions(card)
   const question = getChoiceQuestion(card)
+  const plainQuestion = richTextToPlainText(question)
   const correctOption = getCorrectOption(card)
   const selectedOption = options.find((option) => option.id === state.selectedOptionId)
   const isCorrect = Boolean(correctOption && selectedOption?.id === correctOption.id)
@@ -34,16 +36,19 @@ export function ChoiceCard({
   return (
     <div className="flex flex-col gap-4">
       {card.type === 'scenario' ? (
-        <p className="rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-4 text-sm leading-6 text-[var(--fr-text-secondary)]">
-          <NoBreakText text={card.body} />
-        </p>
+        <RichTextParagraphs
+          className="flex flex-col gap-3 rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-soft)] p-4"
+          paragraphClassName="text-sm leading-6 text-[var(--fr-text-secondary)]"
+          text={card.body}
+        />
       ) : null}
-      <p className="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]">
-        <NoBreakText text={question} />
-      </p>
+      <RichTextParagraphs
+        paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+        text={question}
+      />
       {usePracticeFlow && activeOption ? (
         <fieldset>
-          <legend className="sr-only">{question}</legend>
+          <legend className="sr-only">{plainQuestion}</legend>
           <PracticeCardFlow
             activeIndex={safeActiveIndex}
             getDotState={(index) =>
@@ -79,7 +84,7 @@ export function ChoiceCard({
         </fieldset>
       ) : (
         <fieldset className="flex flex-col gap-3">
-          <legend className="sr-only">{question}</legend>
+          <legend className="sr-only">{plainQuestion}</legend>
           <ul className="flex flex-col gap-3">
             {options.map((option) => {
               const isSelected = state.selectedOptionId === option.id
@@ -242,8 +247,8 @@ function ChoiceFeedback({
   if (!hasObjectiveAnswer) {
     return (
       <LessonFeedback id={id} tone={selectedFeedback || cardFeedback ? 'almost' : 'info'}>
-        {selectedFeedback ? <p><NoBreakText text={selectedFeedback} /></p> : null}
-        {cardFeedback ? <p><NoBreakText text={cardFeedback} /></p> : null}
+        {selectedFeedback ? <RichTextParagraphs text={selectedFeedback} /> : null}
+        {cardFeedback ? <RichTextParagraphs text={cardFeedback} /> : null}
         {!selectedFeedback && !cardFeedback ? <p>Выбор отмечен. Можно продолжать.</p> : null}
       </LessonFeedback>
     )
@@ -252,8 +257,8 @@ function ChoiceFeedback({
   if (isCorrect) {
     return (
       <LessonFeedback id={id} tone="correct">
-        {selectedFeedback ? <p><NoBreakText text={selectedFeedback} /></p> : null}
-        {cardFeedback ? <p><NoBreakText text={cardFeedback} /></p> : null}
+        {selectedFeedback ? <RichTextParagraphs text={selectedFeedback} /> : null}
+        {cardFeedback ? <RichTextParagraphs text={cardFeedback} /> : null}
         {!selectedFeedback && !cardFeedback ? <p>Эта формулировка лучше всего подходит к шагу.</p> : null}
       </LessonFeedback>
     )
@@ -266,8 +271,8 @@ function ChoiceFeedback({
           Лучше подходит: <span className="font-semibold text-[var(--fr-text-primary)]"><NoBreakText text={correctOptionLabel} /></span>.
         </p>
       ) : null}
-      {selectedFeedback ? <p><NoBreakText text={selectedFeedback} /></p> : null}
-      {cardFeedback ? <p><NoBreakText text={cardFeedback} /></p> : null}
+      {selectedFeedback ? <RichTextParagraphs text={selectedFeedback} /> : null}
+      {cardFeedback ? <RichTextParagraphs text={cardFeedback} /> : null}
       {!selectedFeedback && !cardFeedback ? <p>Посмотри на вариант, где есть смысл, срок или связь с ценностью.</p> : null}
     </LessonFeedback>
   )

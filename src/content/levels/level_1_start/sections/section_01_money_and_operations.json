@@ -3,7 +3,7 @@
   "id": "section_l1_s1_money_operations",
   "slug": "money-and-operations",
   "title": "Раздел 1. Деньги и операции",
-  "description": "Первый раздел уровня 1 «Старт»: увидеть, куда уходят деньги, и отделить обязательные траты от желаемых.",
+  "description": "Первый раздел уровня 1 «Старт»: увидеть, куда уходят деньги, отделить обязательные траты от желаемых, платить безопасно и защитить цифровой след.",
   "order": 1,
   "source": "docs/levels/level-1-start/sections/money-and-operations/",
   "lessons": [
@@ -34,7 +34,7 @@
           "thinkingType": "understanding",
           "develops": "psychology",
           "checkability": "subjective",
-          "question": "Конец месяца. Смотришь на баланс, а там почти ноль. На что ушло, непонятно... Крупных покупок вроде не было.\n\nТак бывает почти у всех людей: деньги утекают сквозь пальцы через множество маленьких трат.\n\nУзнаёшь себя?",
+          "question": "Конец месяца. Смотришь на баланс, а там почти ноль. На что ушло, непонятно... Крупных покупок вроде не было.\n\n**Так бывает почти у всех людей:** деньги утекают сквозь пальцы через множество маленьких трат.\n\nУзнаёшь себя?",
           "options": [
             {
               "id": "often",
@@ -63,7 +63,7 @@
           "thinkingType": "memory",
           "develops": "hard skills",
           "checkability": "objective",
-          "body": "Большие траты мы помним. А маленькие — кофе, такси, подписка, доставка — проходят мимо внимания. За месяц из них набегает заметная сумма.\n\nГлавное правило: управлять можно только тем, что замечаешь.\n\n5 трат по 200 ₽ в день — это 30 000 ₽ в месяц. Незаметно по отдельности, но ощутимо в сумме."
+          "body": "Большие траты мы помним. А маленькие — кофе, такси, подписка, доставка — проходят мимо внимания. За месяц из них набегает заметная сумма.\n\n**Главное правило:** управлять можно только тем, что замечаешь.\n\n5 трат по 200 ₽ в день — это 30 000 ₽ в месяц. Незаметно по отдельности, но ощутимо в сумме."
         },
         {
           "id": "card_l1s1l1_03_sorting_choice",
@@ -71,6 +71,7 @@
           "order": 3,
           "title": "Распредели траты на две группы",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 3",
+          "ctaLabel": "Дальше",
           "thinkingType": "application",
           "develops": "hard skills",
           "checkability": "objective",
@@ -125,11 +126,12 @@
           "order": 4,
           "title": "Куда уходят деньги Кирилла?",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 4",
+          "ctaLabel": "Применить к себе",
           "thinkingType": "real world A",
           "develops": "hard skills",
           "checkability": "objective",
           "body": "Кирилл был уверен, что «почти не тратит». Но когда записал всё за неделю, увидел реальность: кофе, доставка и такси съели почти 4 000 ₽ — это больше, чем он ожидал.",
-          "question": "Что помогло Кириллу увидеть эти траты?",
+          "question": "**Что помогло Кириллу увидеть эти траты?**",
           "options": [
             {
               "id": "income-increase",
@@ -179,10 +181,11 @@
           "order": 5,
           "title": "Твои 3 траты за сегодня",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 5",
+          "ctaLabel": "Сохранить и продолжить",
           "thinkingType": "personal world",
           "develops": "soft skills",
           "checkability": "mixed",
-          "body": "Вспомни и запиши 3 свои траты за сегодня: сумма и категория, без оценок «хорошо/плохо».\n\nНе помнишь точно? Поставь примерно.",
+          "body": "**Вспомни и запиши 3 свои траты за сегодня**: сумма и категория, без оценок «хорошо/плохо».\n\nНе помнишь точно? Поставь примерно.",
           "template": [
             "Трата 1: сумма и категория (еда / транспорт / развлечения / прочее)",
             "Трата 2: сумма и категория (еда / транспорт / развлечения / прочее)",
@@ -195,6 +198,7 @@
           "order": 6,
           "title": "Что удивило?",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 6",
+          "ctaLabel": "Дальше",
           "thinkingType": "personal world",
           "develops": "psychology",
           "checkability": "subjective",
@@ -218,6 +222,7 @@
           "order": 7,
           "title": "Твоё правило на 3 дня",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md / Экран 7",
+          "ctaLabel": "Сделать моим правилом",
           "thinkingType": "habit",
           "develops": "habits",
           "checkability": "mixed",
@@ -314,6 +319,7 @@
           "order": 3,
           "title": "Раздели траты на две группы",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 3",
+          "ctaLabel": "Дальше",
           "thinkingType": "application",
           "develops": "hard skills",
           "checkability": "objective",
@@ -374,6 +380,7 @@
           "order": 4,
           "title": "Чужая корзина",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 4",
+          "ctaLabel": "Применить к себе",
           "thinkingType": "real world A",
           "develops": "hard skills",
           "checkability": "objective",
@@ -423,6 +430,7 @@
           "order": 5,
           "title": "Размечаем твои траты",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 5",
+          "ctaLabel": "Сохранить разметку",
           "thinkingType": "personal world",
           "develops": "soft skills",
           "checkability": "mixed",
@@ -439,6 +447,7 @@
           "order": 6,
           "title": "Что можно сократить без боли?",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 6",
+          "ctaLabel": "Дальше",
           "thinkingType": "personal world",
           "develops": "psychology",
           "checkability": "subjective",
@@ -462,6 +471,7 @@
           "order": 7,
           "title": "Твоё правило выбора",
           "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md / Экран 7",
+          "ctaLabel": "Сделать моим правилом",
           "thinkingType": "habit",
           "develops": "habits",
           "checkability": "mixed",
@@ -490,7 +500,519 @@
             "Правило вопроса перед желаемой покупкой.",
             "Когда видишь разницу между обязательным и желаемым, легче находить деньги на цели и накопления — без ощущения ограничений."
           ],
-          "nextStep": "На этом текущий доступный раздел завершён. Дальше вернёмся к новым урокам, когда они будут готовы по актуальной методичке."
+          "nextStep": "Дальше — Уровень 1 · Раздел 1 · Урок 3 «Безопасный платёж»: как платить так, чтобы деньги не уходили мошенникам."
+        }
+      ]
+    },
+    {
+      "id": "lesson_l1_s1_l3_safe_payment",
+      "slug": "safe-payment",
+      "title": "Безопасный платёж",
+      "subtitle": "У1.3",
+      "description": "Распознавать признаки мошенничества и проверять платёж перед подтверждением.",
+      "order": 3,
+      "estimatedMinutes": 5,
+      "learningGoal": "Распознавать признаки мошенничества и проверять платёж перед подтверждением.",
+      "mainSkill": "Пауза и проверка перед оплатой или переводом",
+      "tags": [
+        "L1",
+        "money-operations",
+        "payment-safety",
+        "fraud-prevention"
+      ],
+      "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / У1.3 / Паспорт урока",
+      "cards": [
+        {
+          "id": "card_l1s1l3_01_hook",
+          "type": "single_choice",
+          "order": 1,
+          "title": "Подтвердите перевод прямо сейчас",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 1",
+          "ctaLabel": "Разобраться, как не попасться на крючок",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "question": "Алло-алло!\n\n«Это служба безопасности банка. По вашей карте подозрительная операция. Срочно переведите деньги на безопасный счёт».\n\nГолос уверенный, давят на время.\n\nЧто ты сделаешь в первую секунду?",
+          "options": [
+            {
+              "id": "act-immediately",
+              "label": "Сразу выполню — вдруг и правда спасаю деньги",
+              "feedback": "Принято. Именно на эту реакцию и рассчитывают — сейчас разберёмся, как не попасться."
+            },
+            {
+              "id": "freeze-under-pressure",
+              "label": "Засомневаюсь, но растеряюсь под давлением",
+              "feedback": "Знакомо. Дальше дадим простое правило, которое работает даже под давлением."
+            },
+            {
+              "id": "hang-up-callback",
+              "label": "Положу трубку и перезвоню в банк сам",
+              "feedback": "Отлично — это и есть безопасный ход. Закрепим его на примерах."
+            }
+          ]
+        },
+        {
+          "id": "card_l1s1l3_02_theory",
+          "type": "theory",
+          "order": 2,
+          "title": "Три признака опасного платежа",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 2",
+          "ctaLabel": "Понятно, дальше",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Почти все схемы обмана держатся не на взломе, а на спешке и страхе: тебя торопят и пугают, чтобы выключить здравый смысл.\n\nЗапомни три красных флага, при которых нужно остановиться.\n\n1 — Срочность и страх: «прямо сейчас», «иначе потеряете деньги».\n\n2 — Просьба о коде, пароле, CVV или перевод на «безопасный счёт».\n\n3 — Канал информации не знаком: ссылка из СМС, незнакомый сайт, звонок «из банка или МВД».\n\nБанк и госслужбы НИКОГДА не просят код из СМС, полный номер карты с CVV или перевод на «безопасный счёт». Просят — значит, мошенник."
+        },
+        {
+          "id": "card_l1s1l3_03_practice",
+          "type": "categorization",
+          "order": 3,
+          "title": "Опасно или безопасно?",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 3",
+          "ctaLabel": "Дальше",
+          "thinkingType": "application",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Распредели сообщения и просьбы: опасно — стоп или нормально — можно действовать спокойно.",
+          "categories": [
+            {
+              "id": "danger",
+              "label": "Опасно — стоп"
+            },
+            {
+              "id": "normal",
+              "label": "Нормально — можно спокойно"
+            }
+          ],
+          "items": [
+            {
+              "id": "sms-code",
+              "label": "Просят продиктовать код из СМС",
+              "correctCategoryId": "danger",
+              "feedback": "Код из СМС не диктуют никому — это подпись под операцией."
+            },
+            {
+              "id": "safe-account",
+              "label": "«Переведите на безопасный счёт срочно»",
+              "correctCategoryId": "danger",
+              "feedback": "«Безопасного счёта» не существует — это всегда обман."
+            },
+            {
+              "id": "unknown-sms-link",
+              "label": "Ссылка на оплату из неизвестного СМС",
+              "correctCategoryId": "danger",
+              "feedback": "Чужая ссылка ведёт на поддельный сайт."
+            },
+            {
+              "id": "own-bank-app",
+              "label": "Оплата в приложении банка по своей инициативе",
+              "correctCategoryId": "normal",
+              "feedback": "Платёж начал ты сам в своём приложении — это нормально."
+            },
+            {
+              "id": "known-contact-transfer",
+              "label": "Перевод знакомому по номеру из контактов",
+              "correctCategoryId": "normal",
+              "feedback": "Ты выбрал получателя сам — спешки и давления нет."
+            },
+            {
+              "id": "secure-site-payment",
+              "label": "Покупка на сайте с оплатой через банк (3-D Secure, CVV код)",
+              "correctCategoryId": "normal",
+              "feedback": "Подтверждение через банк защищает операцию."
+            }
+          ],
+          "feedback": "Опасно — там, где тебя торопят, просят код или ведут по чужой ссылке. Нормально — когда платёж начинаешь ты сам в своём приложении. Если сомневаешься, спроси: «Кто начал этот платёж — я или кто-то торопит меня?»"
+        },
+        {
+          "id": "card_l1s1l3_04_real_world",
+          "type": "scenario",
+          "order": 4,
+          "title": "Звонок «из службы безопасности»",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 4",
+          "ctaLabel": "Применить к себе",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Тебе звонят: «Зафиксирована попытка взять кредит на ваше имя. Чтобы отменить, назовите код из СМС, который сейчас придёт». СМС действительно приходит. Что делать?",
+          "question": "Какое действие безопасно?",
+          "options": [
+            {
+              "id": "tell-code",
+              "label": "Назвать код — ведь надо срочно отменить кредит",
+              "feedback": "Код из СМС — это подпись под операцией. Назвав его, ты сам подтвердишь кредит или перевод."
+            },
+            {
+              "id": "callback-bank",
+              "label": "Положить трубку и самому позвонить в банк по номеру с карты",
+              "isCorrect": true,
+              "feedback": "Верно. Настоящий банк не просит код. Позвонив по официальному номеру, ты разрываешь сценарий мошенника."
+            },
+            {
+              "id": "transfer-safe-account",
+              "label": "Перевести деньги на «безопасный счёт», как просят",
+              "feedback": "«Безопасного счёта» не существует — это перевод денег мошеннику."
+            }
+          ],
+          "correctOptionId": "callback-bank",
+          "feedback": "Настоящий банк не просит код из СМС. Кладёшь трубку и перезваниваешь сам по официальному номеру — так обман не сработает.\n\n**Важно:** Код из СМС — это подпись под операцией. Назвал код — сам подтвердил перевод или кредит. Никому и никогда его не диктуй.",
+          "statistics": {
+            "title": "Статистика по теме (Россия)",
+            "items": [
+              {
+                "value": "94%",
+                "label": "хищений у клиентов финансовых организаций в 2025 году совершены с помощью социальной инженерии."
+              },
+              {
+                "value": "~20 000 ₽",
+                "label": "средняя сумма потерь за одну успешную атаку."
+              },
+              {
+                "value": "99,9%",
+                "label": "мошеннических операций отсекают антифрод-системы банков — но звонок-обман это не ловит."
+              }
+            ],
+            "sources": [
+              "F.A.C.C.T. / Habr (2025)",
+              "Банк России (2025)"
+            ]
+          }
+        },
+        {
+          "id": "card_l1s1l3_05_payment_checklist",
+          "type": "artifact",
+          "order": 5,
+          "title": "Твой чек-лист перед оплатой",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 5",
+          "ctaLabel": "Сохранить чек-лист",
+          "thinkingType": "personal world",
+          "develops": "soft skills",
+          "checkability": "mixed",
+          "body": "Собери личный чек-лист: что ты проверяешь, прежде чем подтвердить платёж или перевод. Отметь пункты, которые берёшь себе.\n\nЧтобы выполнить чек-лист, нужна пауза перед платежом. Всегда делай её.",
+          "template": [
+            "Я сам начал этот платёж — меня никто не торопит",
+            "Я не диктую код из СМС, CVV и пароли никому",
+            "Сумму и получателя вижу и подтверждаю осознанно",
+            "Сомневаюсь — кладу трубку и звоню в банк сам"
+          ]
+        },
+        {
+          "id": "card_l1s1l3_06_pressure_reflection",
+          "type": "reflection",
+          "order": 6,
+          "title": "Что ты чувствуешь, когда на тебя давят?",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 6",
+          "ctaLabel": "Дальше",
+          "thinkingType": "personal world",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "prompt": "Мошенники работают через эмоции — страх и спешку. Как ты обычно реагируешь, когда тебя торопят с деньгами?",
+          "inputType": "single_select",
+          "options": [
+            "Теряюсь и могу сделать не подумав",
+            "Раздражаюсь, но всё равно проверяю",
+            "Спокойно беру паузу — меня сложно поторопить"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          },
+          "saveKey": "safe_payment_pressure_reaction",
+          "guidance": "Спасибо за честность. Если давление выбивает тебя из колеи — это нормально, на это и рассчитывают мошенники. Поэтому правило простое: под давлением — пауза, а не действие."
+        },
+        {
+          "id": "card_l1s1l3_07_pause_rule",
+          "type": "artifact",
+          "order": 7,
+          "title": "Правило паузы",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 7",
+          "ctaLabel": "Сделать моим правилом",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "mixed",
+          "body": "Одно простое правило защищает лучше любых технологий. Выбери готовое — или впиши своё.",
+          "variants": [
+            "Если меня торопят с деньгами, то кладу трубку и звоню в банк сам",
+            "Если у меня просят код из СМС, то не диктую его никому"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          }
+        },
+        {
+          "id": "card_l1s1l3_08_summary",
+          "type": "summary",
+          "order": 8,
+          "title": "Сохранили в Навигатор",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md / Экран 8",
+          "thinkingType": "artifact",
+          "develops": "habits",
+          "checkability": "subjective",
+          "body": "Готово. У тебя есть личный чек-лист безопасного платежа и правило паузы — теперь схемы обмана распознаются гораздо легче.",
+          "points": [
+            "Чек-лист безопасного платежа.",
+            "Правило паузы: под давлением — стоп и проверка.",
+            "Безопасность платежа — это привычка останавливаться. Выработав паузу, ты защищаешь деньги в любой ситуации, где тебя пытаются поторопить.",
+            "Схемы мошенников быстро меняются. Свежие признаки обмана и официальные предупреждения смотри на сайте Банка России и в приложении своего банка."
+          ],
+          "nextStep": "Дальше — Уровень 1 · Раздел 1 · Урок 4 «Цифровой след и защита»: как твои данные попадают в сеть и как настроить уведомления и лимиты. Вернёмся к твоему чек-листу через несколько дней."
+        }
+      ]
+    },
+    {
+      "id": "lesson_l1_s1_l4_digital_footprint_protection",
+      "slug": "digital-footprint-and-protection",
+      "title": "Цифровой след и защита",
+      "subtitle": "У1.4",
+      "description": "Понять, что такое цифровой след, и настроить уведомления и лимиты по операциям.",
+      "order": 4,
+      "estimatedMinutes": 5,
+      "learningGoal": "Понять, что такое цифровой след, и настроить уведомления и лимиты по операциям.",
+      "mainSkill": "Настройка защиты: уведомления и лимиты в приложении банка",
+      "tags": [
+        "L1",
+        "money-operations",
+        "digital-safety",
+        "data-protection"
+      ],
+      "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md / У1.4 / Паспорт урока",
+      "cards": [
+        {
+          "id": "card_l1s1l4_01_hook",
+          "type": "single_choice",
+          "order": 1,
+          "title": "Откуда они знают моё имя?",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md / Экран 1",
+          "ctaLabel": "Понять, как защититься",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "question": "Звонит «банк» — и называет твоё имя, последние операции, иногда даже адрес. Кажется, что они правда из банка. Откуда у них эти данные?\n\nОтвет простой: твой цифровой след. Каждая регистрация, заказ и анкета оставляют данные, которые могут утечь.\n\nЗадумывался об этом?",
+          "options": [
+            {
+              "id": "never-thought",
+              "label": "Никогда не думал, что обо мне столько данных в сети",
+              "feedback": "Так бывает у многих. Сейчас разберём, откуда берётся цифровой след."
+            },
+            {
+              "id": "suspected-unsure",
+              "label": "Подозревал, но не знаю, что с этим делать",
+              "feedback": "Знакомо. Дальше настроим простую защиту за пару шагов."
+            },
+            {
+              "id": "share-less",
+              "label": "Стараюсь делиться данными по минимуму",
+              "feedback": "Отлично — закрепим это и добавим видимость операций."
+            }
+          ]
+        },
+        {
+          "id": "card_l1s1l4_02_theory",
+          "type": "theory",
+          "order": 2,
+          "title": "Что такое цифровой след",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md / Экран 2",
+          "ctaLabel": "Понятно, дальше",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "**Цифровой след** — всё, что ты оставляешь в интернете: имя, телефон, почта, история покупок, геолокация. Каждый «кусочек» кажется мелочью, но вместе они дают мошеннику готовый портрет — и повод действовать.\n\nЗащититься можно двумя шагами.\n\n**Сократи след.** Не оставляй номер телефона и данные карты там, где без этого можно обойтись.\n\n**Держи контроль.** Включи уведомления и лимиты по карте — так любая подозрительная операция сразу окажется у тебя перед глазами.\n\nСделай так, чтобы любая операция по твоим деньгам была заметна сразу — через уведомления и лимиты. Тогда даже если мошенник и попытается что-то сделать, ты узнаешь об этом первым."
+        },
+        {
+          "id": "card_l1s1l4_03_practice",
+          "type": "categorization",
+          "order": 3,
+          "title": "Защищает или открывает данные?",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md / Экран 3",
+          "ctaLabel": "Дальше",
+          "thinkingType": "application",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Распредели действия: защищает мои данные или увеличивает риск утечки.",
+          "categories": [
+            {
+              "id": "protect",
+              "label": "Защищает мои данные"
+            },
+            {
+              "id": "risk",
+              "label": "Увеличивает риск утечки"
+            }
+          ],
+          "items": [
+            {
+              "id": "push-notifications",
+              "label": "Включить push-уведомления о всех операциях",
+              "correctCategoryId": "protect",
+              "feedback": "Уведомления делают любую операцию заметной сразу."
+            },
+            {
+              "id": "daily-transfer-limit",
+              "label": "Поставить лимит на переводы в день",
+              "correctCategoryId": "protect",
+              "feedback": "Лимит ограничивает потери, даже если данные утекли."
+            },
+            {
+              "id": "separate-passwords",
+              "label": "Разные пароли для банка и почты",
+              "correctCategoryId": "protect",
+              "feedback": "Один взломанный пароль не открывает всё сразу."
+            },
+            {
+              "id": "card-photo-social",
+              "label": "Выкладывать фото карты в соцсети",
+              "correctCategoryId": "risk",
+              "feedback": "Номер и срок карты становятся доступны посторонним."
+            },
+            {
+              "id": "contacts-any-site",
+              "label": "Указывать телефон и почту на любых сайтах",
+              "correctCategoryId": "risk",
+              "feedback": "Так данные расходятся и попадают в утечки."
+            },
+            {
+              "id": "codes-in-notes",
+              "label": "Хранить коды и пароли в заметках телефона",
+              "correctCategoryId": "risk",
+              "feedback": "При доступе к телефону всё открыто сразу."
+            }
+          ],
+          "feedback": "Защита — это меньше данных наружу и больше видимости операций. Риск — там, где данные о деньгах доступны другим. Если сомневаешься, спроси: «Это делает мои операции заметнее для меня — или мои данные доступнее для чужих?»"
+        },
+        {
+          "id": "card_l1s1l4_04_real_world",
+          "type": "scenario",
+          "order": 4,
+          "title": "Утечки данных — это про каждого",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md / Экран 4",
+          "ctaLabel": "Применить к себе",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Кажется, что утечки случаются «у кого-то другого». На деле данные миллионов людей уже в открытом доступе — и это сырьё для звонков мошенников.",
+          "question": "Что лучше всего поможет заметить чужую операцию по твоей карте сразу?",
+          "options": [
+            {
+              "id": "monthly-balance",
+              "label": "Проверять баланс раз в месяц",
+              "feedback": "Слишком редко: чужую операцию заметишь, когда деньги уже ушли."
+            },
+            {
+              "id": "enable-notifications",
+              "label": "Включить уведомления обо всех операциях",
+              "isCorrect": true,
+              "feedback": "Верно. Уведомление приходит в ту же секунду — ты успеваешь среагировать и заблокировать карту."
+            },
+            {
+              "id": "keep-card-secret",
+              "label": "Никому не рассказывать, что у тебя есть карта",
+              "feedback": "Это не защищает от операций — данные всё равно могут утечь."
+            }
+          ],
+          "correctOptionId": "enable-notifications",
+          "feedback": "Уведомления делают любую операцию видимой в ту же секунду — ты успеваешь среагировать и заблокировать карту.\n\n**Важно:** Если твои данные уже утекли — это не значит, что деньги потеряны. Опасна не утечка сама по себе, а твоё действие по просьбе мошенника. Контролируй то, что зависит от тебя.",
+          "statistics": {
+            "title": "Статистика по теме (Россия)",
+            "items": [
+              {
+                "value": "52 млн",
+                "label": "записей персональных данных оказались в утечках за 2025 год."
+              },
+              {
+                "value": "767 млн",
+                "label": "записей о россиянах находятся в открытом доступе — больше, чем всё население страны."
+              },
+              {
+                "value": "~28%",
+                "label": "утечек 2025 года пришлись на интернет-сервисы, ещё около 26% — на госорганы."
+              }
+            ],
+            "sources": [
+              "Роскомнадзор (2025)",
+              "Отраслевая аналитика (cont.ws, 2026)"
+            ]
+          }
+        },
+        {
+          "id": "card_l1s1l4_05_protection_settings",
+          "type": "artifact",
+          "order": 5,
+          "title": "Настрой свою защиту",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md / Экран 5",
+          "ctaLabel": "Сохранить настройки",
+          "thinkingType": "personal world",
+          "develops": "soft skills",
+          "checkability": "mixed",
+          "body": "Открой приложение банка и отметь, что уже настроено или настроишь сейчас. Это твоя личная база защиты.\n\nЛичная настройка — без оценки «верно/неверно». Даже одни включённые уведомления уже резко повышают твою защищённость.",
+          "template": [
+            "Уведомления обо всех операциях — включены",
+            "Лимит на переводы/снятие в день — установлен",
+            "Вход в приложение по коду, отпечатку или Face ID",
+            "Разные пароли для банка, почты и соцсетей"
+          ]
+        },
+        {
+          "id": "card_l1s1l4_06_control_reflection",
+          "type": "reflection",
+          "order": 6,
+          "title": "Как тебе ощущение контроля?",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md / Экран 6",
+          "ctaLabel": "Дальше",
+          "thinkingType": "personal world",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "prompt": "Ты настроил базовую защиту. Какое чувство это вызывает?",
+          "inputType": "single_select",
+          "options": [
+            "Спокойнее — теперь я вижу, что происходит с деньгами",
+            "Понял, что давно стоило это сделать",
+            "Всё ещё тревожно, но уже чуть увереннее"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          },
+          "saveKey": "digital_footprint_control_feeling",
+          "guidance": "Нет цели отметить всё сразу. Каждый пункт — это реальный шаг, который сужает возможности мошенника."
+        },
+        {
+          "id": "card_l1s1l4_07_digital_hygiene_rule",
+          "type": "artifact",
+          "order": 7,
+          "title": "Привычка цифровой гигиены",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md / Экран 7",
+          "ctaLabel": "Сделать моим правилом",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "mixed",
+          "body": "Защита данных — это не разовая настройка, а привычка. Выбери готовое правило — или впиши своё.",
+          "variants": [
+            "Если оставляю телефон или карту на сайте, то сначала спрашиваю себя: точно ли это нужно",
+            "Если приходит уведомление об операции, то сразу проверяю, мой ли это платёж"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          }
+        },
+        {
+          "id": "card_l1s1l4_08_summary",
+          "type": "summary",
+          "order": 8,
+          "title": "Раздел 1 пройден",
+          "sourceSection": "docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md / Экран 8",
+          "thinkingType": "artifact",
+          "develops": "habits",
+          "checkability": "subjective",
+          "body": "Готово. Ты настроил базовую защиту и понимаешь свой цифровой след. Это завершает Раздел 1 «Деньги и операции»: ты разобрал, куда уходят деньги, что обязательно, как платить безопасно и как защищать данные.",
+          "points": [
+            "Настроенные уведомления и лимиты по операциям.",
+            "Правило цифровой гигиены: видимость операций и осознанный обмен данными.",
+            "Безопасные деньги — это фундамент. Когда операции под контролем и защищены, можно спокойно переходить к следующему шагу: учиться откладывать и строить запас.",
+            "Статистика утечек быстро меняется. Проверить, не попали ли твои данные в открытый доступ, и узнать свежие рекомендации можно на портале Госуслуг и сайте Роскомнадзора."
+          ],
+          "nextStep": "На этом текущий доступный Раздел 1 завершён. Следующий раздел «Планирование и управление» появится в приложении позже; в нём разберём, почему финансовый запас спасает в трудный момент и с чего начать копить. Пока можно вернуться к сохранённым правилам и настройкам."
         }
       ]
     }

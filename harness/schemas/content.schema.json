@@ -8,6 +8,35 @@
       "type": "string",
       "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
     },
+    "plainText": {
+      "type": "string",
+      "description": "Plain text only. Do not use Markdown markers, links, inline code, underline tags, headings, or lists.",
+      "not": {
+        "anyOf": [
+          { "pattern": "\\*\\*|\\*[^*\\n]+\\*|__|`|\\[[^\\]\\n]+\\]\\([^)]+\\)|</?[uU]>" },
+          { "pattern": "(^|\\n)\\s{0,3}#{1,6}\\s" },
+          { "pattern": "(^|\\n)\\s*(?:[-*+]|[0-9]+[.)])\\s+" }
+        ]
+      }
+    },
+    "plainTextRequired": {
+      "allOf": [{ "$ref": "#/$defs/plainText" }],
+      "minLength": 1
+    },
+    "markdownText": {
+      "type": "string",
+      "description": "Approved Markdown subset: paragraphs, inline bold/italic, links, and <u>...</u>. No arbitrary HTML, Markdown headings, Markdown lists, or tables.",
+      "allOf": [
+        { "not": { "pattern": "</?(?![uU]\\b)[A-Za-z][^>]*>" } },
+        { "not": { "pattern": "<[uU]\\s+[^>]*>" } },
+        { "not": { "pattern": "(^|\\n)\\s{0,3}#{1,6}\\s" } },
+        { "not": { "pattern": "(^|\\n)\\s*(?:[-*+]|[0-9]+[.)])\\s+" } }
+      ]
+    },
+    "markdownTextRequired": {
+      "allOf": [{ "$ref": "#/$defs/markdownText" }],
+      "minLength": 1
+    },
     "checkability": {
       "enum": ["objective", "subjective", "mixed"]
     },
@@ -16,8 +45,8 @@
       "required": ["label"],
       "additionalProperties": false,
       "properties": {
-        "label": { "type": "string", "minLength": 1 },
-        "placeholder": { "type": "string", "minLength": 1 }
+        "label": { "$ref": "#/$defs/plainTextRequired" },
+        "placeholder": { "$ref": "#/$defs/plainTextRequired" }
       }
     },
     "cardStatistics": {
@@ -25,7 +54,7 @@
       "required": ["items"],
       "additionalProperties": false,
       "properties": {
-        "title": { "type": "string", "minLength": 1 },
+        "title": { "$ref": "#/$defs/plainTextRequired" },
         "items": {
           "type": "array",
           "minItems": 1,
@@ -34,14 +63,14 @@
             "required": ["value", "label"],
             "additionalProperties": false,
             "properties": {
-              "value": { "type": "string", "minLength": 1 },
-              "label": { "type": "string", "minLength": 1 }
+              "value": { "$ref": "#/$defs/plainTextRequired" },
+              "label": { "$ref": "#/$defs/markdownTextRequired" }
             }
           }
         },
         "sources": {
           "type": "array",
-          "items": { "type": "string", "minLength": 1 }
+          "items": { "$ref": "#/$defs/markdownTextRequired" }
         }
       }
     },
@@ -54,18 +83,16 @@
           "const": 1
         },
         "id": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "slug": {
           "$ref": "#/$defs/slug"
         },
         "title": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "description": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "levels": {
           "type": "array",
@@ -82,26 +109,23 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "slug": {
           "$ref": "#/$defs/slug"
         },
         "title": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "description": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "order": {
           "type": "integer",
           "minimum": 0
         },
         "path": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         }
       }
     },
@@ -114,25 +138,23 @@
           "const": 1
         },
         "id": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "slug": {
           "$ref": "#/$defs/slug"
         },
         "title": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "description": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "order": {
           "type": "integer",
           "minimum": 0
         },
         "source": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "sections": {
           "type": "array",
@@ -149,26 +171,23 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "slug": {
           "$ref": "#/$defs/slug"
         },
         "title": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "description": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "order": {
           "type": "integer",
           "minimum": 0
         },
         "path": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         }
       }
     },
@@ -181,26 +200,23 @@
           "const": 1
         },
         "id": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "slug": {
           "$ref": "#/$defs/slug"
         },
         "title": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "description": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "order": {
           "type": "integer",
           "minimum": 0
         },
         "source": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "lessons": {
           "type": "array",
@@ -220,21 +236,19 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "slug": {
           "$ref": "#/$defs/slug"
         },
         "title": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "subtitle": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "description": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "order": {
           "type": "integer",
@@ -245,20 +259,19 @@
           "minimum": 1
         },
         "learningGoal": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "mainSkill": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "tags": {
           "type": "array",
           "items": {
-            "type": "string",
-            "minLength": 1
+            "$ref": "#/$defs/plainTextRequired"
           }
         },
         "sourceSection": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "cards": {
           "type": "array",
@@ -274,8 +287,7 @@
       "required": ["id", "type", "order"],
       "properties": {
         "id": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "type": {
           "enum": [
@@ -297,20 +309,19 @@
           "minimum": 0
         },
         "title": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "sourceSection": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "ctaLabel": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "thinkingType": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "develops": {
-          "type": "string"
+          "$ref": "#/$defs/plainText"
         },
         "checkability": {
           "$ref": "#/$defs/checkability"
@@ -326,18 +337,16 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "label": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/plainTextRequired"
         },
         "isCorrect": {
           "type": "boolean"
         },
         "feedback": {
-          "type": "string"
+          "$ref": "#/$defs/markdownText"
         }
       }
     },
@@ -361,10 +370,10 @@
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "body": { "type": "string", "minLength": 1 },
+                "body": { "$ref": "#/$defs/markdownTextRequired" },
                 "examples": {
                   "type": "array",
-                  "items": { "type": "string", "minLength": 1 }
+                  "items": { "$ref": "#/$defs/plainTextRequired" }
                 }
               }
             }
@@ -381,16 +390,16 @@
                 "id": true,
                 "type": { "const": "video" },
                 "order": true,
-                "title": { "type": "string", "minLength": 1 },
+                "title": { "$ref": "#/$defs/plainTextRequired" },
                 "sourceSection": true,
                 "ctaLabel": true,
                 "thinkingType": true,
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "src": { "type": "string", "minLength": 1 },
-                "provider": { "type": "string" },
-                "transcript": { "type": "string" },
+                "src": { "$ref": "#/$defs/plainTextRequired" },
+                "provider": { "$ref": "#/$defs/plainText" },
+                "transcript": { "$ref": "#/$defs/markdownText" },
                 "timecodes": {
                   "type": "array",
                   "items": {
@@ -398,8 +407,8 @@
                     "required": ["time", "label"],
                     "additionalProperties": false,
                     "properties": {
-                      "time": { "type": "string", "minLength": 1 },
-                      "label": { "type": "string", "minLength": 1 }
+                      "time": { "$ref": "#/$defs/plainTextRequired" },
+                      "label": { "$ref": "#/$defs/plainTextRequired" }
                     }
                   }
                 }
@@ -426,7 +435,7 @@
                 "checkability": true,
                 "statistics": true,
                 "tone": { "enum": ["info", "warning", "success", "reflection"] },
-                "body": { "type": "string", "minLength": 1 }
+                "body": { "$ref": "#/$defs/markdownTextRequired" }
               }
             }
           ]
@@ -449,14 +458,14 @@
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "question": { "type": "string", "minLength": 1 },
+                "question": { "$ref": "#/$defs/markdownTextRequired" },
                 "options": {
                   "type": "array",
                   "minItems": 2,
                   "items": { "$ref": "#/$defs/choiceOption" }
                 },
-                "correctOptionId": { "type": "string" },
-                "feedback": { "type": "string" },
+                "correctOptionId": { "$ref": "#/$defs/plainText" },
+                "feedback": { "$ref": "#/$defs/markdownText" },
                 "readOnly": { "type": "boolean" }
               }
             }
@@ -480,13 +489,13 @@
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "question": { "type": "string", "minLength": 1 },
+                "question": { "$ref": "#/$defs/markdownTextRequired" },
                 "options": {
                   "type": "array",
                   "minItems": 2,
                   "items": { "$ref": "#/$defs/choiceOption" }
                 },
-                "feedback": { "type": "string" },
+                "feedback": { "$ref": "#/$defs/markdownText" },
                 "readOnly": { "type": "boolean" }
               }
             }
@@ -510,7 +519,7 @@
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "question": { "type": "string", "minLength": 1 },
+                "question": { "$ref": "#/$defs/markdownTextRequired" },
                 "categories": {
                   "type": "array",
                   "minItems": 2,
@@ -519,8 +528,8 @@
                     "required": ["id", "label"],
                     "additionalProperties": false,
                     "properties": {
-                      "id": { "type": "string", "minLength": 1 },
-                      "label": { "type": "string", "minLength": 1 }
+                      "id": { "$ref": "#/$defs/plainTextRequired" },
+                      "label": { "$ref": "#/$defs/plainTextRequired" }
                     }
                   }
                 },
@@ -532,14 +541,14 @@
                     "required": ["id", "label", "correctCategoryId"],
                     "additionalProperties": false,
                     "properties": {
-                      "id": { "type": "string", "minLength": 1 },
-                      "label": { "type": "string", "minLength": 1 },
-                      "correctCategoryId": { "type": "string", "minLength": 1 },
-                      "feedback": { "type": "string" }
+                      "id": { "$ref": "#/$defs/plainTextRequired" },
+                      "label": { "$ref": "#/$defs/plainTextRequired" },
+                      "correctCategoryId": { "$ref": "#/$defs/plainTextRequired" },
+                      "feedback": { "$ref": "#/$defs/markdownText" }
                     }
                   }
                 },
-                "feedback": { "type": "string" },
+                "feedback": { "$ref": "#/$defs/markdownText" },
                 "readOnly": { "type": "boolean" }
               }
             }
@@ -563,15 +572,15 @@
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "prompt": { "type": "string", "minLength": 1 },
+                "prompt": { "$ref": "#/$defs/markdownTextRequired" },
                 "inputType": { "enum": ["text", "single_select", "multi_select", "table", "freeform"] },
                 "options": {
                   "type": "array",
-                  "items": { "type": "string", "minLength": 1 }
+                  "items": { "$ref": "#/$defs/plainTextRequired" }
                 },
                 "customOption": { "$ref": "#/$defs/customOption" },
-                "saveKey": { "type": "string" },
-                "guidance": { "type": "string" },
+                "saveKey": { "$ref": "#/$defs/plainText" },
+                "guidance": { "$ref": "#/$defs/markdownText" },
                 "readOnly": { "type": "boolean" }
               },
               "if": {
@@ -604,14 +613,14 @@
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "body": { "type": "string", "minLength": 1 },
-                "question": { "type": "string" },
+                "body": { "$ref": "#/$defs/markdownTextRequired" },
+                "question": { "$ref": "#/$defs/markdownText" },
                 "options": {
                   "type": "array",
                   "items": { "$ref": "#/$defs/choiceOption" }
                 },
-                "correctOptionId": { "type": "string" },
-                "feedback": { "type": "string" },
+                "correctOptionId": { "$ref": "#/$defs/plainText" },
+                "feedback": { "$ref": "#/$defs/markdownText" },
                 "readOnly": { "type": "boolean" }
               },
               "dependentRequired": {
@@ -638,14 +647,14 @@
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "body": { "type": "string", "minLength": 1 },
+                "body": { "$ref": "#/$defs/markdownTextRequired" },
                 "template": {
                   "type": "array",
-                  "items": { "type": "string", "minLength": 1 }
+                  "items": { "$ref": "#/$defs/markdownTextRequired" }
                 },
                 "variants": {
                   "type": "array",
-                  "items": { "type": "string", "minLength": 1 }
+                  "items": { "$ref": "#/$defs/plainTextRequired" }
                 },
                 "customOption": { "$ref": "#/$defs/customOption" },
                 "readOnly": { "type": "boolean" }
@@ -683,11 +692,11 @@
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "body": { "type": "string" },
+                "body": { "$ref": "#/$defs/markdownText" },
                 "items": {
                   "type": "array",
                   "minItems": 1,
-                  "items": { "type": "string", "minLength": 1 }
+                  "items": { "$ref": "#/$defs/plainTextRequired" }
                 }
               }
             }
@@ -711,13 +720,13 @@
                 "develops": true,
                 "checkability": true,
                 "statistics": true,
-                "body": { "type": "string" },
+                "body": { "$ref": "#/$defs/markdownText" },
                 "points": {
                   "type": "array",
                   "minItems": 1,
-                  "items": { "type": "string", "minLength": 1 }
+                  "items": { "$ref": "#/$defs/markdownTextRequired" }
                 },
-                "nextStep": { "type": "string" }
+                "nextStep": { "$ref": "#/$defs/markdownText" }
               }
             }
           ]
@@ -729,30 +738,14 @@
       "required": ["id", "title", "summary"],
       "additionalProperties": false,
       "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1
-        },
-        "sourceSection": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        },
-        "summary": {
-          "type": "string",
-          "minLength": 1
-        },
+        "id": { "$ref": "#/$defs/plainTextRequired" },
+        "title": { "$ref": "#/$defs/plainTextRequired" },
+        "sourceSection": { "$ref": "#/$defs/plainText" },
+        "type": { "$ref": "#/$defs/plainText" },
+        "summary": { "$ref": "#/$defs/plainTextRequired" },
         "content": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "$ref": "#/$defs/plainTextRequired" }
         }
       }
     },
@@ -760,15 +753,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "strategy": {
-          "type": "string"
-        },
+        "strategy": { "$ref": "#/$defs/plainText" },
         "sourceFiles": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "$ref": "#/$defs/plainTextRequired" }
         },
         "trainings": {
           "type": "array",
@@ -790,10 +778,7 @@
         },
         "editorialRules": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "$ref": "#/$defs/plainTextRequired" }
         },
         "glossary": {
           "type": "array",
@@ -802,23 +787,14 @@
             "required": ["term", "definition"],
             "additionalProperties": false,
             "properties": {
-              "term": {
-                "type": "string",
-                "minLength": 1
-              },
-              "definition": {
-                "type": "string",
-                "minLength": 1
-              }
+              "term": { "$ref": "#/$defs/plainTextRequired" },
+              "definition": { "$ref": "#/$defs/plainTextRequired" }
             }
           }
         },
         "outcome": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
+          "items": { "$ref": "#/$defs/plainTextRequired" }
         }
       }
     }

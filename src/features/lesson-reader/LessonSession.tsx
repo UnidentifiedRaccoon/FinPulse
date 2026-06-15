@@ -10,6 +10,7 @@ import { getOrderedCards } from '@/content/order'
 import { Mascot } from '@/shared/ui/Mascot'
 import { createLessonReturnState } from '@/shared/routeTransitions'
 
+import { RichTextParagraphs } from './card-renderers/shared'
 import { LessonBottomAction } from './LessonBottomAction'
 import { LessonCardFrame } from './LessonCardFrame'
 import { LessonCardRenderer, type LessonCardInteractionProps } from './LessonCardRenderer'
@@ -708,8 +709,8 @@ function getBottomFeedback(
   if (!hasObjectiveAnswer) {
     return (
       <LessonFeedback id={feedbackId} tone={selectedOption.feedback || card.feedback ? 'almost' : 'info'}>
-        {selectedOption.feedback ? <p>{selectedOption.feedback}</p> : null}
-        {card.feedback ? <p>{card.feedback}</p> : null}
+        {selectedOption.feedback ? <RichTextParagraphs text={selectedOption.feedback} /> : null}
+        {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!selectedOption.feedback && !card.feedback ? <p>Выбор отмечен. Можно продолжать.</p> : null}
       </LessonFeedback>
     )
@@ -718,8 +719,8 @@ function getBottomFeedback(
   if (isCorrect) {
     return (
       <LessonFeedback id={feedbackId} tone="correct">
-        {selectedOption.feedback ? <p>{selectedOption.feedback}</p> : null}
-        {card.feedback ? <p>{card.feedback}</p> : null}
+        {selectedOption.feedback ? <RichTextParagraphs text={selectedOption.feedback} /> : null}
+        {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!selectedOption.feedback && !card.feedback ? <p>Эта формулировка лучше всего подходит к шагу.</p> : null}
       </LessonFeedback>
     )
@@ -732,8 +733,8 @@ function getBottomFeedback(
           Лучше подходит: <span className="font-semibold text-[var(--fr-text-primary)]">{correctOption.label}</span>.
         </p>
       ) : null}
-      {selectedOption.feedback ? <p>{selectedOption.feedback}</p> : null}
-      {card.feedback ? <p>{card.feedback}</p> : null}
+      {selectedOption.feedback ? <RichTextParagraphs text={selectedOption.feedback} /> : null}
+      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
       {!selectedOption.feedback && !card.feedback ? <p>Посмотри на вариант, где есть смысл, срок или связь с ценностью.</p> : null}
     </LessonFeedback>
   )
@@ -747,12 +748,13 @@ function getMultiSelectBottomFeedback(card: Extract<Card, { type: 'multi_select'
   const selectedFeedback = card.options
     .filter((option) => selectedIds.has(option.id) && option.feedback)
     .map((option) => option.feedback)
+    .filter((feedback): feedback is string => Boolean(feedback))
   const feedbackId = `${card.id}-multi-select-feedback`
 
   if (isCorrect) {
     return (
       <LessonFeedback id={feedbackId} tone="correct">
-        {card.feedback ? <p>{card.feedback}</p> : null}
+        {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!card.feedback ? <p>Все подходящие варианты отмечены.</p> : null}
       </LessonFeedback>
     )
@@ -771,9 +773,9 @@ function getMultiSelectBottomFeedback(card: Extract<Card, { type: 'multi_select'
         </p>
       ) : null}
       {selectedFeedback.map((feedback) => (
-        <p key={feedback}>{feedback}</p>
+        <RichTextParagraphs key={feedback} text={feedback} />
       ))}
-      {card.feedback ? <p>{card.feedback}</p> : null}
+      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
       {!missingOptions.length && !extraOptions.length && !card.feedback && !selectedFeedback.length ? (
         <p>Проверь, все ли подходящие варианты отмечены.</p>
       ) : null}
@@ -791,7 +793,7 @@ function getCategorizationBottomFeedback(card: Extract<Card, { type: 'categoriza
   if (isCorrect) {
     return (
       <LessonFeedback id={feedbackId} tone="correct">
-        {card.feedback ? <p>{card.feedback}</p> : null}
+        {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!card.feedback ? <p>Все элементы распределены по подходящим группам.</p> : null}
       </LessonFeedback>
     )
@@ -808,8 +810,8 @@ function getCategorizationBottomFeedback(card: Extract<Card, { type: 'categoriza
         </p>
       ))}
       {incorrectItems.length > 3 ? <p>И ещё {incorrectItems.length - 3} пункт(а) стоит пересмотреть.</p> : null}
-      {incorrectItems.map((item) => (item.feedback ? <p key={`${item.id}-feedback`}>{item.feedback}</p> : null))}
-      {card.feedback ? <p>{card.feedback}</p> : null}
+      {incorrectItems.map((item) => (item.feedback ? <RichTextParagraphs key={`${item.id}-feedback`} text={item.feedback} /> : null))}
+      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
       {!incorrectItems.length && !card.feedback ? <p>Проверь распределение ещё раз.</p> : null}
     </LessonFeedback>
   )

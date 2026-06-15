@@ -25,6 +25,11 @@ const learnerUser: ApiUser = {
 const whereMoneyGoesFirstCta = 'Разобраться, куда уходят мои деньги'
 const mandatoryDesiredFirstCta = 'Научиться различать'
 const theoryContinueCta = 'Понятно, дальше'
+const practiceContinueCta = 'Дальше'
+const externalExampleContinueCta = 'Применить к себе'
+const expenseArtifactContinueCta = 'Сохранить и продолжить'
+const reflectionContinueCta = 'Дальше'
+const ruleContinueCta = 'Сделать моим правилом'
 
 type ApiResponseOptions = {
   currentUser?: ApiUser | null
@@ -754,6 +759,8 @@ describe('App', () => {
     const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     expect(within(lessonPath).getByRole('button', { name: /Куда уходят деньги/i })).toBeTruthy()
     expect(within(lessonPath).getByRole('button', { name: /Обязательное и желаемое/i })).toBeTruthy()
+    expect(within(lessonPath).getByRole('button', { name: /Безопасный платёж/i })).toBeTruthy()
+    expect(within(lessonPath).getByRole('button', { name: /Цифровой след и защита/i })).toBeTruthy()
     expect(within(lessonPath).queryByRole('button', { name: /Зачем нужна подушка/i })).toBeNull()
     expect(within(lessonPath).queryByRole('button', { name: /Сколько держать в резерве/i })).toBeNull()
   })
@@ -785,7 +792,7 @@ describe('App', () => {
     expect(within(lessonPath).queryByText(/Юнит/)).toBeNull()
     expect(within(lessonPath).queryByText('Пройден')).toBeNull()
     expect(within(lessonPath).queryByText('Сейчас')).toBeNull()
-    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(0)
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(2)
     const completedLessonButton = within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Пройден/ })
     const completedLessonCircle = completedLessonButton.querySelector('span.relative.flex')
     expect(completedLessonCircle?.className).toContain('group-hover:translate-y-[4px]')
@@ -801,7 +808,7 @@ describe('App', () => {
     const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     expect(within(lessonPath).getByText('Начать')).toBeTruthy()
     expect(within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Текущий урок/ })).toBeTruthy()
-    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(1)
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(3)
   })
 
   it('renders the level sticky header for the target section', async () => {
@@ -1011,15 +1018,15 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: theoryContinueCta }))
     await completeWhereMoneyGoesPractice(user)
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: practiceContinueCta }))
     await completeWhereMoneyGoesExternalExample(user)
     const expenseFields = screen.getAllByRole('textbox')
     await user.type(expenseFields[0], 'Кофе 250')
     await user.type(expenseFields[1], 'Проезд 70')
     await user.type(expenseFields[2], 'Перекус 180')
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: expenseArtifactContinueCta }))
 
-    const continueButton = screen.getByRole('button', { name: 'Далее' })
+    const continueButton = screen.getByRole('button', { name: reflectionContinueCta })
     expect(continueButton).toBeDisabled()
 
     await user.click(screen.getByRole('radio', { name: 'Кофе/перекусы — их больше, чем думал(а)' }))
@@ -1140,20 +1147,20 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: theoryContinueCta }))
     await completeWhereMoneyGoesPractice(user)
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: practiceContinueCta }))
     await completeWhereMoneyGoesExternalExample(user)
     expect(screen.getByRole('heading', { name: 'Твои 3 траты за сегодня' })).toBeTruthy()
     const expenseFields = screen.getAllByRole('textbox')
     await user.type(expenseFields[0], 'Кофе 250')
     await user.type(expenseFields[1], 'Проезд 70')
     await user.type(expenseFields[2], 'Перекус 180')
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: expenseArtifactContinueCta }))
     await user.click(screen.getByRole('radio', { name: 'Кофе/перекусы — их больше, чем думал(а)' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: reflectionContinueCta }))
 
     expect(screen.getByRole('heading', { name: 'Твоё правило на 3 дня' })).toBeTruthy()
     await user.click(screen.getByRole('radio', { name: 'Если совершаю любую трату, то сразу отмечаю её в заметках' }))
-    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: ruleContinueCta }))
 
     expect(screen.getByRole('heading', { name: 'Сохранили в Навигатор' })).toBeTruthy()
     expect(screen.getByText(/Дальше — Уровень 1 · Раздел 1 · Урок 2/i)).toBeTruthy()
@@ -1236,7 +1243,7 @@ async function completeWhereMoneyGoesExternalExample(user: ReturnType<typeof use
   await user.click(screen.getByRole('button', { name: 'Проверить' }))
 
   expect(await screen.findByRole('status')).toHaveTextContent('Верно')
-  await user.click(screen.getByRole('button', { name: 'Далее' }))
+  await user.click(screen.getByRole('button', { name: externalExampleContinueCta }))
 }
 
 function getRequestCount(path: string, method = 'GET') {

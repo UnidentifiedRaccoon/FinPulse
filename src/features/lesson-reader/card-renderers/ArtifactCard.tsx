@@ -5,7 +5,7 @@ import {
 } from '@/features/lesson-reader/lessonInteraction'
 import { cn } from '@/lib/utils'
 
-import { CustomOptionTextarea, NoBreakText, SelectableOption } from './shared'
+import { CustomOptionTextarea, NoBreakText, RichTextParagraphs, SelectableOption } from './shared'
 
 export function ArtifactCard({
   card,
@@ -23,14 +23,15 @@ export function ArtifactCard({
   if (card.readOnly) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-base leading-7 text-[var(--fr-text-secondary)]">
-          <NoBreakText text={card.body} />
-        </p>
+        <RichTextParagraphs
+          paragraphClassName="text-base leading-7 text-[var(--fr-text-secondary)]"
+          text={card.body}
+        />
         {card.template ? (
           <ul className="flex flex-col gap-2 text-sm leading-6 text-[var(--fr-text-secondary)]">
             {card.template.map((item) => (
               <li className="rounded-2xl border border-[var(--fr-border-default)] px-4 py-3" key={item}>
-                <NoBreakText text={item} />
+                <RichTextParagraphs as="span" text={item} />
               </li>
             ))}
           </ul>
@@ -41,9 +42,10 @@ export function ArtifactCard({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-base leading-7 text-[var(--fr-text-secondary)]">
-        <NoBreakText text={card.body} />
-      </p>
+      <RichTextParagraphs
+        paragraphClassName="text-base leading-7 text-[var(--fr-text-secondary)]"
+        text={card.body}
+      />
 
       {card.variants?.length ? (
         <div className="flex flex-col gap-2">
@@ -85,7 +87,7 @@ export function ArtifactCard({
             return (
               <li className="flex flex-col gap-3 rounded-2xl border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] p-3" key={`${item}-${index}`}>
                 <label className="text-sm font-semibold leading-6 text-[var(--fr-text-primary)]" htmlFor={fieldId}>
-                  <NoBreakText text={item} />
+                  <RichTextParagraphs as="span" text={item} />
                 </label>
                 <textarea
                   aria-describedby={statusId}
