@@ -1209,6 +1209,10 @@ describe('backend API', () => {
                 slug: 'money-and-operations',
                 title: 'Раздел 1. Деньги и операции',
               }),
+              expect.objectContaining({
+                slug: 'planning-and-management',
+                title: 'Раздел 2. Планирование и управление',
+              }),
             ],
           }),
         ],
@@ -1216,11 +1220,17 @@ describe('backend API', () => {
 
       const targetLevelResponse = await app.inject('/api/levels/level-1-start')
       const targetSectionResponse = await app.inject('/api/sections/money-and-operations')
+      const planningSectionResponse = await app.inject('/api/sections/planning-and-management')
       const lessonResponse = await app.inject('/api/lessons/where-money-goes')
       const mandatoryLessonResponse = await app.inject('/api/lessons/mandatory-and-desired')
       const safePaymentLessonResponse = await app.inject('/api/lessons/safe-payment')
       const digitalFootprintLessonResponse = await app.inject('/api/lessons/digital-footprint-and-protection')
+      const whyReserveLessonResponse = await app.inject('/api/lessons/why-reserve-matters')
+      const reserveTargetLessonResponse = await app.inject('/api/lessons/reserve-target-amount')
+      const payYourselfLessonResponse = await app.inject('/api/lessons/pay-yourself-first')
+      const budgetDraftLessonResponse = await app.inject('/api/lessons/budget-draft')
       const targetSectionLessons = targetSectionResponse.json().section.lessons.map((lesson: { slug: string }) => lesson.slug)
+      const planningSectionLessons = planningSectionResponse.json().section.lessons.map((lesson: { slug: string }) => lesson.slug)
 
       expect(targetLevelResponse.statusCode).toBe(200)
       expect(targetLevelResponse.json()).toMatchObject({
@@ -1228,6 +1238,9 @@ describe('backend API', () => {
         sections: [
           expect.objectContaining({
             slug: 'money-and-operations',
+          }),
+          expect.objectContaining({
+            slug: 'planning-and-management',
           }),
         ],
       })
@@ -1237,6 +1250,13 @@ describe('backend API', () => {
         'mandatory-and-desired',
         'safe-payment',
         'digital-footprint-and-protection',
+      ])
+      expect(planningSectionResponse.statusCode).toBe(200)
+      expect(planningSectionLessons).toEqual([
+        'why-reserve-matters',
+        'reserve-target-amount',
+        'pay-yourself-first',
+        'budget-draft',
       ])
       expect(lessonResponse.statusCode).toBe(200)
       expect(lessonResponse.json()).toMatchObject({
@@ -1303,11 +1323,66 @@ describe('backend API', () => {
             expect.objectContaining({ id: 'card_l1s1l4_04_real_world', type: 'scenario' }),
           ]),
         }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'why-reserve-matters' }),
+        }),
+      })
+      expect(whyReserveLessonResponse.statusCode).toBe(200)
+      expect(whyReserveLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'digital-footprint-and-protection' }),
+        }),
+        lesson: expect.objectContaining({
+          slug: 'why-reserve-matters',
+          title: 'Зачем нужна подушка',
+          cards: expect.arrayContaining([
+            expect.objectContaining({ id: 'card_l1s2l1_03_practice', type: 'categorization' }),
+            expect.objectContaining({ id: 'card_l1s2l1_04_real_world', type: 'scenario' }),
+          ]),
+        }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'reserve-target-amount' }),
+        }),
+      })
+      expect(reserveTargetLessonResponse.statusCode).toBe(200)
+      expect(reserveTargetLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'why-reserve-matters' }),
+        }),
+        lesson: expect.objectContaining({
+          slug: 'reserve-target-amount',
+          title: 'Сколько держать в резерве',
+        }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'pay-yourself-first' }),
+        }),
+      })
+      expect(payYourselfLessonResponse.statusCode).toBe(200)
+      expect(payYourselfLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'reserve-target-amount' }),
+        }),
+        lesson: expect.objectContaining({
+          slug: 'pay-yourself-first',
+          title: 'Правило «сначала себе»',
+        }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'budget-draft' }),
+        }),
+      })
+      expect(budgetDraftLessonResponse.statusCode).toBe(200)
+      expect(budgetDraftLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'pay-yourself-first' }),
+        }),
+        lesson: expect.objectContaining({
+          slug: 'budget-draft',
+          title: 'Бюджет-черновик',
+        }),
         next: null,
       })
 
       const removedLevelResponse = await app.inject('/api/levels/financial-goals')
-      const removedPlanningSectionResponse = await app.inject('/api/sections/planning-and-management')
       const removedSectionResponse = await app.inject('/api/sections/values-and-goals')
       const removedFutureSectionResponse = await app.inject('/api/sections/future-vision')
       const removedEmergencyFundLessonResponse = await app.inject('/api/lessons/why-emergency-fund')
@@ -1316,7 +1391,6 @@ describe('backend API', () => {
       const removedFinalLessonResponse = await app.inject('/api/lessons/goal-levels')
 
       expect(removedLevelResponse.statusCode).toBe(404)
-      expect(removedPlanningSectionResponse.statusCode).toBe(404)
       expect(removedSectionResponse.statusCode).toBe(404)
       expect(removedFutureSectionResponse.statusCode).toBe(404)
       expect(removedEmergencyFundLessonResponse.statusCode).toBe(404)

@@ -1,0 +1,1020 @@
+{
+  "schemaVersion": 1,
+  "id": "section_l1_s2_planning_management",
+  "slug": "planning-and-management",
+  "title": "Раздел 2. Планирование и управление",
+  "description": "Раздел помогает понять финансовую подушку, посчитать ориентир резерва, настроить правило «сначала себе» и собрать простой бюджет-черновик.",
+  "order": 2,
+  "source": "docs/levels/level-1-start/sections/planning-and-management/",
+  "lessons": [
+    {
+      "id": "lesson_l1_s2_l1_why_reserve_matters",
+      "slug": "why-reserve-matters",
+      "title": "Зачем нужна подушка",
+      "subtitle": "У1.5",
+      "description": "Понять, зачем нужна финансовая подушка, и сформулировать личный смысл резерва.",
+      "order": 1,
+      "estimatedMinutes": 5,
+      "learningGoal": "Понять, что такое финансовая подушка и зачем она нужна.",
+      "mainSkill": "Психология безопасности и знание о роли резерва",
+      "tags": [
+        "L1",
+        "planning-management",
+        "emergency-reserve"
+      ],
+      "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md / У1.5 / Паспорт урока",
+      "cards": [
+        {
+          "id": "card_l1s2l1_01_hook",
+          "type": "single_choice",
+          "order": 1,
+          "title": "А что если завтра...?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md / Экран 1",
+          "ctaLabel": "Разобраться, зачем нужна подушка",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "question": "Сломалась стиральная машина, задержали зарплату, внезапная поездка. Бывало, что **неожиданная трата выбивала из колеи**?",
+          "options": [
+            {
+              "id": "often",
+              "label": "Да, и не раз",
+              "feedback": "Знакомо. Сейчас разберёмся, как сделать так, чтобы мелочь не превращалась в стресс."
+            },
+            {
+              "id": "sometimes",
+              "label": "Иногда",
+              "feedback": "Принято. Запас как раз и нужен для таких *иногда* — чтобы они проходили спокойно."
+            },
+            {
+              "id": "has-reserve",
+              "label": "У меня есть запас на такое",
+              "feedback": "Отлично — значит, у тебя уже есть опора. Закрепим, зачем она работает."
+            }
+          ]
+        },
+        {
+          "id": "card_l1s2l1_02_theory",
+          "type": "theory",
+          "order": 2,
+          "title": "Финансовая подушка = спокойствие",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md / Экран 2",
+          "ctaLabel": "Понятно, дальше",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Финансовая подушка — это деньги, отложенные на непредвиденные ситуации: поломка, болезнь, потеря дохода.\n\nЕё задача — **не «заморозить» деньги, а дать опору**: чтобы внезапная трата не превращалась в долг или панику. Подушка — это не про богатство, а про устойчивость и спокойный сон.\n\nОна отвечает на вопрос *«а если завтра что-то случится — на что я живу?»*. Без неё любая мелочь бьёт по бюджету."
+        },
+        {
+          "id": "card_l1s2l1_03_practice",
+          "type": "categorization",
+          "order": 3,
+          "title": "Где подушка реально выручает?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md / Экран 3",
+          "ctaLabel": "Продолжить тренировку",
+          "thinkingType": "application",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Распредели ситуации: где подушка **помогает**, а что — *не её задача*.",
+          "categories": [
+            {
+              "id": "helps",
+              "label": "Подушка помогает"
+            },
+            {
+              "id": "not-task",
+              "label": "Это не задача подушки"
+            }
+          ],
+          "items": [
+            {
+              "id": "breakdown",
+              "label": "Внезапная поломка техники",
+              "correctCategoryId": "helps",
+              "feedback": "Это непредвиденное — ровно то, для чего подушка."
+            },
+            {
+              "id": "income-gap",
+              "label": "Задержка или потеря дохода",
+              "correctCategoryId": "helps",
+              "feedback": "Подушка держит тебя на плаву, пока доход не вернётся."
+            },
+            {
+              "id": "urgent-health",
+              "label": "Срочное лечение",
+              "correctCategoryId": "helps",
+              "feedback": "Важная и срочная трата — подушка снимает панику."
+            },
+            {
+              "id": "status-phone",
+              "label": "Покупка нового телефона «для статуса»",
+              "correctCategoryId": "not-task",
+              "feedback": "Это желание, а не беда. Для такого — отдельные накопления."
+            },
+            {
+              "id": "sale-shopping",
+              "label": "Спонтанный шопинг на распродаже",
+              "correctCategoryId": "not-task",
+              "feedback": "Импульсивная покупка — не задача подушки."
+            }
+          ],
+          "feedback": "Подушка — для **непредвиденного и важного**, а не для импульсивных покупок. Для желаемого есть отдельные накопления."
+        },
+        {
+          "id": "card_l1s2l1_04_real_world",
+          "type": "scenario",
+          "order": 4,
+          "title": "Учимся на чужих историях",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md / Экран 4",
+          "ctaLabel": "Применить к себе",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "У Марины **не было подушки**. Когда сломался холодильник на 20 000 ₽, пришлось брать в долг под проценты — и потом полгода отдавать.\n\nУ Олега **был запас на месяц**. Тот же холодильник он оплатил сразу, без долгов и стресса.",
+          "question": "В чём была **главная разница** между ними?",
+          "options": [
+            {
+              "id": "wrong-salary",
+              "label": "У Олега больше зарплата",
+              "feedback": "Дело не в размере дохода: даже при большой зарплате без запаса внезапная трата бьёт больно."
+            },
+            {
+              "id": "correct-reserve",
+              "label": "У Олега была подушка, и непредвиденная трата не стала проблемой",
+              "isCorrect": true,
+              "feedback": "Верно. Запас на непредвиденное превратил аварию в обычную решаемую ситуацию."
+            },
+            {
+              "id": "wrong-luck",
+              "label": "Марине просто не повезло",
+              "feedback": "Это не про везение, а про наличие подушки заранее."
+            }
+          ],
+          "correctOptionId": "correct-reserve",
+          "feedback": "Дело не в размере дохода, а в **наличии запаса** на непредвиденное.",
+          "statistics": {
+            "title": "Статистика по теме (Россия)",
+            "items": [
+              {
+                "value": "~65%",
+                "label": "россиян **не имеют** финансовых сбережений вообще."
+              },
+              {
+                "value": "38%",
+                "label": "говорят, что у них нет накоплений на чёрный день."
+              },
+              {
+                "value": "17%",
+                "label": "без дохода проживут *меньше одной недели*."
+              }
+            ],
+            "sources": [
+              "«Ромир» (2025)",
+              "SuperJob (2025)",
+              "НАФИ / «Росгосстрах Жизнь» (2024)"
+            ]
+          }
+        },
+        {
+          "id": "card_l1s2l1_05_personal_artifact",
+          "type": "artifact",
+          "order": 5,
+          "title": "Зачем подушка именно тебе?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md / Экран 5",
+          "ctaLabel": "Сохранить черновик",
+          "thinkingType": "personal world",
+          "develops": "soft skills",
+          "checkability": "mixed",
+          "body": "Набросай черновик: от какой ситуации подушка защитила бы **именно тебя**. Это не тест: личный ответ не оценивается. Когда понятно *зачем*, копить становится легче.",
+          "template": [
+            "Чтобы не залезать в долги при поломках",
+            "Чтобы пережить задержку или потерю дохода",
+            "Чтобы спокойнее себя чувствовать",
+            "Моя ситуация"
+          ]
+        },
+        {
+          "id": "card_l1s2l1_06_reflection",
+          "type": "reflection",
+          "order": 6,
+          "title": "Что мешает начать копить?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md / Экран 6",
+          "ctaLabel": "Согласен",
+          "thinkingType": "personal world",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "prompt": "Честно: что чаще всего **останавливает тебя** завести подушку? Здесь нет правильного ответа — важно увидеть свою причину.",
+          "inputType": "single_select",
+          "options": [
+            "Кажется, что откладывать не из чего",
+            "Деньги быстро тратятся, не успеваю отложить",
+            "Просто не доходили руки"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          },
+          "saveKey": "why_reserve_obstacle",
+          "guidance": "Выбери ближайший вариант или напиши свой. Когда видишь, что именно мешает, легче подобрать *первый маленький шаг*."
+        },
+        {
+          "id": "card_l1s2l1_07_micro_rule",
+          "type": "artifact",
+          "order": 7,
+          "title": "Твоя формулировка",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md / Экран 7",
+          "ctaLabel": "Сделать моим смыслом",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "mixed",
+          "body": "Закрепи смысл подушки одной фразой. **Даже черновая формулировка важнее точной** — её всегда можно уточнить.",
+          "variants": [
+            "Моя подушка нужна, чтобы спокойно пережить поломку или внезапную трату",
+            "Моя подушка нужна, чтобы пережить паузу в доходе без долгов"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          }
+        },
+        {
+          "id": "card_l1s2l1_08_summary",
+          "type": "summary",
+          "order": 8,
+          "title": "Финансовый Навигатор пополнен",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md / Экран 8",
+          "thinkingType": "artifact",
+          "develops": "habits",
+          "checkability": "subjective",
+          "body": "Готово. Теперь у тебя есть **личный ответ**, зачем нужна подушка — это твоя мотивация копить.",
+          "points": [
+            "Личный ответ «зачем подушка» — твоими словами.",
+            "Понимание: подушка — для непредвиденного, *а не для желаний*."
+          ],
+          "nextStep": "Дальше — Уровень 1 · Раздел 2 · Урок 2 «Сколько держать в резерве»: посчитаем твою целевую сумму подушки."
+        }
+      ]
+    },
+    {
+      "id": "lesson_l1_s2_l2_reserve_target_amount",
+      "slug": "reserve-target-amount",
+      "title": "Сколько держать в резерве",
+      "subtitle": "У1.6",
+      "description": "Научиться считать целевую сумму подушки исходя из месячных обязательных расходов.",
+      "order": 2,
+      "estimatedMinutes": 5,
+      "learningGoal": "Научиться считать целевую сумму подушки исходя из своих месячных обязательных расходов.",
+      "mainSkill": "Расчёт месячных обязательных расходов и целевой суммы резерва",
+      "tags": [
+        "L1",
+        "planning-management",
+        "reserve-calculation"
+      ],
+      "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md / У1.6 / Паспорт урока",
+      "cards": [
+        {
+          "id": "card_l1s2l2_01_hook",
+          "type": "single_choice",
+          "order": 1,
+          "title": "А сколько денег надо для финансовой подушки?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md / Экран 1",
+          "ctaLabel": "Узнать ориентир",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "question": "Подушка нужна — это понятно. Но **сколько именно** держать в резерве? Как думаешь?",
+          "options": [
+            {
+              "id": "no-idea",
+              "label": "Понятия не имею",
+              "feedback": "Нормально — сейчас дадим простой ориентир, который подойдёт именно тебе."
+            },
+            {
+              "id": "heard-range",
+              "label": "Слышал(а) про «3–6 месяцев расходов»",
+              "feedback": "Верное направление. Разберём, как из этого правила получить *свою* цифру."
+            },
+            {
+              "id": "has-number",
+              "label": "У меня есть своя цифра",
+              "feedback": "Отлично. Проверим её на простом ориентире и при желании уточним."
+            }
+          ]
+        },
+        {
+          "id": "card_l1s2l2_02_theory",
+          "type": "theory",
+          "order": 2,
+          "title": "Правило 3–6 месяцев",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md / Экран 2",
+          "ctaLabel": "Понятно, идем дальше",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Базовый ориентир подушки — **3–6 месяцев твоих обязательных расходов**. Не доходов, а именно расходов, без которых не прожить.\n\nСчитают от обязательного: жильё, еда, проезд, связь, обязательные платежи. Желаемое в подушку не закладывают.\n\n*Подушка = месячные обязательные расходы × 3–6.* Например, если обязательные расходы — 40 000 ₽ в месяц, то подушка: 120 000 ₽ на 3 месяца или 240 000 ₽ на 6 месяцев."
+        },
+        {
+          "id": "card_l1s2l2_03_practice",
+          "type": "categorization",
+          "order": 3,
+          "title": "Посчитай на примере",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md / Экран 3",
+          "ctaLabel": "Дальше",
+          "thinkingType": "application",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Распредели расходы: что **входит в расчёт подушки**, а что — нет. Подушка считается только от *обязательных* расходов.",
+          "categories": [
+            {
+              "id": "counts",
+              "label": "Входит в расчёт"
+            },
+            {
+              "id": "not-counts",
+              "label": "Не входит"
+            }
+          ],
+          "items": [
+            {
+              "id": "rent",
+              "label": "Аренда или ипотека",
+              "correctCategoryId": "counts",
+              "feedback": "Без жилья не прожить — это обязательное."
+            },
+            {
+              "id": "food-utilities",
+              "label": "Еда и коммунальные платежи",
+              "correctCategoryId": "counts",
+              "feedback": "Базовые расходы, без которых не обойтись."
+            },
+            {
+              "id": "transport",
+              "label": "Проезд до работы",
+              "correctCategoryId": "counts",
+              "feedback": "Нужно, чтобы продолжать получать доход — обязательное."
+            },
+            {
+              "id": "foreign-trip",
+              "label": "Отпуск за границей",
+              "correctCategoryId": "not-counts",
+              "feedback": "Без этого можно прожить месяц — значит, в подушку не входит."
+            },
+            {
+              "id": "subscriptions",
+              "label": "Подписки и развлечения",
+              "correctCategoryId": "not-counts",
+              "feedback": "Это желаемое, а не обязательное."
+            }
+          ],
+          "feedback": "В подушку закладывают **только обязательное** — то, без чего не прожить. Проверка простая: *«Без этого можно прожить месяц?»*"
+        },
+        {
+          "id": "card_l1s2l2_04_real_world",
+          "type": "scenario",
+          "order": 4,
+          "title": "Сколько месяцев выбрать?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md / Экран 4",
+          "ctaLabel": "Применить к себе",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Диапазон 3–6 месяцев не случайный: **чем стабильнее доход, тем меньше можно держать**.\n\nСтабильная работа и запас вариантов — ближе к 3 месяцам. Нестабильный или единственный источник дохода — ближе к 6. Фриланс, сезонный доход или иждивенцы — *6 месяцев и больше*.",
+          "question": "Фрилансеру с **непостоянным доходом** ближе к какому ориентиру?",
+          "options": [
+            {
+              "id": "wrong-3-months",
+              "label": "3 месяца",
+              "feedback": "Маловато: при непостоянном доходе пауза легко затянется дольше трёх месяцев."
+            },
+            {
+              "id": "correct-6-months",
+              "label": "6 месяцев и больше",
+              "isCorrect": true,
+              "feedback": "Верно. Чем менее предсказуем доход, тем больше запас нужен."
+            },
+            {
+              "id": "wrong-income-based",
+              "label": "Считать резерв от всей зарплаты, а не от расходов",
+              "feedback": "Подушку считают от обязательных расходов, а не от всего дохода: так цель получается реалистичнее."
+            }
+          ],
+          "correctOptionId": "correct-6-months",
+          "feedback": "Чем **менее предсказуем доход**, тем больше запас нужен.",
+          "statistics": {
+            "title": "Статистика по теме (Россия)",
+            "items": [
+              {
+                "value": "3–6",
+                "label": "месяцев расходов — рекомендация **Банка России** по размеру подушки."
+              },
+              {
+                "value": "~4 мес.",
+                "label": "средний срок, на который хватит накоплений без зарплаты."
+              },
+              {
+                "value": "12%",
+                "label": "россиян имеют запас именно на *3–6 месяцев*."
+              }
+            ],
+            "sources": [
+              "Банк России (2025)",
+              "SuperJob (2025)"
+            ]
+          }
+        },
+        {
+          "id": "card_l1s2l2_05_personal_artifact",
+          "type": "artifact",
+          "order": 5,
+          "title": "Твоя целевая сумма",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md / Экран 5",
+          "ctaLabel": "Сохранить мою сумму",
+          "thinkingType": "personal world",
+          "develops": "hard skills",
+          "checkability": "mixed",
+          "body": "Посчитай свою подушку: возьми **примерные обязательные расходы** за месяц и умножь на выбранное число месяцев. Это не тест — личный расчёт не оценивается. Сумма кажется большой? Это нормально: цель — ориентир, *а копить будем постепенно*.",
+          "template": [
+            "Мои обязательные расходы в месяц: ____ ₽",
+            "Сколько месяцев беру (3 / 4 / 6): ____",
+            "Целевая сумма подушки = расходы × месяцы = ____ ₽"
+          ]
+        },
+        {
+          "id": "card_l1s2l2_06_reflection",
+          "type": "reflection",
+          "order": 6,
+          "title": "Как тебе эта цифра?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md / Экран 6",
+          "ctaLabel": "Идем дальше",
+          "thinkingType": "personal world",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "prompt": "Ты увидел(а) свою целевую сумму. Какое **ощущение** она вызывает? Здесь нет правильного ответа.",
+          "inputType": "single_select",
+          "options": [
+            "Цифра вдохновляет — хочу начать",
+            "Немного пугает — кажется большой",
+            "Нейтрально — просто ориентир"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          },
+          "saveKey": "reserve_target_feeling",
+          "guidance": "Выбери ближайший вариант или напиши свой. Если цифра пугает — это нормально: важна *регулярность*, а не скорость."
+        },
+        {
+          "id": "card_l1s2l2_07_micro_rule",
+          "type": "artifact",
+          "order": 7,
+          "title": "Цель и первый шаг",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md / Экран 7",
+          "ctaLabel": "Зафиксировать цель",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "mixed",
+          "body": "Большая цель не пугает, если разбить её на шаги. **Главное — начать**: даже небольшой регулярный взнос важнее идеального плана.",
+          "variants": [
+            "Беру свою цель по подушке и начинаю откладывать с небольшой посильной суммы",
+            "Пока без жёсткой цели: начинаю откладывать с любой суммы, главное — регулярно"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          }
+        },
+        {
+          "id": "card_l1s2l2_08_summary",
+          "type": "summary",
+          "order": 8,
+          "title": "Сохранили в Финансовый Навигатор",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md / Экран 8",
+          "thinkingType": "artifact",
+          "develops": "habits",
+          "checkability": "subjective",
+          "body": "Готово. У тебя есть **конкретная целевая сумма** подушки — теперь копить понятно и измеримо.",
+          "points": [
+            "Целевая сумма подушки — твоя цифра.",
+            "Выбранный горизонт *3–6 месяцев* под твою стабильность дохода."
+          ],
+          "nextStep": "Дальше — Уровень 1 · Раздел 2 · Урок 3 «Правило сначала себе»: настроим перевод части дохода на подушку."
+        }
+      ]
+    },
+    {
+      "id": "lesson_l1_s2_l3_pay_yourself_first",
+      "slug": "pay-yourself-first",
+      "title": "Правило «сначала себе»",
+      "subtitle": "У1.7",
+      "description": "Понять правило «сначала себе» и настроить перевод части дохода на накопления.",
+      "order": 3,
+      "estimatedMinutes": 5,
+      "learningGoal": "Понять правило «сначала себе» и настроить перевод части дохода на накопления.",
+      "mainSkill": "Привычка откладывать сразу после дохода",
+      "tags": [
+        "L1",
+        "planning-management",
+        "saving-habit"
+      ],
+      "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md / У1.7 / Паспорт урока",
+      "cards": [
+        {
+          "id": "card_l1s2l3_01_hook",
+          "type": "single_choice",
+          "order": 1,
+          "title": "Отложу, что останется",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md / Экран 1",
+          "ctaLabel": "Узнать, как иначе",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "question": "Получаешь зарплату, живёшь месяц — а к концу откладывать уже нечего. Проблема не в силе воли, а в **порядке**. Узнаёшь себя?",
+          "options": [
+            {
+              "id": "always-leftover",
+              "label": "Да, постоянно так — до накоплений не доходит",
+              "feedback": "Знакомо. Дальше покажем простой способ поменять порядок — и накопления появятся сами."
+            },
+            {
+              "id": "sometimes",
+              "label": "Иногда получается, иногда нет",
+              "feedback": "Знакомо. Чтобы не зависеть от *иногда*, поможет один простой приём."
+            },
+            {
+              "id": "already-first",
+              "label": "Я уже откладываю сразу, как приходят деньги",
+              "feedback": "Отлично — ты уже платишь сначала себе. Закрепим это и сделаем автоматическим."
+            }
+          ]
+        },
+        {
+          "id": "card_l1s2l3_02_theory",
+          "type": "theory",
+          "order": 2,
+          "title": "Сначала себе, потом всё остальное",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md / Экран 2",
+          "ctaLabel": "Понятно, идем дальше",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Правило **«сначала себе»** переворачивает привычный порядок: как только пришёл доход — сразу откладываешь часть на накопления, и только потом тратишь остальное. Ты платишь сначала себе, а уже потом — магазинам и подпискам.\n\nПривычно: доход → траты → *«что останется» в накопления*. Часто это 0. Правильно: доход → откладываю часть → трачу остальное.\n\nРазмер не главное: **даже 5–10% дохода, отложенные сразу**, работают лучше, чем «много, но когда-нибудь потом»."
+        },
+        {
+          "id": "card_l1s2l3_03_practice",
+          "type": "categorization",
+          "order": 3,
+          "title": "Что идёт первым?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md / Экран 3",
+          "ctaLabel": "Идем дальше",
+          "thinkingType": "application",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Распредели действия: что делаю **сразу при доходе** (плачу себе), а что — *потом, из остатка*.",
+          "categories": [
+            {
+              "id": "first",
+              "label": "Сразу при доходе (плачу себе)"
+            },
+            {
+              "id": "later",
+              "label": "Потом, из остатка"
+            }
+          ],
+          "items": [
+            {
+              "id": "savings-transfer",
+              "label": "Перевести часть дохода на накопления",
+              "correctCategoryId": "first",
+              "feedback": "Это про будущее — откладывается первым."
+            },
+            {
+              "id": "reserve-topup",
+              "label": "Пополнить финансовую подушку",
+              "correctCategoryId": "first",
+              "feedback": "Подушка — это твоя устойчивость, её пополняют сразу."
+            },
+            {
+              "id": "goal-saving",
+              "label": "Отложить на цель (поездка, техника)",
+              "correctCategoryId": "first",
+              "feedback": "Цели — тоже про будущее, их финансируют первыми."
+            },
+            {
+              "id": "new-clothes",
+              "label": "Купить новую одежду",
+              "correctCategoryId": "later",
+              "feedback": "Это желаемое — из того, что осталось."
+            },
+            {
+              "id": "cafe",
+              "label": "Сходить в кафе с друзьями",
+              "correctCategoryId": "later",
+              "feedback": "Радости — из остатка после «сначала себе»."
+            },
+            {
+              "id": "new-subscription",
+              "label": "Оформить новую подписку",
+              "correctCategoryId": "later",
+              "feedback": "Необязательный расход — из остатка."
+            }
+          ],
+          "feedback": "**«Сначала себе»** — всё, что про твоё будущее: накопления, подушка, цели. Желаемое — *из того, что осталось после*."
+        },
+        {
+          "id": "card_l1s2l3_04_real_world",
+          "type": "scenario",
+          "order": 4,
+          "title": "Почему «потом» не работает?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md / Экран 4",
+          "ctaLabel": "Применить к себе",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Статистика показывает: накопления есть у половины, но **регулярно их пополняют единицы**. Разница — именно в привычке *откладывать сразу*.",
+          "question": "Что вернее всего превращает «хочу копить» в **реальные накопления**?",
+          "options": [
+            {
+              "id": "wrong-leftover",
+              "label": "Откладывать то, что осталось в конце месяца",
+              "feedback": "К концу месяца часто не остаётся ничего — именно поэтому «потом» не работает."
+            },
+            {
+              "id": "correct-auto",
+              "label": "Настроить автоперевод части дохода сразу после зарплаты",
+              "isCorrect": true,
+              "feedback": "Верно. Автоперевод убирает человеческий фактор: деньги уходят до трат."
+            },
+            {
+              "id": "wrong-motivation",
+              "label": "Ждать момента, когда появится сильная мотивация",
+              "feedback": "Мотивация меняется, а автоматическое правило работает даже в обычный день."
+            }
+          ],
+          "correctOptionId": "correct-auto",
+          "feedback": "Автоперевод убирает **человеческий фактор**: деньги уходят на накопления до того, как ты успеешь их потратить.",
+          "statistics": {
+            "title": "Статистика по теме (Россия)",
+            "items": [
+              {
+                "value": "50%",
+                "label": "россиян имеют сбережения, но *регулярно* пополняют лишь около 15%."
+              },
+              {
+                "value": "37%",
+                "label": "тех, кто откладывает, направляют в накопления 10–25% дохода."
+              },
+              {
+                "value": "42%",
+                "label": "россиян к началу 2025 года имели накопления."
+              }
+            ],
+            "sources": [
+              "ВЦИОМ (2025)",
+              "НПФ-исследование / npfi.ru (2025)"
+            ]
+          }
+        },
+        {
+          "id": "card_l1s2l3_05_personal_artifact",
+          "type": "artifact",
+          "order": 5,
+          "title": "Настрой своё правило",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md / Экран 5",
+          "ctaLabel": "Сохранить правило",
+          "thinkingType": "personal world",
+          "develops": "soft skills",
+          "checkability": "mixed",
+          "body": "Опиши своё правило «сначала себе» — это **твоя личная настройка**, а не норматив. Это не тест: ответ не оценивается. Начни с комфортной суммы: *лучше маленький перевод, который работает*, чем большой, который ты отменишь.",
+          "template": [
+            "Сумма или % дохода, который откладываю: ____ ₽ / ____ %",
+            "Дата перевода (день зарплаты/аванса): ____",
+            "Куда: накопительный счёт / вклад / отдельная карта: ____",
+            "Способ: автоперевод или ручной перевод"
+          ]
+        },
+        {
+          "id": "card_l1s2l3_06_reflection",
+          "type": "reflection",
+          "order": 6,
+          "title": "Что мешает откладывать сразу",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md / Экран 6",
+          "ctaLabel": "Дальше",
+          "thinkingType": "personal world",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "prompt": "Что для тебя самое сложное в идее *«отдать часть денег в личные накопления сразу»*? Здесь нет правильного ответа.",
+          "inputType": "single_select",
+          "options": [
+            "Страшно — вдруг не хватит на жизнь",
+            "Жалко — хочется потратить на себя сейчас",
+            "Ничего не мешает — готов(а) попробовать"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          },
+          "saveKey": "pay_yourself_obstacle",
+          "guidance": "Выбери ближайший вариант или напиши свой. Если страшно — начни с *символической суммы*, главное — запустить привычку."
+        },
+        {
+          "id": "card_l1s2l3_07_micro_rule",
+          "type": "artifact",
+          "order": 7,
+          "title": "Первый шаг прямо сейчас",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md / Экран 7",
+          "ctaLabel": "Зафиксировать правило",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "mixed",
+          "body": "Большое начинается с малого. **Главное — порядок: сначала себе**. Даже небольшой перевод важнее идеального плана *«потом»*.",
+          "variants": [
+            "В день зарплаты комфортная сумма автоматически уходит на накопления — до всех остальных трат",
+            "Пока мягче: перевожу часть дохода вручную сразу после каждой зарплаты"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          }
+        },
+        {
+          "id": "card_l1s2l3_08_summary",
+          "type": "summary",
+          "order": 8,
+          "title": "Сохранили в Финансовый Навигатор",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md / Экран 8",
+          "thinkingType": "artifact",
+          "develops": "habits",
+          "checkability": "subjective",
+          "body": "Готово. У тебя есть личное правило **«сначала себе»** — теперь накопления растут без ежемесячной борьбы с собой.",
+          "points": [
+            "Правило перевода — твоя сумма, дата и счёт.",
+            "Принцип «сначала себе»: откладываю *до трат*, а не из остатка."
+          ],
+          "nextStep": "Дальше — Уровень 1 · Раздел 2 · Урок 4 «Бюджет-черновик»: увидим, откуда брать сумму «сначала себе»."
+        }
+      ]
+    },
+    {
+      "id": "lesson_l1_s2_l4_budget_draft",
+      "slug": "budget-draft",
+      "title": "Бюджет-черновик",
+      "subtitle": "У1.8",
+      "description": "Собрать простой черновик бюджета по крупным категориям.",
+      "order": 4,
+      "estimatedMinutes": 5,
+      "learningGoal": "Собрать простой черновик бюджета: разложить доходы и расходы по понятным категориям.",
+      "mainSkill": "Распределение личных денег по категориям без сложных таблиц",
+      "tags": [
+        "L1",
+        "planning-management",
+        "budget-draft"
+      ],
+      "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md / У1.8 / Паспорт урока",
+      "cards": [
+        {
+          "id": "card_l1s2l4_01_hook",
+          "type": "single_choice",
+          "order": 1,
+          "title": "Куда делись деньги?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md / Экран 1",
+          "ctaLabel": "Навести порядок",
+          "thinkingType": "understanding",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "question": "Конец месяца, на счёте почти пусто, а вспомнить, на что ушло, — не получается. Дело не в больших тратах, а в том, что бюджет живёт только *«в голове»*. Узнаёшь себя?",
+          "options": [
+            {
+              "id": "money-disappears",
+              "label": "Да, к концу месяца деньги исчезают непонятно куда",
+              "feedback": "Знакомо. Дальше соберём простой черновик — и деньги перестанут *«исчезать»*."
+            },
+            {
+              "id": "roughly-know",
+              "label": "Примерно понимаю, на что трачу, но точно не считаю",
+              "feedback": "Хорошо. Черновик переведёт это *«примерно»* в понятную картину по категориям."
+            },
+            {
+              "id": "already-budget",
+              "label": "Я уже веду бюджет и вижу свои категории",
+              "feedback": "Отлично — ты уже впереди. Закрепим простую структуру из четырёх корзин."
+            }
+          ]
+        },
+        {
+          "id": "card_l1s2l4_02_theory",
+          "type": "theory",
+          "order": 2,
+          "title": "Бюджет из четырёх корзин",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md / Экран 2",
+          "ctaLabel": "Понятно, дальше",
+          "thinkingType": "memory",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Бюджет **не обязан быть сложной таблицей**. Достаточно разложить деньги по нескольким крупным корзинам — так сразу видно картину.\n\nБазовый черновик строится на четырёх категориях: **обязательное** — жильё, еда, проезд, связь, обязательные платежи; **«сначала себе»** — накопления и подушка; **желаемое** — кафе, подписки, радости; **непредвиденное** — запас на неожиданное.\n\nГлавное — чтобы доходы покрывали категории, а *«сначала себе» не пропадало* в конце месяца."
+        },
+        {
+          "id": "card_l1s2l4_03_practice",
+          "type": "categorization",
+          "order": 3,
+          "title": "Разложи по корзинам",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md / Экран 3",
+          "ctaLabel": "Дальше",
+          "thinkingType": "application",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "question": "Распредели расходы по **четырём корзинам** бюджета.",
+          "categories": [
+            {
+              "id": "mandatory",
+              "label": "Обязательное"
+            },
+            {
+              "id": "self-first",
+              "label": "Сначала себе"
+            },
+            {
+              "id": "wants",
+              "label": "Желаемое"
+            },
+            {
+              "id": "unexpected",
+              "label": "Непредвиденное"
+            }
+          ],
+          "items": [
+            {
+              "id": "rent",
+              "label": "Аренда квартиры",
+              "correctCategoryId": "mandatory",
+              "feedback": "Жильё — базовый обязательный расход."
+            },
+            {
+              "id": "savings",
+              "label": "Перевод на накопительный счёт",
+              "correctCategoryId": "self-first",
+              "feedback": "Накопления — это «сначала себе», про будущее."
+            },
+            {
+              "id": "streaming",
+              "label": "Подписка на сериалы",
+              "correctCategoryId": "wants",
+              "feedback": "Подписка ради удовольствия — желаемое."
+            },
+            {
+              "id": "repair-reserve",
+              "label": "Запас на ремонт техники",
+              "correctCategoryId": "unexpected",
+              "feedback": "Запас на неожиданное — непредвиденное."
+            },
+            {
+              "id": "transport",
+              "label": "Проезд до работы",
+              "correctCategoryId": "mandatory",
+              "feedback": "Проезд нужен для жизни и работы — обязательное."
+            },
+            {
+              "id": "cafe",
+              "label": "Поход в кафе",
+              "correctCategoryId": "wants",
+              "feedback": "Радость, без которой можно обойтись, — желаемое."
+            }
+          ],
+          "feedback": "Когда расходы разложены по корзинам, *сразу видно*, на что уходят деньги и **где есть запас**."
+        },
+        {
+          "id": "card_l1s2l4_04_real_world",
+          "type": "scenario",
+          "order": 4,
+          "title": "Как ведут бюджет другие",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md / Экран 4",
+          "ctaLabel": "Применить к себе",
+          "thinkingType": "real world A",
+          "develops": "hard skills",
+          "checkability": "objective",
+          "body": "Учёт расходов — **не редкость**, но почти половина ведёт его *«в уме»*, и тогда мелкие траты теряются. Черновик на бумаге или в заметке делает суммы видимыми.",
+          "question": "Почему черновик надёжнее, чем бюджет **«в уме»**?",
+          "options": [
+            {
+              "id": "wrong-solid",
+              "label": "Так бюджет выглядит солиднее",
+              "feedback": "Дело не во внешнем виде, а в том, что черновик показывает реальные суммы."
+            },
+            {
+              "id": "correct-visible",
+              "label": "Видны реальные суммы по категориям, мелкие траты не теряются",
+              "isCorrect": true,
+              "feedback": "Верно. На черновике видно каждую корзину — мелочи перестают ускользать."
+            },
+            {
+              "id": "wrong-perfect-app",
+              "label": "Нужно сразу скачать сложное приложение и заполнить всё идеально",
+              "feedback": "Сложный инструмент не обязателен. Для старта достаточно простого черновика, где видны категории."
+            }
+          ],
+          "correctOptionId": "correct-visible",
+          "feedback": "*«В уме»* легко недооценить мелочи — а на черновике видны **реальные суммы** по каждой корзине.",
+          "statistics": {
+            "title": "Статистика по теме (Россия)",
+            "items": [
+              {
+                "value": "53%",
+                "label": "россиян ведут учёт доходов и расходов."
+              },
+              {
+                "value": "43%",
+                "label": "ведущих учёт делают это *«в уме»*, без записей."
+              },
+              {
+                "value": "32%",
+                "label": "учитывают расходы детально."
+              }
+            ],
+            "sources": [
+              "ЮMoney (2025)",
+              "Moneyman / ПРАЙМ (2025)"
+            ]
+          }
+        },
+        {
+          "id": "card_l1s2l4_05_personal_artifact",
+          "type": "artifact",
+          "order": 5,
+          "title": "Твой черновик бюджета",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md / Экран 5",
+          "ctaLabel": "Сохранить черновик",
+          "thinkingType": "personal world",
+          "develops": "soft skills",
+          "checkability": "mixed",
+          "body": "Прикинь свой бюджет на месяц по четырём корзинам — это **твой черновик**, а не отчёт. Это не тест: ответ не оценивается. Если *сумма категорий больше дохода* — это сигнал, где стоит подкрутить.",
+          "template": [
+            "Доход за месяц: ____ ₽",
+            "Обязательное: ____ ₽",
+            "«Сначала себе»: ____ ₽",
+            "Желаемое: ____ ₽",
+            "Непредвиденное: ____ ₽"
+          ]
+        },
+        {
+          "id": "card_l1s2l4_06_reflection",
+          "type": "reflection",
+          "order": 6,
+          "title": "Что ты увидел в своём бюджете?",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md / Экран 6",
+          "ctaLabel": "Дальше",
+          "thinkingType": "personal world",
+          "develops": "psychology",
+          "checkability": "subjective",
+          "prompt": "Когда деньги разложены по корзинам, обычно что-то **удивляет**. Что бросилось в глаза тебе? Здесь нет *правильного* ответа.",
+          "inputType": "single_select",
+          "options": [
+            "Удивил размер «желаемого»",
+            "На «сначала себе» почти ничего не остаётся",
+            "Баланс в целом нормальный"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          },
+          "saveKey": "budget_draft_insight",
+          "guidance": "Выбери ближайший вариант или напиши свой. Даже *один замеченный перекос* — уже повод аккуратно перераспределить корзины."
+        },
+        {
+          "id": "card_l1s2l4_07_micro_rule",
+          "type": "artifact",
+          "order": 7,
+          "title": "Привычка работать с бюджетом",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md / Экран 7",
+          "ctaLabel": "Зафиксировать правило",
+          "thinkingType": "habit",
+          "develops": "habits",
+          "checkability": "mixed",
+          "body": "Черновик работает, **только если к нему возвращаться**. Зафиксируй удобный ритм одной фразой — главное, чтобы *«сначала себе»* оставалось на месте.",
+          "variants": [
+            "Раз в месяц обновляю черновик по четырём корзинам и проверяю, что «сначала себе» на месте",
+            "Пока мягче: заглядываю в черновик хотя бы раз в пару месяцев"
+          ],
+          "customOption": {
+            "label": "Свой вариант",
+            "placeholder": "Напиши свой вариант"
+          }
+        },
+        {
+          "id": "card_l1s2l4_08_summary",
+          "type": "summary",
+          "order": 8,
+          "title": "Раздел 2 пройден",
+          "sourceSection": "docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md / Экран 8",
+          "thinkingType": "artifact",
+          "develops": "habits",
+          "checkability": "subjective",
+          "body": "Готово. Ты разобрал(а) **весь Раздел 2 «Планирование и управление»**: зачем нужна подушка, сколько копить, правило *«сначала себе»* и как видеть свой бюджет.",
+          "points": [
+            "Черновик категорий бюджета — четыре корзины.",
+            "Правило ежемесячно обновлять черновик и держать *«сначала себе»* на месте."
+          ],
+          "nextStep": "Дальше — Раздел 3 «Инвестиции и риск», урок «30% без риска — красный флаг». Этот раздел появится в приложении позже."
+        }
+      ]
+    }
+  ]
+}

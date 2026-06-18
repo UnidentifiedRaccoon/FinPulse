@@ -15,6 +15,13 @@ Displayed in the learner app:
 - Section: `money-and-operations` — `Раздел 1. Деньги и операции`
   - `where-money-goes` — `Куда уходят деньги`
   - `mandatory-and-desired` — `Обязательное и желаемое`
+  - `safe-payment` — `Безопасный платёж`
+  - `digital-footprint-and-protection` — `Цифровой след и защита`
+- Section: `planning-and-management` — `Раздел 2. Планирование и управление`
+  - `why-reserve-matters` — `Зачем нужна подушка`
+  - `reserve-target-amount` — `Сколько держать в резерве`
+  - `pay-yourself-first` — `Правило «сначала себе»`
+  - `budget-draft` — `Бюджет-черновик`
 
 Source package:
 
@@ -22,6 +29,12 @@ Source package:
 - Scripted lesson sources:
   - `docs/levels/level-1-start/sections/money-and-operations/lesson_01_where-money-goes.md`
   - `docs/levels/level-1-start/sections/money-and-operations/lesson_02_mandatory-and-desired.md`
+  - `docs/levels/level-1-start/sections/money-and-operations/lesson_03_safe-payment.md`
+  - `docs/levels/level-1-start/sections/money-and-operations/lesson_04_digital-footprint-and-protection.md`
+  - `docs/levels/level-1-start/sections/planning-and-management/lesson_01_why-reserve-matters.md`
+  - `docs/levels/level-1-start/sections/planning-and-management/lesson_02_reserve-target-amount.md`
+  - `docs/levels/level-1-start/sections/planning-and-management/lesson_03_pay-yourself-first.md`
+  - `docs/levels/level-1-start/sections/planning-and-management/lesson_04_budget-draft.md`
 
 ## Removed Active Sources
 
@@ -31,8 +44,9 @@ The following are no longer active authoring/runtime sources:
 - previous `finpulse_methodology` split catalog;
 - previous AI/personal-experience lesson candidates;
 - previous runtime level `financial-goals` and its lessons.
-- previous `planning-and-management` section and its `why-emergency-fund` /
-  `reserve-amount` lessons, which were prepared from older methodology.
+- previous `planning-and-management` lesson slugs `why-emergency-fund` /
+  `reserve-amount`, which were prepared from older methodology and remain
+  removed even though the section slug is active again with new source-backed lessons.
 
 Historical task files under `harness/tasks/review/**` remain as project history.
 
