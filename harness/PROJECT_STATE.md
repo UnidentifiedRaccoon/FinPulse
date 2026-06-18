@@ -1,6 +1,6 @@
 # Project State — FinPulse Learning MVP
 
-Last updated: 2026-06-16
+Last updated: 2026-06-18
 
 This file is the compact current-state snapshot for agents. Detailed task history
 lives in `harness/tasks/review/T-*.md`; do not re-expand this file into a task
@@ -9,9 +9,11 @@ log.
 ## Current phase
 
 `main` contains the Stage 2 learner MVP plus stacked review work through T-150.
-The learner app is a Vite React TypeScript SPA backed by a Fastify/PostgreSQL
-API. A separate Next.js internal admin app exists under `apps/admin` for the
-read-only curator progress board accepted by ADR-0010 and ADR-0011.
+The current workspace additionally includes T-152 content updates for Level 1
+Section 2. The learner app is a Vite React TypeScript SPA backed by a
+Fastify/PostgreSQL API. A separate Next.js internal admin app exists under
+`apps/admin` for the read-only curator progress board accepted by ADR-0010 and
+ADR-0011.
 
 Recent state that matters for new work:
 - approved educational hierarchy is `Program -> Level -> Section -> Lesson -> Card`;
@@ -19,7 +21,7 @@ Recent state that matters for new work:
   `Level` / `Section` directly;
 - legacy `Module` / `Unit`, `t1-start`, and `t1_start` runtime/API names are
   historical only and must not be reintroduced;
-- active content is Level 1, one section, four lessons;
+- active content is Level 1, two sections, eight lessons;
 - lesson cards use the eight-screen Level 1 architecture;
 - screen 4 is the external example/scenario with statistics;
 - reflection/artifact answers are private learner artifacts, not diagnostics or
@@ -61,11 +63,15 @@ Runtime content lives under `src/content/levels/**`.
 - Program manifest: `src/content/program.json`
 - Level: `level-1-start`, title `Уровень 1 · Старт`
 - Section: `money-and-operations`, title `Раздел 1. Деньги и операции`
-- Active lessons:
   - `where-money-goes` — `Куда уходят деньги`
   - `mandatory-and-desired` — `Обязательное и желаемое`
   - `safe-payment` — `Безопасный платёж`
   - `digital-footprint-and-protection` — `Цифровой след и защита`
+- Section: `planning-and-management`, title `Раздел 2. Планирование и управление`
+  - `why-reserve-matters` — `Зачем нужна подушка`
+  - `reserve-target-amount` — `Сколько держать в резерве`
+  - `pay-yourself-first` — `Правило «сначала себе»`
+  - `budget-draft` — `Бюджет-черновик`
 
 Legacy content slugs from earlier graphs intentionally return 404 through the
 content API. Historical references may remain in old task files only.
@@ -118,11 +124,16 @@ Known local verification caveat:
   `FINPULSE_TEST_DATABASE_URL`, `FINPULSE_DATABASE_URL`, or `DATABASE_URL`.
 - GitHub Actions provides a PostgreSQL service and `FINPULSE_TEST_DATABASE_URL`.
 
-Most recent recorded checks before compaction:
-- T-150: `npm run check:content`, focused lesson-reader tests, typecheck, lint,
-  `git diff --check`, and in-app Browser QA passed.
-- Full verify for T-150 was blocked only by the missing local PostgreSQL test DB
-  URL.
+Most recent recorded checks:
+- T-152: `npm run check:content`, focused frontend/content tests
+  (`src/App.test.tsx`, `src/content/program.test.ts`,
+  `src/features/program-navigation/learningPath.test.ts`), `npm run lint`, and
+  in-app Browser smoke at 390px passed.
+- T-152: `npm run typecheck` reached `typecheck:admin` and stopped because the
+  local `node_modules` does not contain `next`; `npm run build` passed
+  `build:web` and stopped in `build:admin` with `next: command not found`.
+- Backend tests for T-152 still require `FINPULSE_TEST_DATABASE_URL`,
+  `FINPULSE_DATABASE_URL`, or `DATABASE_URL`.
 
 ## Canonical docs
 

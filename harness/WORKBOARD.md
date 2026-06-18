@@ -25,6 +25,7 @@ Recent review tasks that define the current top of stack:
 
 | ID | Status | Task | Notes |
 |---|---:|---|---|
+| T-152 | review | Add planning management lessons | Adds Level 1 Section 2 with У1.5-У1.8. Content validation, focused frontend/content tests, lint, and 390px browser smoke passed; backend/full admin checks need local DB and complete admin dependencies. |
 | T-151 | review | Safe project autocompaction | Compacted project memory docs without touching app code, runtime JSON, schemas, or canonical product/methodology docs. |
 | T-150 | review | Paragraph-aware Rich Text rendering | Latest learner UI/content rendering change. Full local verify still needs a PostgreSQL test DB URL in this shell. |
 | T-149 | review | Source-backed lesson rich formatting | Runtime JSON restores approved DOCX-backed rich formatting and source-table wording. |

@@ -750,7 +750,7 @@ describe('App', () => {
     expect(within(dialog).getByRole('link', { name: 'Продолжить урок · 5 мин' }).getAttribute('href')).toBe('/lessons/where-money-goes')
   })
 
-  it('renders only the current active lesson nodes in source order', async () => {
+  it('renders the active lesson nodes in source order', async () => {
     setAuthenticatedLearner(apiOptions)
     window.history.pushState({}, '', '/levels/level-1-start')
 
@@ -761,8 +761,10 @@ describe('App', () => {
     expect(within(lessonPath).getByRole('button', { name: /Обязательное и желаемое/i })).toBeTruthy()
     expect(within(lessonPath).getByRole('button', { name: /Безопасный платёж/i })).toBeTruthy()
     expect(within(lessonPath).getByRole('button', { name: /Цифровой след и защита/i })).toBeTruthy()
-    expect(within(lessonPath).queryByRole('button', { name: /Зачем нужна подушка/i })).toBeNull()
-    expect(within(lessonPath).queryByRole('button', { name: /Сколько держать в резерве/i })).toBeNull()
+    expect(within(lessonPath).getByRole('button', { name: /Зачем нужна подушка/i })).toBeTruthy()
+    expect(within(lessonPath).getByRole('button', { name: /Сколько держать в резерве/i })).toBeTruthy()
+    expect(within(lessonPath).getByRole('button', { name: /Правило «сначала себе»/i })).toBeTruthy()
+    expect(within(lessonPath).getByRole('button', { name: /Бюджет-черновик/i })).toBeTruthy()
   })
 
   it('renders the active target section in the level path', async () => {
@@ -787,12 +789,12 @@ describe('App', () => {
     const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     const sectionHeadings = within(lessonPath).getAllByRole('heading').map((heading) => heading.textContent)
 
-    expect(sectionHeadings).toEqual(['Раздел 1. Деньги и операции'])
+    expect(sectionHeadings).toEqual(['Раздел 1. Деньги и операции', 'Раздел 2. Планирование и управление'])
     expect(within(lessonPath).queryByText(/^Раздел$/)).toBeNull()
     expect(within(lessonPath).queryByText(/Юнит/)).toBeNull()
     expect(within(lessonPath).queryByText('Пройден')).toBeNull()
     expect(within(lessonPath).queryByText('Сейчас')).toBeNull()
-    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(2)
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(6)
     const completedLessonButton = within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Пройден/ })
     const completedLessonCircle = completedLessonButton.querySelector('span.relative.flex')
     expect(completedLessonCircle?.className).toContain('group-hover:translate-y-[4px]')
@@ -808,7 +810,7 @@ describe('App', () => {
     const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     expect(within(lessonPath).getByText('Начать')).toBeTruthy()
     expect(within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Текущий урок/ })).toBeTruthy()
-    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(3)
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(7)
   })
 
   it('renders the level sticky header for the target section', async () => {
@@ -964,11 +966,14 @@ describe('App', () => {
     unmount()
     window.history.pushState({}, '', '/levels/level-1-start/sections/planning-and-management')
 
-    const removedSectionRoute = render(<App />)
+    const planningSectionRoute = render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Не удалось загрузить раздел' })).toBeTruthy()
+    const planningSectionHeader = await screen.findByTestId('compact-path-header')
+    expect(within(planningSectionHeader).getByRole('heading', { level: 1, name: 'Раздел 2. Планирование и управление' })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: /Зачем нужна подушка/i })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: /Сколько держать в резерве/i })).toBeTruthy()
 
-    removedSectionRoute.unmount()
+    planningSectionRoute.unmount()
     window.history.pushState({}, '', '/lessons/why-emergency-fund')
 
     const removedLessonRoute = render(<App />)

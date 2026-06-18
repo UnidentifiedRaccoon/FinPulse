@@ -1,10 +1,10 @@
 # QA User Scenario Map — FinPulse
 
-Last updated: 2026-06-15
+Last updated: 2026-06-18
 
 ## Purpose
 
-This map defines the current MVP smoke and regression scenarios after the methodology reset. It covers entry authentication, the single active runtime graph, lesson consumption, progress persistence, private reflection/artifact answers, profile review, and responsive behavior.
+This map defines the current MVP smoke and regression scenarios after the methodology reset. It covers entry authentication, the active Level 1 runtime graph, lesson consumption, progress persistence, private reflection/artifact answers, profile review, and responsive behavior.
 
 Out of scope remains unchanged: diagnostics, rewards, scoring, recommendations, analytics dashboards, payments, admin/CMS, production financial operations, and automatic reminders.
 
@@ -13,8 +13,8 @@ Out of scope remains unchanged: diagnostics, rewards, scoring, recommendations, 
 - Program: `/program`
 - Profile: `/profile`
 - Level: `/levels/level-1-start`
-- Sections: `/levels/level-1-start/sections/money-and-operations`
-- Lessons: `/lessons/where-money-goes`, `/lessons/mandatory-and-desired`, `/lessons/safe-payment`, `/lessons/digital-footprint-and-protection`
+- Sections: `/levels/level-1-start/sections/money-and-operations`, `/levels/level-1-start/sections/planning-and-management`
+- Lessons: `/lessons/where-money-goes`, `/lessons/mandatory-and-desired`, `/lessons/safe-payment`, `/lessons/digital-footprint-and-protection`, `/lessons/why-reserve-matters`, `/lessons/reserve-target-amount`, `/lessons/pay-yourself-first`, `/lessons/budget-draft`
 
 Product and methodology language uses Program -> Level -> Section -> Lesson ->
 Card. Old `/modules/**` browser routes and old `/api/modules*` /
@@ -26,11 +26,15 @@ Current runtime lesson set:
 - `mandatory-and-desired`
 - `safe-payment`
 - `digital-footprint-and-protection`
+- `why-reserve-matters`
+- `reserve-target-amount`
+- `pay-yourself-first`
+- `budget-draft`
 
 Removed legacy content must return 404 through content API and graceful load errors in the UI:
 
 - level `financial-goals`
-- section slugs `planning-and-management`, `values-and-goals`, `future-vision`, `financial-goals-map`, `goal-motivation`
+- section slugs `values-and-goals`, `future-vision`, `financial-goals-map`, `goal-motivation`
 - lessons `why-emergency-fund`, `reserve-amount`, `why-values-matter`, `what-are-values`, `values-conflict`, `practice-1m`, `life-cycle-and-money`, `vuca-future-view`, `day-in-future`, `goal-levels`
 
 ## Device Matrix
@@ -118,7 +122,7 @@ Minimum run:
 
 | ID | Priority | Scenario | Expected Result |
 |---|---|---|---|
-| API-01 | P0 | `GET /api/program`, `/api/levels/level-1-start`, current `/api/sections/money-and-operations`, and all current `/api/lessons/:lessonSlug`. | Responses match shared Level/Section content schemas. |
+| API-01 | P0 | `GET /api/program`, `/api/levels/level-1-start`, current `/api/sections/money-and-operations`, `/api/sections/planning-and-management`, and all current `/api/lessons/:lessonSlug`. | Responses match shared Level/Section content schemas. |
 | API-02 | P0 | Removed old content API calls to `/api/modules`, `/api/modules/:moduleSlug`, and `/api/units/:unitSlug`. | Old endpoints return 404. |
 | API-03 | P0 | Removed legacy content API slugs. | Old level/section/lesson slugs return 404. |
 | API-04 | P0 | Protected auth/progress/reflection endpoints without cookie. | Protected endpoints return 401; no private data is returned. |
