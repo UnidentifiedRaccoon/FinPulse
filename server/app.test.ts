@@ -733,7 +733,7 @@ describe('backend API', () => {
         },
         totals: {
           totalUsers: 1,
-          totalLessons: 4,
+          totalLessons: 8,
           completedLessons: 1,
           completedCards: 1,
           stuckUsers: 1,
@@ -755,8 +755,8 @@ describe('backend API', () => {
           total: 1,
         },
         totals: {
-          totalLessons: 4,
-          totalCards: 32,
+          totalLessons: 8,
+          totalCards: 64,
         },
         users: [
           {
@@ -765,7 +765,7 @@ describe('backend API', () => {
             progress: {
               viewedLessons: 2,
               completedLessons: 1,
-              totalLessons: 4,
+              totalLessons: 8,
               completedCards: 1,
               currentLesson: {
                 lessonSlug: 'mandatory-and-desired',

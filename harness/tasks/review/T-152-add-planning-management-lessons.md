@@ -65,17 +65,11 @@ Google Docs TXT exports were downloaded to `/tmp` only:
 
 - [x] `npm run check:content`
 - [x] `npm run test:run -- src/App.test.tsx src/content/program.test.ts src/features/program-navigation/learningPath.test.ts`
-- [ ] `npm run test:run -- server/content-contract.test.ts server/app.test.ts`
-  - Not run to completion in this shell: `FINPULSE_TEST_DATABASE_URL`,
-    `FINPULSE_DATABASE_URL`, and `DATABASE_URL` are absent.
-- [ ] `npm run typecheck`
-  - Learner TypeScript build step passed; command stopped in
-    `typecheck:admin` because local `node_modules` does not contain `next`.
+- [x] `npm run test:run -- server/app.test.ts`
+- [x] `npm run typecheck`
 - [x] `npm run lint`
-- [ ] `npm run build`
-  - `build:web` passed; command stopped in `build:admin` with
-    `next: command not found` because local `node_modules` does not contain
-    `next`.
+- [x] `npm run build`
+- [x] `FINPULSE_TEST_DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test npm run verify`
 - [x] Browser smoke on new section and lessons
   - Passed at 390px for `/levels/level-1-start`,
     `/levels/level-1-start/sections/planning-and-management`,
@@ -95,15 +89,14 @@ Google Docs TXT exports were downloaded to `/tmp` only:
 - Checks run:
   - `npm run check:content` — pass.
   - `npm run test:run -- src/App.test.tsx src/content/program.test.ts src/features/program-navigation/learningPath.test.ts` — pass, 48 tests.
+  - `FINPULSE_TEST_DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test npm run test:run -- server/app.test.ts` — pass, 15 tests.
+  - `FINPULSE_TEST_DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse_test npm run verify` — pass.
   - `npm run lint` — pass.
-  - `npm run typecheck` — blocked in admin by missing local `next`.
-  - `npm run build` — `build:web` pass; blocked in admin by missing local
-    `next`.
+  - `npm run typecheck` — pass.
+  - `npm run build` — pass.
   - Browser smoke at 390px — pass with temporary API stub.
 - Risks:
-  - Backend integration tests still need a PostgreSQL test database URL.
-  - Full admin typecheck/build still need installed `next` dependency in local
-    `node_modules`.
+  - Backend integration tests still need a PostgreSQL test database URL in
+    shells without local PostgreSQL.
 - Follow-up:
-  - Re-run backend tests and full `npm run typecheck` / `npm run build` in an
-    environment with PostgreSQL test DB and complete dependencies.
+  - Re-run GitHub Verify after pushing the test expectation fix.
