@@ -255,6 +255,61 @@ describe('App', () => {
     expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
   })
 
+  it('renders the categorization columns experiment route without auth shell', async () => {
+    window.history.pushState({}, '', '/design/categorization-columns')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Финальная сверка колонками' })).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'Пример: Бюджетные корзины' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Войдите в ФинПульс' })).toBeNull()
+    expect(screen.queryByRole('navigation', { name: 'Боковое меню приложения' })).toBeNull()
+    expect(screen.queryByRole('navigation', { name: 'Нижнее меню приложения' })).toBeNull()
+    expect(getRequestCount('/api/auth/me')).toBe(0)
+
+    const fourColumnExample = screen.getByRole('region', { name: 'Пример: Бюджетные корзины' })
+    expect(within(fourColumnExample).getAllByRole('region', { name: /^Колонка / })).toHaveLength(4)
+  })
+
+  it('moves a selected answer between columns in the four-column experiment', async () => {
+    const user = userEvent.setup()
+    window.history.pushState({}, '', '/design/categorization-columns')
+
+    render(<App />)
+
+    const fourColumnExample = await screen.findByRole('region', { name: 'Пример: Бюджетные корзины' })
+    const desiredColumn = within(fourColumnExample).getByRole('region', { name: 'Колонка Желаемое' })
+    const payYourselfColumn = within(fourColumnExample).getByRole('region', { name: 'Колонка Сначала себе' })
+    const reserveTransfer = within(desiredColumn).getByRole('button', { name: /Перевод 10% в резерв/ })
+
+    expect(reserveTransfer).toHaveAttribute('aria-pressed', 'false')
+    expect(payYourselfColumn.firstElementChild?.className).toContain('bg-[#e9edf2]')
+    expect(payYourselfColumn.firstElementChild?.className).toContain('min-h-[57px]')
+    expect(payYourselfColumn.firstElementChild?.className).toContain('border-b')
+    expect(payYourselfColumn.firstElementChild?.querySelector('h3')?.getAttribute('style')).toContain(
+      '-webkit-line-clamp: 2',
+    )
+    expect(reserveTransfer.querySelector('svg')).toBeNull()
+
+    await user.click(reserveTransfer)
+    expect(reserveTransfer).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(payYourselfColumn)
+
+    await waitFor(() => {
+      expect(within(payYourselfColumn).getByRole('button', { name: /Перевод 10% в резерв/ })).toBeTruthy()
+    })
+    expect(within(desiredColumn).queryByRole('button', { name: /Перевод 10% в резерв/ })).toBeNull()
+    expect(within(payYourselfColumn).getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Копилка на поездку. Сейчас: Сначала себе',
+      'Перевод 10% в резерв. Сейчас: Сначала себе',
+    ])
+    expect(within(payYourselfColumn).getByRole('button', { name: /Перевод 10% в резерв/ })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
   it('opens the program tab for an existing session at the root route', async () => {
     setAuthenticatedLearner(apiOptions)
     window.history.pushState({}, '', '/')
@@ -554,10 +609,37 @@ describe('App', () => {
     expect(compactHeader.className).toContain('rounded-b-[22px]')
     expect(compactHeader.className).not.toContain('rounded-t')
     expect(within(compactHeader).getByRole('link', { name: 'Уровень 1 раздел 1' }).getAttribute('href')).toBe('/program')
-    expect(within(compactHeader).getByRole('heading', { level: 1, name: 'Раздел 1. Деньги и операции' }).className).toContain('text-[20px]')
+    expect(within(compactHeader).getByRole('heading', { level: 1, name: 'Деньги и операции' }).className).toContain('text-[20px]')
+    expect(within(compactHeader).getByRole('heading', { level: 1, name: 'Деньги и операции' }).className).toContain('pl-5')
     expect(screen.queryByRole('heading', { name: 'Войдите в ФинПульс' })).toBeNull()
 
     const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
+    const firstSectionPassport = within(lessonPath).getByRole('button', {
+      name: 'Раскрыть описание раздела Деньги и операции',
+    })
+    expect(firstSectionPassport.getAttribute('aria-expanded')).toBe('false')
+    expect(firstSectionPassport.className).toContain('size-6')
+    expect(firstSectionPassport.className).toContain('border-[var(--fr-color-sky-500)]/35')
+    expect(firstSectionPassport.querySelector('svg')?.className.baseVal).toContain('size-4')
+    expect(firstSectionPassport.querySelector('svg')?.className.baseVal).toContain('duration-300')
+    const collapsedPassportText = within(lessonPath).getByText(/Деньги и операции - это бытовые ситуации/i)
+    const passportReveal = collapsedPassportText.parentElement?.parentElement
+    expect(passportReveal?.getAttribute('aria-hidden')).toBe('true')
+    expect(passportReveal?.className).toContain('grid-rows-[0fr]')
+    expect(passportReveal?.className).toContain('opacity-0')
+
+    await user.click(firstSectionPassport)
+
+    const firstSectionPassportText = within(lessonPath).getByText(/Деньги и операции - это бытовые ситуации/i)
+    const expandedPassportReveal = firstSectionPassportText.parentElement?.parentElement
+    expect(firstSectionPassport.getAttribute('aria-expanded')).toBe('true')
+    expect(firstSectionPassport.getAttribute('aria-label')).toBe('Свернуть описание раздела Деньги и операции')
+    expect(firstSectionPassport.getAttribute('aria-describedby')).toBe(firstSectionPassportText.id)
+    expect(expandedPassportReveal?.getAttribute('aria-hidden')).toBe('false')
+    expect(expandedPassportReveal?.className).toContain('grid-rows-[1fr]')
+    expect(expandedPassportReveal?.className).toContain('opacity-100')
+    expect(firstSectionPassportText.className).toContain('text-center')
+
     const firstLessonButton = within(lessonPath).getByRole('button', { name: /Куда уходят деньги/i })
     expect(firstLessonButton).toBeTruthy()
 
@@ -741,7 +823,7 @@ describe('App', () => {
 
     render(<App />)
 
-    expect((await screen.findAllByRole('heading', { name: 'Раздел 1. Деньги и операции' })).length).toBeGreaterThan(0)
+    expect((await screen.findAllByRole('heading', { name: 'Деньги и операции' })).length).toBeGreaterThan(0)
     await user.click(await screen.findByRole('button', { name: /Куда уходят деньги/i }))
 
     const dialog = await screen.findByRole('dialog')
@@ -789,7 +871,7 @@ describe('App', () => {
     const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     const sectionHeadings = within(lessonPath).getAllByRole('heading').map((heading) => heading.textContent)
 
-    expect(sectionHeadings).toEqual(['Раздел 1. Деньги и операции', 'Раздел 2. Планирование и управление'])
+    expect(sectionHeadings).toEqual(['Деньги и операции', 'Планирование и управление'])
     expect(within(lessonPath).queryByText(/^Раздел$/)).toBeNull()
     expect(within(lessonPath).queryByText(/Юнит/)).toBeNull()
     expect(within(lessonPath).queryByText('Пройден')).toBeNull()
@@ -821,7 +903,7 @@ describe('App', () => {
 
     const compactHeader = await screen.findByTestId('compact-path-header')
     expect(within(compactHeader).getByRole('link', { name: 'Уровень 1 раздел 1' })).toBeTruthy()
-    expect(within(compactHeader).getByRole('heading', { level: 1, name: 'Раздел 1. Деньги и операции' })).toBeTruthy()
+    expect(within(compactHeader).getByRole('heading', { level: 1, name: 'Деньги и операции' })).toBeTruthy()
   })
 
   it('renders a lesson with cards', async () => {
@@ -957,8 +1039,9 @@ describe('App', () => {
     expect(main.className).toContain('max-w-[720px]')
     expect(main.className).not.toContain('max-w-none')
     expect(within(sectionHeader).getByRole('link', { name: 'Уровень 1' }).getAttribute('href')).toBe('/levels/level-1-start')
-    expect(within(sectionHeader).getByRole('heading', { level: 1, name: 'Раздел 1. Деньги и операции' }).className).toContain('text-[20px]')
-    expect((await screen.findAllByRole('heading', { name: 'Раздел 1. Деньги и операции' })).length).toBeGreaterThan(0)
+    expect(within(sectionHeader).getByRole('heading', { level: 1, name: 'Деньги и операции' }).className).toContain('text-[20px]')
+    expect(within(sectionHeader).getByRole('heading', { level: 1, name: 'Деньги и операции' }).className).toContain('pl-5')
+    expect((await screen.findAllByRole('heading', { name: 'Деньги и операции' })).length).toBeGreaterThan(0)
     expect(await screen.findByRole('button', { name: /Куда уходят деньги/i })).toBeTruthy()
     expect(await screen.findByRole('button', { name: /Обязательное и желаемое/i })).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Сколько держать в резерве/i })).toBeNull()
@@ -969,7 +1052,7 @@ describe('App', () => {
     const planningSectionRoute = render(<App />)
 
     const planningSectionHeader = await screen.findByTestId('compact-path-header')
-    expect(within(planningSectionHeader).getByRole('heading', { level: 1, name: 'Раздел 2. Планирование и управление' })).toBeTruthy()
+    expect(within(planningSectionHeader).getByRole('heading', { level: 1, name: 'Планирование и управление' })).toBeTruthy()
     expect(await screen.findByRole('button', { name: /Зачем нужна подушка/i })).toBeTruthy()
     expect(await screen.findByRole('button', { name: /Сколько держать в резерве/i })).toBeTruthy()
 
@@ -1236,8 +1319,9 @@ async function completeWhereMoneyGoesPractice(user: ReturnType<typeof userEvent.
     within(screen.getByRole('group', { name: 'Поездка на такси' })).getByRole('radio', { name: 'Проходит мимо внимания' }),
   )
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Поездка на такси: Проходит мимо внимания' })).toBeTruthy(),
+    expect(screen.getByRole('region', { name: 'Итоговая сверка по колонкам' })).toBeTruthy(),
   )
+  expect(screen.getByRole('button', { name: 'Поездка на такси. Сейчас: Проходит мимо внимания' })).toBeTruthy()
 }
 
 async function completeWhereMoneyGoesExternalExample(user: ReturnType<typeof userEvent.setup>) {

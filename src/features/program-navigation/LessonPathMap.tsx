@@ -1,4 +1,5 @@
-import { Check, Play } from 'lucide-react'
+import { useState } from 'react'
+import { Check, ChevronDown, Play } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Button } from '@/components/ui/button'
@@ -166,6 +167,8 @@ function PathSection({
         <span className="h-px bg-[var(--fr-border-default)]" />
       </div>
 
+      <SectionPassport description={section.description} sectionId={section.id} title={section.title} />
+
       <div className="mx-auto flex w-full max-w-[340px] flex-col items-center gap-5 py-2">
         {section.lessons.map((lessonItem, lessonIndex) => (
           <LessonNode
@@ -178,6 +181,58 @@ function PathSection({
         ))}
       </div>
     </section>
+  )
+}
+
+function SectionPassport({ description, sectionId, title }: { description?: string; sectionId: string; title: string }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  if (!description) {
+    return null
+  }
+
+  const descriptionId = `section-passport-${sectionId}`
+
+  return (
+    <div className="mx-auto -mt-4 flex w-[calc(100%-2rem)] max-w-[330px] flex-col items-center">
+      <button
+        aria-controls={descriptionId}
+        aria-describedby={isExpanded ? descriptionId : undefined}
+        aria-expanded={isExpanded}
+        aria-label={`${isExpanded ? 'Свернуть' : 'Раскрыть'} описание раздела ${title}`}
+        className={cn(
+          'group flex size-6 items-center justify-center rounded-full border border-[var(--fr-color-sky-500)]/35 bg-[var(--fr-surface-card)] text-[var(--fr-color-sky-500)] shadow-[var(--fr-shadow-xs)] transition-colors duration-200 hover:border-[var(--fr-color-sky-500)] hover:bg-[var(--fr-color-brand-50)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25 motion-reduce:transition-none',
+          isExpanded && 'border-[var(--fr-color-sky-500)] bg-[var(--fr-color-brand-50)]',
+        )}
+        onClick={() => setIsExpanded((current) => !current)}
+        type="button"
+      >
+        <ChevronDown
+          aria-hidden="true"
+          className={cn(
+            'size-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+            isExpanded && 'rotate-180',
+          )}
+        />
+      </button>
+
+      <div
+        aria-hidden={!isExpanded}
+        className={cn(
+          'grid w-full transition-[grid-template-rows,opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+          isExpanded ? 'grid-rows-[1fr] translate-y-0 opacity-100' : 'grid-rows-[0fr] -translate-y-1 opacity-0',
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <p
+            className="mx-auto mt-2 max-w-[300px] text-center text-[13px] leading-5 tracking-normal text-[var(--fr-text-secondary)]"
+            id={descriptionId}
+          >
+            {description}
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }
 

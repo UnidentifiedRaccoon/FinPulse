@@ -881,6 +881,106 @@ describe('LessonSession', () => {
     expect(screen.getByRole('button', { name: 'Проверить' })).toBeEnabled()
   })
 
+  it('uses answer columns for the first lesson categorization result', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card_l1s1l1_03_sorting_choice',
+        type: 'categorization',
+        order: 3,
+        title: 'Распредели траты на две группы',
+        question: 'Распредели траты на две группы: «замечаю сразу» и «проходит мимо внимания».',
+        categories: [
+          { id: 'visible', label: 'Замечаю сразу' },
+          { id: 'unnoticed', label: 'Проходит мимо внимания' },
+        ],
+        items: [
+          { id: 'phone', label: 'Покупка телефона', correctCategoryId: 'visible' },
+          { id: 'coffee', label: 'Кофе навынос', correctCategoryId: 'unnoticed' },
+          { id: 'taxi', label: 'Поездка на такси', correctCategoryId: 'unnoticed' },
+        ],
+        feedback: 'Траты «мимо внимания» обычно и создают утечку.',
+      },
+    ])
+
+    await user.click(
+      within(screen.getByRole('group', { name: 'Покупка телефона' })).getByRole('radio', {
+        name: 'Замечаю сразу',
+      }),
+    )
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Кофе навынос' })).toBeInTheDocument())
+    await user.click(
+      within(screen.getByRole('group', { name: 'Кофе навынос' })).getByRole('radio', {
+        name: 'Замечаю сразу',
+      }),
+    )
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Поездка на такси' })).toBeInTheDocument())
+    await user.click(
+      within(screen.getByRole('group', { name: 'Поездка на такси' })).getByRole('radio', {
+        name: 'Проходит мимо внимания',
+      }),
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('region', { name: 'Итоговая сверка по колонкам' })).toBeInTheDocument(),
+    )
+
+    const resultColumns = screen.getByRole('region', { name: 'Итоговая сверка по колонкам' })
+    expect(screen.queryByRole('region', { name: 'Итоговая таблица распределения' })).toBeNull()
+    expect(within(resultColumns).getAllByRole('region', { name: /^Колонка / })).toHaveLength(2)
+
+    const visibleColumn = within(resultColumns).getByRole('region', { name: 'Колонка Замечаю сразу' })
+    const unnoticedColumn = within(resultColumns).getByRole('region', { name: 'Колонка Проходит мимо внимания' })
+    const coffeeButton = within(visibleColumn).getByRole('button', {
+      name: 'Кофе навынос. Сейчас: Замечаю сразу',
+    })
+
+    expect(visibleColumn.firstElementChild?.className).toContain('bg-[#e9edf2]')
+    expect(visibleColumn.firstElementChild?.className).toContain('min-h-[57px]')
+    expect(visibleColumn.firstElementChild?.className).toContain('border-b')
+    expect(visibleColumn.firstElementChild?.querySelector('h3')?.getAttribute('style')).toContain(
+      '-webkit-line-clamp: 2',
+    )
+    expect(coffeeButton.querySelector('[aria-hidden="true"]')).toBeNull()
+
+    await user.click(coffeeButton)
+    expect(coffeeButton).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(
+      within(unnoticedColumn).getByRole('button', {
+        name: 'Поездка на такси. Сейчас: Проходит мимо внимания',
+      }),
+    )
+
+    await waitFor(() =>
+      expect(
+        within(unnoticedColumn).getByRole('button', {
+          name: 'Кофе навынос. Сейчас: Проходит мимо внимания',
+        }),
+      ).toBeTruthy(),
+    )
+    expect(
+      within(unnoticedColumn).getByRole('button', {
+        name: 'Кофе навынос. Сейчас: Проходит мимо внимания',
+      }),
+    ).toHaveAttribute('aria-pressed', 'false')
+    expect(within(unnoticedColumn).getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Поездка на такси. Сейчас: Проходит мимо внимания',
+      'Кофе навынос. Сейчас: Проходит мимо внимания',
+    ])
+    expect(within(visibleColumn).queryByRole('button', { name: 'Кофе навынос. Сейчас: Замечаю сразу' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+
+    const checkedCoffeeButton = within(unnoticedColumn).getByRole('button', {
+      name: 'Кофе навынос. Сейчас: Проходит мимо внимания',
+    })
+    expect(checkedCoffeeButton.className).toContain('bg-[var(--fr-color-learn-correct-50)]')
+    expect(checkedCoffeeButton.querySelector('[aria-hidden="true"]')).toBeNull()
+    expect(screen.getByRole('status')).toHaveTextContent('Верно')
+    expect(screen.getByRole('status')).toHaveTextContent('Траты «мимо внимания» обычно и создают утечку.')
+  })
+
   it('keeps money and duration fragments unwrapped in formula practice labels', () => {
     renderSession([
       {

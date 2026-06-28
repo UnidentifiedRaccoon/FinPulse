@@ -43,7 +43,7 @@ export function ChoiceCard({
         />
       ) : null}
       <RichTextParagraphs
-        paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+        paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-primary)]"
         text={question}
       />
       {usePracticeFlow && activeOption ? (

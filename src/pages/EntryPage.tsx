@@ -315,7 +315,7 @@ function QuestionTooltip({ id, prompt }: { id: string; prompt: string }) {
       <PopoverContent
         align="start"
         aria-label="Вопрос"
-        className="w-[min(19rem,calc(100vw-2rem))] p-3 text-sm font-medium leading-6"
+        className="w-[min(19rem,calc(100vw-2rem))] p-3 text-sm leading-6"
         collisionPadding={16}
         id={id}
         role="dialog"

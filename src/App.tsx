@@ -5,6 +5,7 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate,
 
 import { api, ApiError, type ApiUser, type ProgressResponse, type ReflectionAnswerPayload, type ReflectionAnswersResponse } from '@/api/client'
 import { LessonPage } from '@/pages/LessonPage'
+import { CategorizationColumnsExperimentPage } from '@/pages/CategorizationColumnsExperimentPage'
 import { EntryPage } from '@/pages/EntryPage'
 import { LevelPage } from '@/pages/LevelPage'
 import { ProgramOverviewPage } from '@/pages/ProgramOverviewPage'
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { getRouteTransitionKind, type RouteTransitionKind } from '@/shared/routeTransitions'
 
 const LOGOUT_MARKER_KEY = 'finpulse:logged-out'
+const CATEGORIZATION_COLUMNS_PREVIEW_PATH = '/design/categorization-columns'
 
 function App() {
   const [user, setUser] = useState<ApiUser | null>(null)
@@ -23,7 +25,9 @@ function App() {
   const [progress, setProgress] = useState<ProgressResponse | null>(null)
   const [reflectionAnswers, setReflectionAnswers] = useState<ReflectionAnswersResponse | null>(null)
   const [isAuthBusy, setIsAuthBusy] = useState(false)
-  const [isAuthReady, setIsAuthReady] = useState(() => hasLogoutMarker())
+  const [isAuthReady, setIsAuthReady] = useState(
+    () => hasLogoutMarker() || isCategorizationColumnsPreviewPath(window.location.pathname),
+  )
 
   const clearAuthenticatedState = useCallback(() => {
     setUser(null)
@@ -62,6 +66,12 @@ function App() {
 
   useEffect(() => {
     let isActive = true
+
+    if (isCategorizationColumnsPreviewPath(window.location.pathname)) {
+      return () => {
+        isActive = false
+      }
+    }
 
     if (hasLogoutMarker()) {
       return () => {
@@ -272,7 +282,8 @@ function AppShell({
   const navigationType = useNavigationType()
   const isLessonRoute = location.pathname.startsWith('/lessons/')
   const isPathRoute = location.pathname.startsWith('/levels/')
-  const showAuthenticatedShell = Boolean(user)
+  const isDesignPreviewRoute = isCategorizationColumnsPreviewPath(location.pathname)
+  const showAuthenticatedShell = Boolean(user) && !isDesignPreviewRoute
   const showMobileNavigation = showAuthenticatedShell && !isLessonRoute
   const [routeTransitionState, setRouteTransitionState] = useState<{
     pathname: string
@@ -317,7 +328,9 @@ function AppShell({
       <main
         className={cn(
           'mx-auto w-full',
-          showAuthenticatedShell && isPathRoute
+          isDesignPreviewRoute
+            ? 'max-w-none px-0 py-0'
+            : showAuthenticatedShell && isPathRoute
               ? 'max-w-[720px] px-0 py-0'
               : showAuthenticatedShell && isLessonRoute
                 ? 'max-w-none px-0 py-0 lg:px-8 lg:py-6'
@@ -335,7 +348,12 @@ function AppShell({
               </p>
             ))
           : null}
-        {showAuthenticatedShell ? (
+        {isDesignPreviewRoute ? (
+          <Routes>
+            <Route path={CATEGORIZATION_COLUMNS_PREVIEW_PATH} element={<CategorizationColumnsExperimentPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        ) : showAuthenticatedShell ? (
           <RouteTransitionFrame pathname={location.pathname} transition={routeTransition}>
             <Routes>
               <Route path="/" element={<Navigate to="/program" replace />} />
@@ -667,6 +685,10 @@ function getApiMessage(error: unknown) {
   }
 
   return 'Не удалось выполнить запрос.'
+}
+
+function isCategorizationColumnsPreviewPath(pathname: string) {
+  return pathname === CATEGORIZATION_COLUMNS_PREVIEW_PATH
 }
 
 function markLogout() {

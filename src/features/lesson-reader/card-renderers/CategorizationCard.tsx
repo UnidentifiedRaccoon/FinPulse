@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type UIEvent } from 'react'
+import { Fragment, useEffect, useState, type CSSProperties, type UIEvent } from 'react'
 
 import { LessonFeedback } from '@/features/lesson-reader/LessonFeedback'
 import type {
@@ -13,6 +13,13 @@ import {
 import { cn } from '@/lib/utils'
 
 import { NoBreakText, RichTextParagraphs, SelectableOption } from './shared'
+
+const FIRST_LESSON_COLUMN_RESULT_CARD_ID = 'card_l1s1l1_03_sorting_choice'
+const COLUMN_HEADER_TITLE_CLAMP_STYLE: CSSProperties = {
+  display: '-webkit-box',
+  WebkitBoxOrient: 'vertical',
+  WebkitLineClamp: 2,
+}
 
 export function CategorizationCard({
   card,
@@ -32,7 +39,7 @@ export function CategorizationCard({
     return (
       <div className="flex flex-col gap-4">
         <RichTextParagraphs
-          paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+          paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-primary)]"
           text={card.question}
         />
         <ul className="flex flex-col gap-3">
@@ -63,7 +70,7 @@ export function CategorizationCard({
   return (
     <div className="flex flex-col gap-4">
       <RichTextParagraphs
-        paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+        paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-primary)]"
         text={card.question}
       />
       {useAutoFlow ? (
@@ -142,6 +149,8 @@ function getCategoryOptionState({
 }
 
 type FlowCategoryState = 'default' | 'selected' | 'correct' | 'retry'
+type CategorizationItem = CategorizationCardType['items'][number]
+type CategorizationColumnOrder = Record<string, string[]>
 
 function AutoCategorizationFlow({
   card,
@@ -176,6 +185,10 @@ function AutoCategorizationFlow({
   }, [isTurning, pendingIndex])
 
   if (isComplete) {
+    if (shouldUseColumnResult(card)) {
+      return <CategorizationResultColumns card={card} feedbackId={feedbackId} onSelect={onSelect} state={state} />
+    }
+
     return <CategorizationResultMatrix card={card} feedbackId={feedbackId} onSelect={onSelect} state={state} />
   }
 
@@ -416,6 +429,160 @@ function CategorizationResultMatrix({
   )
 }
 
+function CategorizationResultColumns({
+  card,
+  feedbackId,
+  onSelect,
+  state,
+}: {
+  card: CategorizationCardType
+  feedbackId: string
+  onSelect: (itemId: string, categoryId: string) => void
+  state: CategorizationState
+}) {
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
+  const [itemOrderByCategoryId, setItemOrderByCategoryId] = useState<CategorizationColumnOrder>(() =>
+    createCategorizationColumnOrder(card, state),
+  )
+  const selectedCategoryId = selectedItemId ? (state.selectedCategoryIdsByItemId[selectedItemId] ?? '') : ''
+  const gridTemplateColumns = `repeat(${card.categories.length}, minmax(10.75rem,1fr))`
+  const minWidth = `${card.categories.length * 11.75}rem`
+  const itemsByCategoryId = getCategorizationItemsByCategoryId(card, state, itemOrderByCategoryId)
+
+  function handleSelectItem(itemId: string) {
+    setSelectedItemId((current) => (current === itemId ? null : itemId))
+  }
+
+  function handleMoveSelectedItem(categoryId: string) {
+    const itemId = selectedItemId
+    if (!itemId || selectedCategoryId === categoryId) {
+      return
+    }
+
+    setItemOrderByCategoryId((current) => moveCategorizationItemToColumnEnd(current, itemId, categoryId))
+    onSelect(itemId, categoryId)
+    setSelectedItemId(null)
+  }
+
+  return (
+    <div
+      aria-label="Итоговая сверка по колонкам"
+      className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]"
+      role="region"
+    >
+      <div className="grid min-w-full gap-[var(--fr-space-2)]" style={{ gridTemplateColumns, minWidth }}>
+        {card.categories.map((category) => {
+          const items = itemsByCategoryId[category.id] ?? []
+          const canReceiveSelectedItem = Boolean(selectedItemId && selectedCategoryId !== category.id)
+
+          return (
+            <section
+              aria-label={`Колонка ${category.label}`}
+              className={cn(
+                'flex min-h-56 flex-col overflow-hidden rounded-[var(--fr-radius-md)] border border-[var(--fr-border-default)] bg-[var(--fr-surface-muted)] transition-[border-color,background-color,box-shadow]',
+                canReceiveSelectedItem && 'cursor-pointer border-[var(--fr-color-sky-500)]/45 bg-[var(--fr-color-brand-50)] shadow-[var(--fr-shadow-sm)]',
+              )}
+              key={category.id}
+              onClick={() => handleMoveSelectedItem(category.id)}
+            >
+              <div className="flex min-h-[57px] min-w-0 items-center border-b border-[var(--fr-border-default)] bg-[#e9edf2] px-[var(--fr-space-3)] py-[var(--fr-space-2)]">
+                <h3
+                  className="min-w-0 overflow-hidden text-[length:var(--fr-type-body-sm-size)] font-bold leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-primary)] [overflow-wrap:anywhere]"
+                  style={COLUMN_HEADER_TITLE_CLAMP_STYLE}
+                >
+                  <NoBreakText text={category.label} />
+                </h3>
+              </div>
+
+              <div className="flex flex-1 flex-col gap-[var(--fr-space-2)] p-[var(--fr-space-2)]">
+                {items.length ? (
+                  items.map((item) => {
+                    const isSelected = selectedItemId === item.id
+                    const itemState = getColumnResultItemState({
+                      categoryId: category.id,
+                      correctCategoryId: item.correctCategoryId,
+                      isChecked: state.isChecked,
+                      isSelected,
+                    })
+
+                    return (
+                      <button
+                        aria-describedby={state.isChecked ? feedbackId : undefined}
+                        aria-label={`${item.label}. Сейчас: ${category.label}`}
+                        aria-pressed={isSelected}
+                        className={cn(
+                          'flex min-h-12 w-full items-start rounded-[var(--fr-radius-md)] border bg-[var(--fr-surface-card)] px-[var(--fr-space-3)] py-[var(--fr-space-2)] text-left shadow-[var(--fr-shadow-sm)] transition-[border-color,background-color,box-shadow,transform] active:translate-y-px focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15',
+                          itemState === 'selected' &&
+                            'border-[var(--fr-color-sky-500)] bg-[var(--fr-color-brand-50)] shadow-[var(--fr-shadow-md)]',
+                          itemState === 'correct' &&
+                            'border-[var(--fr-color-learn-correct-500)]/50 bg-[var(--fr-color-learn-correct-50)]',
+                          itemState === 'retry' &&
+                            'border-[var(--fr-color-learn-almost-500)]/50 bg-[var(--fr-color-learn-almost-50)]',
+                          itemState === 'default' &&
+                            'border-[var(--fr-border-default)] hover:border-[var(--fr-border-strong)] hover:shadow-[var(--fr-shadow-md)]',
+                        )}
+                        key={item.id}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          if (selectedItemId && selectedItemId !== item.id && selectedCategoryId !== category.id) {
+                            handleMoveSelectedItem(category.id)
+                            return
+                          }
+
+                          handleSelectItem(item.id)
+                        }}
+                        type="button"
+                      >
+                        <span className="min-w-0 text-[length:var(--fr-type-body-sm-size)] font-bold leading-[var(--fr-type-body-sm-line)] text-[var(--fr-text-primary)] [overflow-wrap:anywhere]">
+                          <NoBreakText text={item.label} />
+                        </span>
+                      </button>
+                    )
+                  })
+                ) : (
+                  <div className="flex min-h-20 flex-1 items-center justify-center rounded-[var(--fr-radius-md)] border border-dashed border-[var(--fr-border-strong)] bg-[var(--fr-surface-card)] px-[var(--fr-space-2)] text-center text-[length:var(--fr-type-caption-md-size)] leading-[var(--fr-type-caption-md-line)] text-[var(--fr-text-tertiary)]">
+                    Пока пусто
+                  </div>
+                )}
+              </div>
+
+              {canReceiveSelectedItem ? (
+                <button
+                  className="mx-[var(--fr-space-2)] mb-[var(--fr-space-2)] mt-auto inline-flex min-h-10 items-center justify-center rounded-[var(--fr-radius-md)] border border-[var(--fr-color-sky-500)]/40 bg-[var(--fr-surface-card)] px-[var(--fr-space-2)] text-[length:var(--fr-type-caption-md-size)] font-bold leading-[var(--fr-type-caption-md-line)] text-[var(--fr-color-sky-600)] transition-[background-color,transform] active:translate-y-px hover:bg-[var(--fr-color-brand-100)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    handleMoveSelectedItem(category.id)
+                  }}
+                  type="button"
+                >
+                  Переместить сюда
+                </button>
+              ) : null}
+            </section>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function getColumnResultItemState({
+  isSelected,
+  isChecked,
+  categoryId,
+  correctCategoryId,
+}: {
+  isSelected: boolean
+  isChecked: boolean
+  categoryId: string
+  correctCategoryId: string
+}): FlowCategoryState {
+  if (isChecked && categoryId === correctCategoryId) return 'correct'
+  if (isChecked && categoryId !== correctCategoryId) return 'retry'
+  if (isSelected) return 'selected'
+  return 'default'
+}
+
 function AutoFlowDots({
   activeIndex,
   card,
@@ -465,6 +632,68 @@ function getResultCellState({
   if (isChecked && isSelected && categoryId !== correctCategoryId) return 'retry'
   if (isSelected) return 'selected'
   return 'default'
+}
+
+function createCategorizationColumnOrder(
+  card: CategorizationCardType,
+  state: CategorizationState,
+): CategorizationColumnOrder {
+  return card.categories.reduce<CategorizationColumnOrder>((itemOrderByCategoryId, category) => {
+    itemOrderByCategoryId[category.id] = card.items
+      .filter((item) => state.selectedCategoryIdsByItemId[item.id] === category.id)
+      .map((item) => item.id)
+
+    return itemOrderByCategoryId
+  }, {})
+}
+
+function moveCategorizationItemToColumnEnd(
+  itemOrderByCategoryId: CategorizationColumnOrder,
+  itemId: string,
+  categoryId: string,
+) {
+  const nextItemOrderByCategoryId = Object.entries(itemOrderByCategoryId).reduce<CategorizationColumnOrder>(
+    (nextOrder, [currentCategoryId, itemIds]) => {
+      nextOrder[currentCategoryId] = itemIds.filter((currentItemId) => currentItemId !== itemId)
+      return nextOrder
+    },
+    {},
+  )
+
+  nextItemOrderByCategoryId[categoryId] = [...(nextItemOrderByCategoryId[categoryId] ?? []), itemId]
+
+  return nextItemOrderByCategoryId
+}
+
+function getCategorizationItemsByCategoryId(
+  card: CategorizationCardType,
+  state: CategorizationState,
+  itemOrderByCategoryId: CategorizationColumnOrder,
+) {
+  const itemById = new Map(card.items.map((item) => [item.id, item]))
+
+  return card.categories.reduce<Record<string, CategorizationCardType['items']>>((itemsByCategoryId, category) => {
+    const assignedItems = card.items.filter((item) => state.selectedCategoryIdsByItemId[item.id] === category.id)
+    const assignedItemIds = new Set(assignedItems.map((item) => item.id))
+    const orderedItems = (itemOrderByCategoryId[category.id] ?? []).reduce<CategorizationItem[]>((items, itemId) => {
+      const item = itemById.get(itemId)
+      if (item && assignedItemIds.has(item.id)) {
+        items.push(item)
+      }
+      return items
+    }, [])
+    const orderedItemIds = new Set(orderedItems.map((item) => item.id))
+
+    itemsByCategoryId[category.id] = [
+      ...orderedItems,
+      ...assignedItems.filter((item) => !orderedItemIds.has(item.id)),
+    ]
+    return itemsByCategoryId
+  }, {})
+}
+
+function shouldUseColumnResult(card: CategorizationCardType) {
+  return card.id === FIRST_LESSON_COLUMN_RESULT_CARD_ID
 }
 
 function areAllCategorizationItemsAssigned(

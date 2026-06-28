@@ -17,7 +17,7 @@ Use files under `harness/tasks/active/` for real active work.
 
 | ID | Status | Task | Intended write set | Notes |
 |---|---:|---|---|---|
-| — | — | — | — | No active task is currently claimed. |
+| _None_ | - | - | - | - |
 
 ## Review Queue Snapshot
 
@@ -25,6 +25,13 @@ Recent review tasks that define the current top of stack:
 
 | ID | Status | Task | Notes |
 |---|---:|---|---|
+| T-159 | review | Column header height and clamp | Column headers now use a neutral gray surface, 57px minimum height in the product result, and explicit two-line clamp. Focused renderer/App tests, typecheck, lint, Browser QA, and diff check passed; full verify still needs a backend test DB URL. |
+| T-158 | review | Column header and iconless items | Adds tinted header strips and text-only answer cards without marker icons to production and preview column results. Focused renderer/App tests, typecheck, lint, Browser QA, and diff check passed; full verify still needs a backend test DB URL. |
+| T-157 | review | First lesson categorization columns | Applies the column final check only to `card_l1s1l1_03_sorting_choice`; moved answers append to the target column bottom, extra result frame and count badges are removed. Focused renderer/App tests, typecheck, lint, Browser QA, and diff check passed; full verify still needs a backend test DB URL. |
+| T-156 | review | Categorization columns experiment | Adds isolated `/design/categorization-columns` mock route with 2/3/4-column final checks and click-to-move mechanics. Focused App tests, typecheck, lint, Browser QA, and diff check passed; full verify still needs a backend test DB URL. |
+| T-155 | review | Body text weight normalization | Ordinary learner/body text now uses regular 400; the typography docs no longer define a 500 body-text layer. Focused App tests, typecheck, lint, web build, Storybook build, and diff check passed; full verify still needs a backend test DB URL. |
+| T-154 | review | Chevron only section passport | Refines T-153 so collapsed section passports show only a small chevron under the heading; description appears only after tap. Focused App tests, typecheck, lint, diff check, and web build passed. |
+| T-153 | review | Section passport description | Adds compact expandable section passports, updates the first section description, and strips `Раздел N.` from displayed section headings while keeping sticky section-number context. Focused checks and web build passed; full verify still needs a backend test DB URL. |
 | T-152 | review | Add planning management lessons | Adds Level 1 Section 2 with У1.5-У1.8. Content validation, focused frontend/content tests, lint, and 390px browser smoke passed; backend/full admin checks need local DB and complete admin dependencies. |
 | T-151 | review | Safe project autocompaction | Compacted project memory docs without touching app code, runtime JSON, schemas, or canonical product/methodology docs. |
 | T-150 | review | Paragraph-aware Rich Text rendering | Latest learner UI/content rendering change. Full local verify still needs a PostgreSQL test DB URL in this shell. |

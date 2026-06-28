@@ -59,7 +59,7 @@ export function PathPageSkeleton({
           <Skeleton aria-hidden="true" className={cn('h-4 bg-white/35', pathBackLabelSkeletonWidth[variant])} />
         </Link>
 
-        <Skeleton aria-hidden="true" className="h-6 w-72 max-w-[18rem] bg-white/35" />
+        <Skeleton aria-hidden="true" className="ml-5 h-6 w-[calc(18rem-1.25rem)] max-w-[calc(100%-1.25rem)] bg-white/35" />
       </header>
 
       <div aria-hidden="true" className={cn('pb-6 pt-7', variant === 'level' && 'flex flex-col gap-8')}>
