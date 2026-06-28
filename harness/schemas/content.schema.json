@@ -465,7 +465,10 @@
                   "items": { "$ref": "#/$defs/choiceOption" }
                 },
                 "correctOptionId": { "$ref": "#/$defs/plainText" },
+                "feedbackTitle": { "$ref": "#/$defs/plainText" },
                 "feedback": { "$ref": "#/$defs/markdownText" },
+                "retryFeedbackTitle": { "$ref": "#/$defs/plainText" },
+                "retryFeedback": { "$ref": "#/$defs/markdownText" },
                 "readOnly": { "type": "boolean" }
               }
             }
@@ -495,7 +498,10 @@
                   "minItems": 2,
                   "items": { "$ref": "#/$defs/choiceOption" }
                 },
+                "feedbackTitle": { "$ref": "#/$defs/plainText" },
                 "feedback": { "$ref": "#/$defs/markdownText" },
+                "retryFeedbackTitle": { "$ref": "#/$defs/plainText" },
+                "retryFeedback": { "$ref": "#/$defs/markdownText" },
                 "readOnly": { "type": "boolean" }
               }
             }
@@ -548,7 +554,10 @@
                     }
                   }
                 },
+                "feedbackTitle": { "$ref": "#/$defs/plainText" },
                 "feedback": { "$ref": "#/$defs/markdownText" },
+                "retryFeedbackTitle": { "$ref": "#/$defs/plainText" },
+                "retryFeedback": { "$ref": "#/$defs/markdownText" },
                 "readOnly": { "type": "boolean" }
               }
             }
@@ -620,7 +629,10 @@
                   "items": { "$ref": "#/$defs/choiceOption" }
                 },
                 "correctOptionId": { "$ref": "#/$defs/plainText" },
+                "feedbackTitle": { "$ref": "#/$defs/plainText" },
                 "feedback": { "$ref": "#/$defs/markdownText" },
+                "retryFeedbackTitle": { "$ref": "#/$defs/plainText" },
+                "retryFeedback": { "$ref": "#/$defs/markdownText" },
                 "readOnly": { "type": "boolean" }
               },
               "dependentRequired": {

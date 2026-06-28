@@ -25,6 +25,8 @@ Recent review tasks that define the current top of stack:
 
 | ID | Status | Task | Notes |
 |---|---:|---|---|
+| T-161 | review | FinPulse content editor skill | Adds project-owned `skills/finpulse-content-editor` with workflow, editorial rubric extracted from lesson 1-4 edits, and agent UI metadata. Structure/frontmatter/content smoke checks and diff check passed; official quick validator needs PyYAML. |
+| T-160 | review | Lesson 1-4 review edits | Adds interactive feedback titles/retry feedback support, applies selected edits to first four money-and-operations lessons, syncs source Markdown and docs. Content validation, focused renderer/content/App tests, typecheck, lint, web build, and diff check passed; full verify still needs a backend test DB URL. |
 | T-159 | review | Column header height and clamp | Column headers now use a neutral gray surface, 57px minimum height in the product result, and explicit two-line clamp. Focused renderer/App tests, typecheck, lint, Browser QA, and diff check passed; full verify still needs a backend test DB URL. |
 | T-158 | review | Column header and iconless items | Adds tinted header strips and text-only answer cards without marker icons to production and preview column results. Focused renderer/App tests, typecheck, lint, Browser QA, and diff check passed; full verify still needs a backend test DB URL. |
 | T-157 | review | First lesson categorization columns | Applies the column final check only to `card_l1s1l1_03_sorting_choice`; moved answers append to the target column bottom, extra result frame and count badges are removed. Focused renderer/App tests, typecheck, lint, Browser QA, and diff check passed; full verify still needs a backend test DB URL. |

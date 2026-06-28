@@ -145,8 +145,8 @@ Brief должен содержать:
 |---|---|
 | Назначение | Закрепить главное различие урока действием. |
 | Тип взаимодействия | Только `categorization`: разложить примеры по 2-3 известным категориям. |
-| Обязательные элементы | Заголовок-задание; категории; 4-8 примеров; верная раскладка; feedback по карточкам; системная кнопка `Проверить`, затем continue CTA из `ctaLabel`. |
-| Markdown-поля | `question`; `items[].feedback`; `feedback`. |
+| Обязательные элементы | Заголовок-задание; категории; 4-8 примеров; верная раскладка; feedback по карточкам; системная кнопка `Проверить`, затем continue CTA из `ctaLabel`. Если источник даёт отдельные тексты для верного и неверного результата, используй `feedbackTitle`, `retryFeedbackTitle` и `retryFeedback`. |
+| Markdown-поля | `question`; `items[].feedback`; `feedback`; `retryFeedback`. |
 | Чего нельзя делать | Нельзя делать одиночным или множественным выбором; нельзя вводить новый материал. |
 
 Если исходная практика написана как список вариантов, её нужно переписать в сортировку по категориям.
@@ -157,8 +157,8 @@ Brief должен содержать:
 |---|---|
 | Назначение | Связать тему с реальной финансовой средой, продуктами, договорами, ставками или правами. |
 | Тип взаимодействия | Проверяемый `scenario`: короткий сценарий, ровно 3 варианта, 1 верный. |
-| Обязательные элементы | Заголовок; внешний сценарий; 3 варианта; `correctOptionId`; feedback на карточке и у каждого варианта; статистика при наличии источника. |
-| Markdown-поля | `body`; `question`; `options[].feedback`; `feedback`; `statistics.items[].label`; `statistics.sources[]`. |
+| Обязательные элементы | Заголовок; внешний сценарий; 3 варианта; `correctOptionId`; feedback на карточке и у каждого варианта; статистика при наличии источника. Если источник различает заголовки результата, храни их в `feedbackTitle` и `retryFeedbackTitle`; если нужен отдельный текст только для ошибки, используй `retryFeedback`. |
+| Markdown-поля | `body`; `question`; `options[].feedback`; `feedback`; `retryFeedback`; `statistics.items[].label`; `statistics.sources[]`. |
 | Чего нельзя делать | Нельзя заменять этим экраном личную работу; нельзя приводить статистику без источника; нельзя давать индивидуальные рекомендации. |
 
 Статистика из источника хранится на этой же карточке в `statistics`. Она не становится отдельной карточкой.
@@ -229,6 +229,7 @@ JSON должен быть валидным: без комментариев, tr
 - system actions `Проверить`, `Ответить` и финальное `Завершить` не записываются как `ctaLabel`;
 - экран 8 не требует `ctaLabel`, потому что финальная кнопка завершения принадлежит reader-у;
 - `statistics` ставится только на экран 4 и только при наличии статистики в источнике;
+- `feedbackTitle` и `retryFeedbackTitle` остаются plain text; `retryFeedback` разрешён только на интерактивных карточках `single_choice`, `multi_select`, `categorization` и `scenario` и показывается только при ошибочном результате;
 - `customOption.label` на экранах 6 и 7 всегда ровно `Свой вариант`;
 - экран 7 содержит ровно две готовые `variants` плюс `customOption`.
 
@@ -249,16 +250,16 @@ Markdown-enabled поля для Уровня 1:
 
 | Экран | Тип карточки | Поля |
 |---:|---|---|
-| 1 | `single_choice` | `question`, `options[].feedback` |
+| 1 | `single_choice` | `question`, `options[].feedback`, `feedback`, `retryFeedback` |
 | 2 | `theory` | `body` |
-| 3 | `categorization` | `question`, `items[].feedback`, `feedback` |
-| 4 | `scenario` | `body`, `question`, `options[].feedback`, `feedback`, `statistics.items[].label`, `statistics.sources[]` |
+| 3 | `categorization` | `question`, `items[].feedback`, `feedback`, `retryFeedback` |
+| 4 | `scenario` | `body`, `question`, `options[].feedback`, `feedback`, `retryFeedback`, `statistics.items[].label`, `statistics.sources[]` |
 | 5 | `artifact` | `body`, `template[]` |
 | 6 | `reflection` | `prompt`, `guidance` |
 | 7 | `artifact` | `body` |
 | 8 | `summary` | `body`, `points[]`, `nextStep` |
 
-Plain-text поля, где Markdown не используется: `title`, `ctaLabel`, `options[].label`, `categories[].label`, `items[].label`, `variants[]`, `customOption.label`, `customOption.placeholder`, `statistics.value`, `id`, `sourceSection`, `saveKey`, slugs и технические ключи.
+Plain-text поля, где Markdown не используется: `title`, `feedbackTitle`, `retryFeedbackTitle`, `ctaLabel`, `options[].label`, `categories[].label`, `items[].label`, `variants[]`, `customOption.label`, `customOption.placeholder`, `statistics.value`, `id`, `sourceSection`, `saveKey`, slugs и технические ключи.
 
 Не нужно создавать отдельную техническую структуру через префиксы `Факт:`, `Формула:`, `Пример:` или `Простой тест:` ради будущего renderer-а. Если в исходной таблице есть факт-иллюстрация, пример, формула или простой тест, он переносится обычным абзацем в соответствующее Markdown-enabled поле, чаще всего в `theory.body`.
 

@@ -167,14 +167,14 @@ Minimal type-specific fields:
 - `video`: `src`, `title`, optional `provider`, `timecodes`, `transcript`.
   For RUTUBE, use the platform embed URL (`https://rutube.ru/play/embed/...`); the reader renders it inline and keeps a source link as fallback.
 - `callout`: `body`, optional `tone`.
-- `single_choice`: `question`, `options`, optional `correctOptionId`, `feedback`, `readOnly`.
-- `multi_select`: `question`, `options`, optional `feedback`, `readOnly`.
+- `single_choice`: `question`, `options`, optional `correctOptionId`, `feedbackTitle`, `feedback`, `retryFeedbackTitle`, `retryFeedback`, `readOnly`.
+- `multi_select`: `question`, `options`, optional `feedbackTitle`, `feedback`, `retryFeedbackTitle`, `retryFeedback`, `readOnly`.
   `options` use `{ id, label, isCorrect?, feedback? }`; at least one option must be correct and at least one must be incorrect.
-- `categorization`: `question`, `categories`, `items`, optional `feedback`, `readOnly`.
+- `categorization`: `question`, `categories`, `items`, optional `feedbackTitle`, `feedback`, `retryFeedbackTitle`, `retryFeedback`, `readOnly`.
   `categories` use `{ id, label }`; `items` use `{ id, label, correctCategoryId, feedback? }`.
   Every `correctCategoryId` must match a category id.
 - `reflection`: `prompt`, optional `options`, `customOption`, `inputType`, `saveKey`, `guidance`, `readOnly`.
-- `scenario`: `body`, optional `question`, `options`, `correctOptionId`, `feedback`, `readOnly`.
+- `scenario`: `body`, optional `question`, `options`, `correctOptionId`, `feedbackTitle`, `feedback`, `retryFeedbackTitle`, `retryFeedback`, `readOnly`.
 - `artifact`: `body`, optional `template`, `variants`, `customOption`, `readOnly`.
 - `checklist`: `items`, optional `body`.
 - `summary`: `points`, optional `body`, `nextStep`.
@@ -184,6 +184,15 @@ action. Use it when the methodologist source gives a specific `Кнопка` lab
 for example `Разобраться, куда уходят мои деньги` or `Научиться различать`.
 Store clean text without decorative arrows; the reader owns the visual arrow.
 System actions such as `Проверить` and final `Завершить` override `ctaLabel`.
+
+Interactive cards `single_choice`, `multi_select`, `categorization`, and
+`scenario` may customize result copy with optional `feedbackTitle`,
+`retryFeedbackTitle`, and `retryFeedback`. Titles are plain text. `feedback`
+remains the correct/accepted result body, and `retryFeedback` is shown only
+for an incorrect result. If titles are omitted, the reader keeps its previous
+fallback copy: objective correct feedback uses `Верно`, retry feedback uses
+`Можно уточнить`, and subjective accepted choices keep their existing no-title
+feedback style unless `feedbackTitle` is provided.
 
 Every card may also include a source-backed statistics block:
 
@@ -228,8 +237,9 @@ Approved Markdown subset:
   iframes, or embedded media in JSON strings.
 
 Plain-text fields must not contain Markdown markers. This includes `title`,
-`ctaLabel`, option/category/item labels, `variants[]`, `customOption.label`,
-`customOption.placeholder`, `statistics.items[].value`, ids, slugs,
+`feedbackTitle`, `retryFeedbackTitle`, `ctaLabel`, option/category/item labels,
+`variants[]`, `customOption.label`, `customOption.placeholder`,
+`statistics.items[].value`, ids, slugs,
 `sourceSection`, `saveKey`, paths, and other technical keys.
 
 Markdown-enabled lesson fields:
@@ -238,11 +248,11 @@ Markdown-enabled lesson fields:
 |---|---|
 | `theory` | `body` |
 | `callout` | `body` |
-| `single_choice` | `question`, `options[].feedback`, `feedback` |
-| `multi_select` | `question`, `options[].feedback`, `feedback` |
-| `categorization` | `question`, `items[].feedback`, `feedback` |
+| `single_choice` | `question`, `options[].feedback`, `feedback`, `retryFeedback` |
+| `multi_select` | `question`, `options[].feedback`, `feedback`, `retryFeedback` |
+| `categorization` | `question`, `items[].feedback`, `feedback`, `retryFeedback` |
 | `reflection` | `prompt`, `guidance` |
-| `scenario` | `body`, `question`, `options[].feedback`, `feedback` |
+| `scenario` | `body`, `question`, `options[].feedback`, `feedback`, `retryFeedback` |
 | `artifact` | `body`, `template[]` |
 | `checklist` | `body` |
 | `summary` | `body`, `points[]`, `nextStep` |
@@ -295,8 +305,8 @@ Every Level 1 lesson must have exactly eight cards with orders `1` through `8`:
 |---:|---|---|---|
 | 1 | `single_choice` | `subjective` | Hook into a familiar situation. No `correctOptionId`; no option should be marked `isCorrect`. |
 | 2 | `theory` | `objective` | One main idea. Use text placeholders for video unless a real playable `video.src` exists in a later approved model change. |
-| 3 | `categorization` | `objective` | Core objective practice only. Sort examples into known categories; do not use `single_choice` or `multi_select`. Include feedback. |
-| 4 | `scenario` | `objective` | External Real World A example. Exactly three options, exactly one correct answer, card-level feedback, and feedback on every option. Attach source statistics here when present. |
+| 3 | `categorization` | `objective` | Core objective practice only. Sort examples into known categories; do not use `single_choice` or `multi_select`. Include feedback; use `feedbackTitle`, `retryFeedbackTitle`, and `retryFeedback` when the source specifies state-specific copy. |
+| 4 | `scenario` | `objective` | External Real World A example. Exactly three options, exactly one correct answer, card-level feedback, and feedback on every option. Attach source statistics here when present; use custom feedback titles when the source distinguishes correct and incorrect result headings. |
 | 5 | `artifact` | `mixed` | Personal Real World B draft on the learner's data. Personal data is accepted, not marked right/wrong. |
 | 6 | `reflection` | `subjective` | Personal reflection with options plus `customOption` / `Свой вариант`; no correct answer. |
 | 7 | `artifact` | `mixed` | Micro-rule or first step with exactly two ready `variants` plus `customOption` / `Свой вариант`. Do not create reminders, schedules, or habit mechanics. |
