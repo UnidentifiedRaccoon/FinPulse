@@ -23,9 +23,10 @@ const learnerUser: ApiUser = {
   createdAt: '2026-05-30T08:15:00.000Z',
 }
 const whereMoneyGoesFirstCta = 'Разобраться, куда уходят мои деньги'
-const mandatoryDesiredFirstCta = 'Научиться различать'
-const theoryContinueCta = 'Понятно, дальше'
-const practiceContinueCta = 'Дальше'
+const mandatoryDesiredFirstCta = 'Разберёмся с теорией.'
+const whereMoneyGoesTheoryCta = 'Ок, согласен. Давай дальше.'
+const mandatoryDesiredTheoryCta = 'Звучит хорошо'
+const whereMoneyGoesPracticeContinueCta = 'Продолжить тренировку'
 const externalExampleContinueCta = 'Применить к себе'
 const expenseArtifactContinueCta = 'Сохранить и продолжить'
 const reflectionContinueCta = 'Дальше'
@@ -478,7 +479,7 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Старт' })).toBeTruthy()
     expect(screen.getByText('Уровень 1')).toBeTruthy()
     expect(
-      screen.getByText('Первый уровень новой методической рамки ФинПульс: навести порядок, увидеть базовые траты и начать маленькие финансовые привычки.'),
+      screen.getByText('Первые шаги, чтобы навести порядок в деньгах, увидеть базовые траты и внедрить парочку простых привычек.'),
     ).toBeTruthy()
     expect(screen.queryByText('Ваш прогресс')).toBeNull()
     expect(screen.getByRole('progressbar', { name: /уровня завершено/ })).toBeTruthy()
@@ -954,15 +955,15 @@ describe('App', () => {
 
     await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Знакомо. Сейчас увидим, куда уходят деньги.')
+    expect(await screen.findByRole('status')).toHaveTextContent('Понимаю тебя. Двигайся дальше, и ты точно увидишь дыры в бюджете.')
     expect(screen.getByRole('status')).not.toHaveTextContent('Есть нюанс')
     expect(screen.getByRole('button', { name: whereMoneyGoesFirstCta })).toBeEnabled()
     expect(screen.queryByRole('button', { name: 'Проверить' })).toBeNull()
 
     await user.click(screen.getByRole('radio', { name: 'Нет, я знаю, куда уходят деньги' }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Отлично — проверим это на практике.')
-    expect(screen.queryByText('Знакомо. Сейчас увидим, куда уходят деньги.')).toBeNull()
+    expect(await screen.findByRole('status')).toHaveTextContent('Да ты молодец! Ждём твоих новых достижений.')
+    expect(screen.queryByText('Понимаю тебя. Двигайся дальше, и ты точно увидишь дыры в бюджете.')).toBeNull()
   })
 
   it('shows mandatory-and-desired first-screen feedback from source JSON options', async () => {
@@ -978,17 +979,17 @@ describe('App', () => {
 
     await user.click(screen.getByRole('radio', { name: 'Да, регулярно' }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Знакомо. Научимся различать нужное и приятное.')
+    expect(await screen.findByRole('status')).toHaveTextContent('Знакомая история. Такое бывает у многих: разберёмся, где «надо», а где «хочу».')
     expect(screen.getByRole('status')).not.toHaveTextContent('Любой ответ')
 
     await user.click(screen.getByRole('radio', { name: 'Иногда' }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Бывает у многих — посмотрим на разницу.')
-    expect(screen.queryByText('Знакомо. Научимся различать нужное и приятное.')).toBeNull()
+    expect(await screen.findByRole('status')).toHaveTextContent('Уже хорошо, что не постоянно! Поработаем над этим.')
+    expect(screen.queryByText('Знакомая история. Такое бывает у многих: разберёмся, где «надо», а где «хочу».')).toBeNull()
 
     await user.click(screen.getByRole('radio', { name: 'Почти никогда' }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Отлично. Закрепим это на примерах.')
+    expect(await screen.findByRole('status')).toHaveTextContent('Ух ты! Да ты почти мастер. Покажешь класс на практике.')
     expect(screen.getByRole('button', { name: mandatoryDesiredFirstCta })).toBeEnabled()
     expect(screen.queryByRole('button', { name: 'Проверить' })).toBeNull()
   })
@@ -1011,8 +1012,8 @@ describe('App', () => {
 
     await user.click(screen.getByRole('button', { name: mandatoryDesiredFirstCta }))
 
-    expect(await screen.findByRole('heading', { name: 'Две группы трат' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: theoryContinueCta })).toBeEnabled()
+    expect(await screen.findByRole('heading', { name: 'Между «хочу» и «надо»' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: mandatoryDesiredTheoryCta })).toBeEnabled()
     expect(screen.queryByRole('button', { name: 'Далее' })).toBeNull()
   })
 
@@ -1103,10 +1104,10 @@ describe('App', () => {
 
     await user.click(screen.getByRole('radio', { name: 'Иногда бывает' }))
     await user.click(screen.getByRole('button', { name: whereMoneyGoesFirstCta }))
-    await user.click(screen.getByRole('button', { name: theoryContinueCta }))
+    await user.click(screen.getByRole('button', { name: whereMoneyGoesTheoryCta }))
     await completeWhereMoneyGoesPractice(user)
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
-    await user.click(screen.getByRole('button', { name: practiceContinueCta }))
+    await user.click(screen.getByRole('button', { name: whereMoneyGoesPracticeContinueCta }))
     await completeWhereMoneyGoesExternalExample(user)
     const expenseFields = screen.getAllByRole('textbox')
     await user.type(expenseFields[0], 'Кофе 250')
@@ -1117,7 +1118,7 @@ describe('App', () => {
     const continueButton = screen.getByRole('button', { name: reflectionContinueCta })
     expect(continueButton).toBeDisabled()
 
-    await user.click(screen.getByRole('radio', { name: 'Кофе/перекусы — их больше, чем думал(а)' }))
+    await user.click(screen.getByRole('radio', { name: 'кофе/перекусы' }))
     await user.click(continueButton)
 
     await waitFor(() => {
@@ -1125,7 +1126,7 @@ describe('App', () => {
       expect(getProgressCompletedWriteCount('/api/progress/cards/card_l1s1l1_05_surprise_reflection')).toBe(1)
     })
     expect(getJsonRequestBody('/api/reflections/card_l1s1l1_05_surprise_reflection', 'PUT')).toEqual({
-      singleValue: 'Кофе/перекусы — их больше, чем думал(а)',
+      singleValue: 'кофе/перекусы',
     })
     expect(getRequestOrder('/api/reflections/card_l1s1l1_05_surprise_reflection', 'PUT')).toBeLessThan(
       getRequestOrder('/api/progress/cards/card_l1s1l1_05_surprise_reflection', 'PUT', (body) => body.completed === true),
@@ -1232,10 +1233,10 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Куда уходят деньги' })).toBeTruthy()
     await user.click(screen.getByRole('radio', { name: 'Да, постоянно так' }))
     await user.click(screen.getByRole('button', { name: whereMoneyGoesFirstCta }))
-    await user.click(screen.getByRole('button', { name: theoryContinueCta }))
+    await user.click(screen.getByRole('button', { name: whereMoneyGoesTheoryCta }))
     await completeWhereMoneyGoesPractice(user)
     await user.click(screen.getByRole('button', { name: 'Проверить' }))
-    await user.click(screen.getByRole('button', { name: practiceContinueCta }))
+    await user.click(screen.getByRole('button', { name: whereMoneyGoesPracticeContinueCta }))
     await completeWhereMoneyGoesExternalExample(user)
     expect(screen.getByRole('heading', { name: 'Твои 3 траты за сегодня' })).toBeTruthy()
     const expenseFields = screen.getAllByRole('textbox')
@@ -1243,19 +1244,19 @@ describe('App', () => {
     await user.type(expenseFields[1], 'Проезд 70')
     await user.type(expenseFields[2], 'Перекус 180')
     await user.click(screen.getByRole('button', { name: expenseArtifactContinueCta }))
-    await user.click(screen.getByRole('radio', { name: 'Кофе/перекусы — их больше, чем думал(а)' }))
+    await user.click(screen.getByRole('radio', { name: 'кофе/перекусы' }))
     await user.click(screen.getByRole('button', { name: reflectionContinueCta }))
 
     expect(screen.getByRole('heading', { name: 'Твоё правило на 3 дня' })).toBeTruthy()
-    await user.click(screen.getByRole('radio', { name: 'Если совершаю любую трату, то сразу отмечаю её в заметках' }))
+    await user.click(screen.getByRole('radio', { name: 'Отмечаю в заметках трату больше 1000 рублей.' }))
     await user.click(screen.getByRole('button', { name: ruleContinueCta }))
 
-    expect(screen.getByRole('heading', { name: 'Сохранили в Навигатор' })).toBeTruthy()
-    expect(screen.getByText(/Дальше — Уровень 1 · Раздел 1 · Урок 2/i)).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Правило готово!' })).toBeTruthy()
+    expect(screen.getByText(/Следующий шаг: переход к Уроку 2/i)).toBeTruthy()
 
     await user.click(screen.getByRole('button', { name: 'Завершить' }))
 
-    expect(screen.getByRole('heading', { name: 'Сохранили в Навигатор' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Правило готово!' })).toBeTruthy()
     expect(screen.getByText('Сохранено в Навигатор')).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Урок пройден' })).toBeTruthy()
     expect(screen.getByRole('link', { name: 'К следующему уроку' }).getAttribute('href')).toBe('/lessons/mandatory-and-desired')
@@ -1328,7 +1329,7 @@ async function completeWhereMoneyGoesExternalExample(user: ReturnType<typeof use
   expect(await screen.findByRole('heading', { name: 'Куда уходят деньги Кирилла?' })).toBeTruthy()
   expect(screen.getByText('56%')).toBeTruthy()
 
-  await user.click(screen.getByRole('radio', { name: 'Он просто записал все траты и увидел картину' }))
+  await user.click(screen.getByRole('radio', { name: 'Сила момента: он просто остановился и перестал тратить на автомате' }))
   await user.click(screen.getByRole('button', { name: 'Проверить' }))
 
   expect(await screen.findByRole('status')).toHaveTextContent('Верно')

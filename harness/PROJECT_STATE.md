@@ -11,7 +11,8 @@ log.
 `main` contains the Stage 2 learner MVP plus stacked review work through T-150.
 The current workspace additionally includes T-152 content updates for Level 1
 Section 2, T-153/T-154 section passport UI/content updates, and T-156/T-159
-categorization-column review work. The learner app is a Vite React TypeScript
+categorization-column review work, T-160 lesson 1-4 review edits, and T-161
+project-owned content editor skill. The learner app is a Vite React TypeScript
 SPA backed by a Fastify/PostgreSQL API. A separate Next.js internal admin app exists under
 `apps/admin` for the read-only curator progress board accepted by ADR-0010 and
 ADR-0011.
@@ -32,6 +33,9 @@ Recent state that matters for new work:
   scoring;
 - approved Markdown-enabled lesson fields render through the safe Rich Text
   renderer, including paragraph-aware rendering from T-150;
+- interactive cards `single_choice`, `multi_select`, `categorization`, and
+  `scenario` support optional `feedbackTitle`, `retryFeedbackTitle`, and
+  `retryFeedback`; omitted titles keep the reader fallback copy;
 - ordinary learner body text is regular `400`; explicit emphasis, compact
   labels, headings, and controls use separate heavier layers instead of a
   default `500` body-text layer;
@@ -48,6 +52,9 @@ Recent state that matters for new work:
   the product result, and two-line ellipsis/clamp for long labels;
 - plain labels, ids, CTA labels, variants, statistic values, and technical keys
   remain plain text;
+- reusable project skills live under `skills/**`; `skills/finpulse-content-editor`
+  is the current editorial automation contract for improving methodologist
+  lesson copy and returning only `Needs review` items;
 - route/loading/lesson transitions and mobile card rhythm are already applied;
 - stale design experiment routes were removed after rollout.
 
@@ -143,6 +150,19 @@ Known local verification caveat:
 - GitHub Actions provides a PostgreSQL service and `FINPULSE_TEST_DATABASE_URL`.
 
 Most recent recorded checks:
+- T-161: `find skills/finpulse-content-editor -maxdepth 3 -type f -print`,
+  Node metadata/frontmatter smoke check, `rg` policy smoke check, `wc -l`, and
+  `git diff --check` passed. The skill-creator `quick_validate.py` check was
+  attempted but could not run because both available Python environments lack
+  `yaml`/PyYAML.
+- T-160: `npm run check:content`,
+  `npm run test:run -- src/features/lesson-reader/LessonCardRenderer.test.tsx src/content/program.test.ts src/App.test.tsx`,
+  `npm run typecheck`, `npm run lint`, `npm run build:web`, and
+  `git diff --check` passed. `npm run verify` passed content validation,
+  runtime import guard, typecheck, lint, and 108 non-backend tests, then failed
+  19 backend tests because this shell has no `FINPULSE_TEST_DATABASE_URL`,
+  `FINPULSE_DATABASE_URL`, or `DATABASE_URL`. `build:web` emitted the existing
+  Vite chunk-size warning.
 - T-159: `npm run test:run -- src/features/lesson-reader/LessonCardRenderer.test.tsx`,
   `npm run test:run -- src/App.test.tsx`, `npm run typecheck`,
   `npm run lint`, Browser QA on `/lessons/where-money-goes` at 390x844 and

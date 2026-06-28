@@ -370,6 +370,16 @@ function validateCategorization(card, ctx) {
   }
 }
 
+function validateInteractiveFeedbackFields(card, ctx) {
+  for (const key of ['feedbackTitle', 'retryFeedbackTitle']) {
+    requireOptionalString(card, key, ctx);
+    validatePlainTextField(card, key, ctx);
+  }
+
+  requireOptionalString(card, 'retryFeedback', ctx);
+  validateMarkdownTextField(card, 'retryFeedback', ctx);
+}
+
 function isLevel1Lesson(lesson, scope) {
   return (
     scope.levelSlug === 'level-1-start' ||
@@ -652,15 +662,16 @@ function validateCard(card, ctx, seen) {
     return;
   }
   const baseCardKeys = ['id', 'type', 'order', 'title', 'sourceSection', 'ctaLabel', 'thinkingType', 'develops', 'checkability', 'statistics'];
+  const feedbackKeys = ['feedbackTitle', 'feedback', 'retryFeedbackTitle', 'retryFeedback'];
   const cardKeysByType = {
     theory: [...baseCardKeys, 'body', 'examples'],
     video: [...baseCardKeys, 'src', 'provider', 'transcript', 'timecodes'],
     callout: [...baseCardKeys, 'tone', 'body'],
-    single_choice: [...baseCardKeys, 'question', 'options', 'correctOptionId', 'feedback', 'readOnly'],
-    multi_select: [...baseCardKeys, 'question', 'options', 'feedback', 'readOnly'],
-    categorization: [...baseCardKeys, 'question', 'categories', 'items', 'feedback', 'readOnly'],
+    single_choice: [...baseCardKeys, 'question', 'options', 'correctOptionId', ...feedbackKeys, 'readOnly'],
+    multi_select: [...baseCardKeys, 'question', 'options', ...feedbackKeys, 'readOnly'],
+    categorization: [...baseCardKeys, 'question', 'categories', 'items', ...feedbackKeys, 'readOnly'],
     reflection: [...baseCardKeys, 'prompt', 'inputType', 'options', 'customOption', 'saveKey', 'guidance', 'readOnly'],
-    scenario: [...baseCardKeys, 'body', 'question', 'options', 'correctOptionId', 'feedback', 'readOnly'],
+    scenario: [...baseCardKeys, 'body', 'question', 'options', 'correctOptionId', ...feedbackKeys, 'readOnly'],
     artifact: [...baseCardKeys, 'body', 'template', 'variants', 'customOption', 'readOnly'],
     checklist: [...baseCardKeys, 'body', 'items'],
     summary: [...baseCardKeys, 'body', 'points', 'nextStep'],
@@ -718,6 +729,7 @@ function validateCard(card, ctx, seen) {
     requireOptionalString(card, 'feedback', ctx);
     validatePlainTextField(card, 'correctOptionId', ctx);
     validateMarkdownTextField(card, 'feedback', ctx);
+    validateInteractiveFeedbackFields(card, ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'multi_select') {
@@ -726,6 +738,7 @@ function validateCard(card, ctx, seen) {
     validateMultiSelectOptions(card, ctx);
     requireOptionalString(card, 'feedback', ctx);
     validateMarkdownTextField(card, 'feedback', ctx);
+    validateInteractiveFeedbackFields(card, ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'categorization') {
@@ -734,6 +747,7 @@ function validateCard(card, ctx, seen) {
     validateCategorization(card, ctx);
     requireOptionalString(card, 'feedback', ctx);
     validateMarkdownTextField(card, 'feedback', ctx);
+    validateInteractiveFeedbackFields(card, ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'reflection') {
@@ -765,6 +779,7 @@ function validateCard(card, ctx, seen) {
     requireOptionalString(card, 'feedback', ctx);
     validatePlainTextField(card, 'correctOptionId', ctx);
     validateMarkdownTextField(card, 'feedback', ctx);
+    validateInteractiveFeedbackFields(card, ctx);
     if (card.readOnly !== undefined && typeof card.readOnly !== 'boolean') fail(`${ctx}.readOnly must be a boolean`);
   }
   if (card.type === 'artifact') {

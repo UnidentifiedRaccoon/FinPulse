@@ -254,15 +254,17 @@ function MultiSelectFeedback({
 
   if (isCorrect) {
     return (
-      <LessonFeedback id={id} tone="correct">
+      <LessonFeedback id={id} title={card.feedbackTitle} tone="correct">
         {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!card.feedback ? <p>Все подходящие варианты отмечены.</p> : null}
       </LessonFeedback>
     )
   }
 
+  const retryFeedback = card.retryFeedback ?? card.feedback
+
   return (
-    <LessonFeedback id={id} tone="retry">
+    <LessonFeedback id={id} title={card.retryFeedbackTitle} tone="retry">
       {missingOptions.length ? (
         <p>
           Ещё подходит: <span className="font-semibold text-[var(--fr-text-primary)]"><NoBreakText text={joinLabels(missingOptions)} /></span>.
@@ -276,8 +278,8 @@ function MultiSelectFeedback({
       {optionFeedback.map((feedback) => (
         <RichTextParagraphs key={feedback} text={feedback} />
       ))}
-      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
-      {!missingOptions.length && !extraOptions.length && !card.feedback && !optionFeedback.length ? (
+      {retryFeedback ? <RichTextParagraphs text={retryFeedback} /> : null}
+      {!missingOptions.length && !extraOptions.length && !retryFeedback && !optionFeedback.length ? (
         <p>Проверь, все ли подходящие варианты отмечены.</p>
       ) : null}
     </LessonFeedback>

@@ -115,7 +115,7 @@ export function ChoiceCard({
 
       {showFeedback && state.isChecked && selectedOption ? (
         <ChoiceFeedback
-          cardFeedback={card.feedback}
+          card={card}
           correctOptionLabel={correctOption?.label}
           hasObjectiveAnswer={hasObjectiveAnswer}
           id={feedbackId}
@@ -235,45 +235,49 @@ function ChoiceFeedback({
   hasObjectiveAnswer,
   correctOptionLabel,
   selectedFeedback,
-  cardFeedback,
+  card,
 }: {
   id: string
   isCorrect: boolean
   hasObjectiveAnswer: boolean
   correctOptionLabel?: string
   selectedFeedback?: string
-  cardFeedback?: string
+  card: ChoiceCardType
 }) {
   if (!hasObjectiveAnswer) {
+    const hasFeedback = Boolean(selectedFeedback || card.feedback)
+
     return (
-      <LessonFeedback id={id} tone={selectedFeedback || cardFeedback ? 'almost' : 'info'}>
+      <LessonFeedback id={id} title={card.feedbackTitle} tone={hasFeedback ? 'almost' : 'info'}>
         {selectedFeedback ? <RichTextParagraphs text={selectedFeedback} /> : null}
-        {cardFeedback ? <RichTextParagraphs text={cardFeedback} /> : null}
-        {!selectedFeedback && !cardFeedback ? <p>Выбор отмечен. Можно продолжать.</p> : null}
+        {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
+        {!hasFeedback ? <p>Выбор отмечен. Можно продолжать.</p> : null}
       </LessonFeedback>
     )
   }
 
   if (isCorrect) {
     return (
-      <LessonFeedback id={id} tone="correct">
+      <LessonFeedback id={id} title={card.feedbackTitle} tone="correct">
         {selectedFeedback ? <RichTextParagraphs text={selectedFeedback} /> : null}
-        {cardFeedback ? <RichTextParagraphs text={cardFeedback} /> : null}
-        {!selectedFeedback && !cardFeedback ? <p>Эта формулировка лучше всего подходит к шагу.</p> : null}
+        {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
+        {!selectedFeedback && !card.feedback ? <p>Эта формулировка лучше всего подходит к шагу.</p> : null}
       </LessonFeedback>
     )
   }
 
+  const retryFeedback = card.retryFeedback ?? card.feedback
+
   return (
-    <LessonFeedback id={id} tone="retry">
+    <LessonFeedback id={id} title={card.retryFeedbackTitle} tone="retry">
       {correctOptionLabel ? (
         <p>
           Лучше подходит: <span className="font-semibold text-[var(--fr-text-primary)]"><NoBreakText text={correctOptionLabel} /></span>.
         </p>
       ) : null}
       {selectedFeedback ? <RichTextParagraphs text={selectedFeedback} /> : null}
-      {cardFeedback ? <RichTextParagraphs text={cardFeedback} /> : null}
-      {!selectedFeedback && !cardFeedback ? <p>Посмотри на вариант, где есть смысл, срок или связь с ценностью.</p> : null}
+      {retryFeedback ? <RichTextParagraphs text={retryFeedback} /> : null}
+      {!selectedFeedback && !retryFeedback ? <p>Посмотри на вариант, где есть смысл, срок или связь с ценностью.</p> : null}
     </LessonFeedback>
   )
 }

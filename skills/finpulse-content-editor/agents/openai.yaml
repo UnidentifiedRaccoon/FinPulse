@@ -1,0 +1,7 @@
+interface:
+  display_name: "FinPulse Content Editor"
+  short_description: "Edits FinPulse lesson wording safely"
+  default_prompt: "Use $finpulse-content-editor to polish FinPulse lesson copy and return only items that need review."
+
+policy:
+  allow_implicit_invocation: true

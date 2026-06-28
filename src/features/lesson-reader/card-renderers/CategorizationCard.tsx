@@ -728,15 +728,17 @@ function CategorizationFeedback({
 
   if (isCorrect) {
     return (
-      <LessonFeedback id={id} tone="correct">
+      <LessonFeedback id={id} title={card.feedbackTitle} tone="correct">
         {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!card.feedback ? <p>Все элементы распределены по подходящим группам.</p> : null}
       </LessonFeedback>
     )
   }
 
+  const retryFeedback = card.retryFeedback ?? card.feedback
+
   return (
-    <LessonFeedback id={id} tone="retry">
+    <LessonFeedback id={id} title={card.retryFeedbackTitle} tone="retry">
       {incorrectItems.slice(0, 3).map((item) => (
         <p key={item.id}>
           Уточни: <span className="font-semibold text-[var(--fr-text-primary)]"><NoBreakText text={item.label} /></span> →{' '}
@@ -747,8 +749,8 @@ function CategorizationFeedback({
       ))}
       {incorrectItems.length > 3 ? <p>И ещё {incorrectItems.length - 3} пункт(а) стоит пересмотреть.</p> : null}
       {incorrectItems.map((item) => (item.feedback ? <RichTextParagraphs key={`${item.id}-feedback`} text={item.feedback} /> : null))}
-      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
-      {!incorrectItems.length && !card.feedback ? <p>Проверь распределение ещё раз.</p> : null}
+      {retryFeedback ? <RichTextParagraphs text={retryFeedback} /> : null}
+      {!incorrectItems.length && !retryFeedback ? <p>Проверь распределение ещё раз.</p> : null}
     </LessonFeedback>
   )
 }

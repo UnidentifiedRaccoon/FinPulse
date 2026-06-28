@@ -259,6 +259,56 @@ describe('LessonSession', () => {
     expectNoVisibleMarkdownMarkers(feedback)
   })
 
+  it('uses custom feedback titles and retry-only feedback on objective choices', async () => {
+    const user = userEvent.setup()
+
+    renderSession([
+      {
+        id: 'card-custom-feedback-copy',
+        type: 'scenario',
+        order: 1,
+        title: 'Проверка формулировок',
+        body: 'Короткая ситуация.',
+        question: 'Какой вариант выбрать?',
+        options: [
+          {
+            id: 'wrong',
+            label: 'Сначала уточнять в чате',
+            feedback: 'Этот вариант оставляет тебя в сценарии мошенника.',
+          },
+          {
+            id: 'correct',
+            label: 'Остановиться и проверить официальный источник',
+            feedback: 'Ты разрываешь опасный сценарий.',
+          },
+        ],
+        correctOptionId: 'correct',
+        feedbackTitle: 'Отличная работа',
+        feedback: 'Это общий correct feedback.',
+        retryFeedbackTitle: 'Проверь, все так?',
+        retryFeedback: 'Это retry-only feedback.',
+      },
+    ])
+
+    await user.click(screen.getByRole('radio', { name: 'Сначала уточнять в чате' }))
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+
+    const retryFeedback = screen.getByRole('status')
+    expect(retryFeedback).toHaveTextContent('Проверь, все так?')
+    expect(retryFeedback).toHaveTextContent('Это retry-only feedback.')
+    expect(retryFeedback).not.toHaveTextContent('Отличная работа')
+    expect(retryFeedback).not.toHaveTextContent('Это общий correct feedback.')
+
+    await user.click(screen.getByRole('radio', { name: 'Остановиться и проверить официальный источник' }))
+    await user.click(screen.getByRole('button', { name: 'Проверить' }))
+
+    const correctFeedback = screen.getByRole('status')
+    expect(correctFeedback).toHaveTextContent('Отличная работа')
+    expect(correctFeedback).toHaveTextContent('Это общий correct feedback.')
+    expect(correctFeedback).not.toHaveTextContent('Проверь, все так?')
+    expect(correctFeedback).not.toHaveTextContent('Это retry-only feedback.')
+  })
+
   it('renders artifact template Markdown but keeps artifact variants plain', () => {
     renderSession([
       {

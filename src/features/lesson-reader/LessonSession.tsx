@@ -707,18 +707,20 @@ function getBottomFeedback(
   const feedbackId = `${card.id}-choice-feedback`
 
   if (!hasObjectiveAnswer) {
+    const hasFeedback = Boolean(selectedOption.feedback || card.feedback)
+
     return (
-      <LessonFeedback id={feedbackId} tone={selectedOption.feedback || card.feedback ? 'almost' : 'info'}>
+      <LessonFeedback id={feedbackId} title={card.feedbackTitle} tone={hasFeedback ? 'almost' : 'info'}>
         {selectedOption.feedback ? <RichTextParagraphs text={selectedOption.feedback} /> : null}
         {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
-        {!selectedOption.feedback && !card.feedback ? <p>Выбор отмечен. Можно продолжать.</p> : null}
+        {!hasFeedback ? <p>Выбор отмечен. Можно продолжать.</p> : null}
       </LessonFeedback>
     )
   }
 
   if (isCorrect) {
     return (
-      <LessonFeedback id={feedbackId} tone="correct">
+      <LessonFeedback id={feedbackId} title={card.feedbackTitle} tone="correct">
         {selectedOption.feedback ? <RichTextParagraphs text={selectedOption.feedback} /> : null}
         {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!selectedOption.feedback && !card.feedback ? <p>Эта формулировка лучше всего подходит к шагу.</p> : null}
@@ -726,16 +728,18 @@ function getBottomFeedback(
     )
   }
 
+  const retryFeedback = card.retryFeedback ?? card.feedback
+
   return (
-    <LessonFeedback id={feedbackId} tone="retry">
+    <LessonFeedback id={feedbackId} title={card.retryFeedbackTitle} tone="retry">
       {correctOption?.label ? (
         <p>
           Лучше подходит: <span className="font-semibold text-[var(--fr-text-primary)]">{correctOption.label}</span>.
         </p>
       ) : null}
       {selectedOption.feedback ? <RichTextParagraphs text={selectedOption.feedback} /> : null}
-      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
-      {!selectedOption.feedback && !card.feedback ? <p>Посмотри на вариант, где есть смысл, срок или связь с ценностью.</p> : null}
+      {retryFeedback ? <RichTextParagraphs text={retryFeedback} /> : null}
+      {!selectedOption.feedback && !retryFeedback ? <p>Посмотри на вариант, где есть смысл, срок или связь с ценностью.</p> : null}
     </LessonFeedback>
   )
 }
@@ -753,15 +757,17 @@ function getMultiSelectBottomFeedback(card: Extract<Card, { type: 'multi_select'
 
   if (isCorrect) {
     return (
-      <LessonFeedback id={feedbackId} tone="correct">
+      <LessonFeedback id={feedbackId} title={card.feedbackTitle} tone="correct">
         {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!card.feedback ? <p>Все подходящие варианты отмечены.</p> : null}
       </LessonFeedback>
     )
   }
 
+  const retryFeedback = card.retryFeedback ?? card.feedback
+
   return (
-    <LessonFeedback id={feedbackId} tone="retry">
+    <LessonFeedback id={feedbackId} title={card.retryFeedbackTitle} tone="retry">
       {missingOptions.length ? (
         <p>
           Ещё подходит: <span className="font-semibold text-[var(--fr-text-primary)]">{joinOptionLabels(missingOptions)}</span>.
@@ -775,8 +781,8 @@ function getMultiSelectBottomFeedback(card: Extract<Card, { type: 'multi_select'
       {selectedFeedback.map((feedback) => (
         <RichTextParagraphs key={feedback} text={feedback} />
       ))}
-      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
-      {!missingOptions.length && !extraOptions.length && !card.feedback && !selectedFeedback.length ? (
+      {retryFeedback ? <RichTextParagraphs text={retryFeedback} /> : null}
+      {!missingOptions.length && !extraOptions.length && !retryFeedback && !selectedFeedback.length ? (
         <p>Проверь, все ли подходящие варианты отмечены.</p>
       ) : null}
     </LessonFeedback>
@@ -792,15 +798,17 @@ function getCategorizationBottomFeedback(card: Extract<Card, { type: 'categoriza
 
   if (isCorrect) {
     return (
-      <LessonFeedback id={feedbackId} tone="correct">
+      <LessonFeedback id={feedbackId} title={card.feedbackTitle} tone="correct">
         {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
         {!card.feedback ? <p>Все элементы распределены по подходящим группам.</p> : null}
       </LessonFeedback>
     )
   }
 
+  const retryFeedback = card.retryFeedback ?? card.feedback
+
   return (
-    <LessonFeedback id={feedbackId} tone="retry">
+    <LessonFeedback id={feedbackId} title={card.retryFeedbackTitle} tone="retry">
       {incorrectItems.slice(0, 3).map((item) => (
         <p key={item.id}>
           Уточни: <span className="font-semibold text-[var(--fr-text-primary)]">{item.label}</span> →{' '}
@@ -811,8 +819,8 @@ function getCategorizationBottomFeedback(card: Extract<Card, { type: 'categoriza
       ))}
       {incorrectItems.length > 3 ? <p>И ещё {incorrectItems.length - 3} пункт(а) стоит пересмотреть.</p> : null}
       {incorrectItems.map((item) => (item.feedback ? <RichTextParagraphs key={`${item.id}-feedback`} text={item.feedback} /> : null))}
-      {card.feedback ? <RichTextParagraphs text={card.feedback} /> : null}
-      {!incorrectItems.length && !card.feedback ? <p>Проверь распределение ещё раз.</p> : null}
+      {retryFeedback ? <RichTextParagraphs text={retryFeedback} /> : null}
+      {!incorrectItems.length && !retryFeedback ? <p>Проверь распределение ещё раз.</p> : null}
     </LessonFeedback>
   )
 }
