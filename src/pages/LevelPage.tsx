@@ -84,7 +84,7 @@ export function LevelPage({ progress }: { progress: ProgressResponse | null }) {
           </Link>
         </Button>
 
-        <h1 className="max-w-[18rem] text-[20px] font-bold leading-6 tracking-normal text-white [overflow-wrap:anywhere]">
+        <h1 className="max-w-[18rem] pl-5 text-[20px] font-bold leading-6 tracking-normal text-white [overflow-wrap:anywhere]">
           {activeSection?.title ?? level.title}
         </h1>
       </header>

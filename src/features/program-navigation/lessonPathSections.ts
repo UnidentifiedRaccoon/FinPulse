@@ -44,5 +44,7 @@ function getSectionState(lessons: LessonPathItem[]): PathItemState {
 }
 
 function getSectionDisplayTitle(title: string) {
-  return title.replace(/^\s*(?:\d{2}\.\d{2}|\d{4})[\s.-]+/, '').trim() || title
+  const withoutSectionPrefix = title.replace(/^\s*Раздел\s+\d+\s*[.:·-]?\s*/i, '')
+
+  return withoutSectionPrefix.replace(/^\s*(?:\d{2}\.\d{2}|\d{4})[\s.-]+/, '').trim() || title
 }

@@ -58,7 +58,7 @@ export function ArtifactCard({
                 <button
                   aria-pressed={state.selectedVariant === variant}
                   className={cn(
-                    'min-h-11 max-w-full whitespace-normal rounded-full border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] px-4 py-2 text-left text-sm font-medium leading-5 text-[var(--fr-text-secondary)] transition-colors [overflow-wrap:anywhere] hover:bg-[var(--fr-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15',
+                    'min-h-11 max-w-full whitespace-normal rounded-full border border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] px-4 py-2 text-left text-sm leading-5 text-[var(--fr-text-secondary)] transition-colors [overflow-wrap:anywhere] hover:bg-[var(--fr-surface-soft)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15',
                     state.selectedVariant === variant &&
                       'border-[var(--fr-color-brand-500)] bg-[var(--fr-color-brand-50)] text-[var(--fr-text-primary)]',
                   )}

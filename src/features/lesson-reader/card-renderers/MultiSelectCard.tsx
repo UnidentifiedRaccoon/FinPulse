@@ -35,7 +35,7 @@ export function MultiSelectCard({
     return (
       <div className="flex flex-col gap-4">
         <RichTextParagraphs
-          paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+          paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-primary)]"
           text={card.question}
         />
         <StaticChoiceList options={card.options} />
@@ -52,7 +52,7 @@ export function MultiSelectCard({
   return (
     <div className="flex flex-col gap-4">
       <RichTextParagraphs
-        paragraphClassName="text-base font-medium leading-6 text-pretty text-[var(--fr-text-primary)]"
+        paragraphClassName="text-base leading-6 text-pretty text-[var(--fr-text-primary)]"
         text={card.question}
       />
       {usePracticeFlow && activeOption ? (

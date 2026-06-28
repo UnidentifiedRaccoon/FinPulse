@@ -213,12 +213,14 @@ font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial
 Allowed alternative: `Golos Text` if the product intentionally moves toward a more local Russian-language character. Do not mix multiple similar UI sans-serifs.
 
 Rules:
-- body text: `400-500`;
+- body text: `400`;
 - headings: `600-700`;
 - buttons, tabs, chips: `600`;
+- explicit inline emphasis: `700`;
 - numbers, percentages, amounts: `700` and tabular numerals;
 - no decorative UI fonts;
 - no thin weights below `400`;
+- no `500` as a default body-text emphasis layer;
 - no long dense paragraphs in learning blocks.
 
 ### 5.1. Mobile Type Scale
@@ -229,11 +231,11 @@ Rules:
 | `heading.lg` | `24 / 30` | `700` | Page heading. |
 | `heading.md` | `20 / 26` | `700` | Lesson/card heading. |
 | `heading.sm` | `18 / 24` | `600` | Block heading. |
-| `body.lg` | `16 / 24` | `400-500` | Main explanatory text. |
-| `body.md` | `15 / 22` | `400-500` | Standard UI text. |
-| `body.sm` | `14 / 20` | `400-500` | Secondary text. |
-| `caption.md` | `13 / 18` | `400-500` | Metadata and helper text. |
-| `caption.sm` | `11 / 14` | `500-600` | Compact labels. |
+| `body.lg` | `16 / 24` | `400` | Main explanatory text. |
+| `body.md` | `15 / 22` | `400` | Standard UI text. |
+| `body.sm` | `14 / 20` | `400` | Secondary text. |
+| `caption.md` | `13 / 18` | `400` | Metadata and helper text. |
+| `caption.sm` | `11 / 14` | `600` | Compact labels. |
 | `button.md` | `15 / 20` | `600` | Main buttons. |
 | `number.lg` | `32 / 36` | `700` | Large percentage/result. |
 | `number.md` | `20 / 24` | `700` | Compact metrics. |
