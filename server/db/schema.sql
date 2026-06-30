@@ -7,6 +7,44 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_login_unique_idx ON users ((lower(login)));
 
+CREATE TABLE IF NOT EXISTS content_programs (
+  slug text PRIMARY KEY,
+  payload jsonb NOT NULL,
+  revision integer NOT NULL DEFAULT 1 CHECK (revision > 0),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS content_levels (
+  slug text PRIMARY KEY,
+  payload jsonb NOT NULL,
+  revision integer NOT NULL DEFAULT 1 CHECK (revision > 0),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS content_sections (
+  level_slug text NOT NULL,
+  section_slug text NOT NULL,
+  payload jsonb NOT NULL,
+  revision integer NOT NULL DEFAULT 1 CHECK (revision > 0),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (level_slug, section_slug)
+);
+
+CREATE INDEX IF NOT EXISTS content_sections_level_slug_idx ON content_sections(level_slug);
+
+CREATE TABLE IF NOT EXISTS content_lessons (
+  level_slug text NOT NULL,
+  section_slug text NOT NULL,
+  lesson_slug text NOT NULL,
+  payload jsonb NOT NULL,
+  revision integer NOT NULL DEFAULT 1 CHECK (revision > 0),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (level_slug, section_slug, lesson_slug)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS content_lessons_lesson_slug_unique_idx ON content_lessons(lesson_slug);
+CREATE INDEX IF NOT EXISTS content_lessons_section_idx ON content_lessons(level_slug, section_slug);
+
 CREATE TABLE IF NOT EXISTS sessions (
   id text PRIMARY KEY,
   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,

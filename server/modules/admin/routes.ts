@@ -14,7 +14,8 @@ import {
 } from '../../lib/adminSession'
 import { sendError } from '../../lib/http'
 import { isPasswordTooLongForHash, verifyPassword } from '../../lib/password'
-import type { ContentService, LearningCatalogLesson } from '../content/contentService'
+import type { ContentPreviewInput, ContentService, ContentUpdateInput, LearningCatalogLesson } from '../content/contentService'
+import { ContentConfigurationError } from '../content/contentDocuments'
 
 const DEFAULT_PAGE_SIZE = 50
 const MAX_PAGE_SIZE = 100
@@ -40,6 +41,50 @@ const adminSummaryQuerySchema = z.object({
 const adminUserParamsSchema = z.object({
   userId: z.string().uuid(),
 }).strict()
+
+const adminContentPreviewQuerySchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('level'),
+    levelSlug: z.string().min(1),
+  }).strict(),
+  z.object({
+    kind: z.literal('section'),
+    levelSlug: z.string().min(1),
+    sectionSlug: z.string().min(1),
+  }).strict(),
+  z.object({
+    kind: z.literal('card'),
+    levelSlug: z.string().min(1),
+    sectionSlug: z.string().min(1),
+    lessonSlug: z.string().min(1),
+    cardId: z.string().min(1),
+  }).strict(),
+])
+
+const adminContentUpdateBodySchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('level'),
+    levelSlug: z.string().min(1),
+    revision: z.number().int().positive(),
+    slice: z.unknown(),
+  }).strict(),
+  z.object({
+    kind: z.literal('section'),
+    levelSlug: z.string().min(1),
+    sectionSlug: z.string().min(1),
+    revision: z.number().int().positive(),
+    slice: z.unknown(),
+  }).strict(),
+  z.object({
+    kind: z.literal('card'),
+    levelSlug: z.string().min(1),
+    sectionSlug: z.string().min(1),
+    lessonSlug: z.string().min(1),
+    cardId: z.string().min(1),
+    revision: z.number().int().positive(),
+    slice: z.unknown(),
+  }).strict(),
+])
 
 type AdminCookieOptions = {
   secure: boolean
@@ -258,6 +303,70 @@ export function registerAdminRoutes(
           }),
         }
       }),
+    }
+  })
+
+  app.get('/api/admin/content/tree', async (request, reply) => {
+    const session = requireAdminSession(authConfig, request, reply)
+    if (!session) return
+    if (rejectUnsupportedQuery(request.query, reply)) return
+
+    return {
+      scope: adminScope(),
+      tree: content.getContentTree(),
+    }
+  })
+
+  app.get('/api/admin/content/preview', async (request, reply) => {
+    const session = requireAdminSession(authConfig, request, reply)
+    if (!session) return
+    if (rejectUnsupportedQuery(request.query, reply)) return
+
+    const parsed = adminContentPreviewQuerySchema.safeParse(request.query ?? {})
+    if (!parsed.success) {
+      return sendError(reply, 400, 'invalid_admin_content_query', 'Admin content preview query is invalid')
+    }
+
+    const preview = content.getContentPreview(parsed.data as ContentPreviewInput)
+    if (!preview) {
+      return sendError(reply, 404, 'not_found', 'Content selection not found')
+    }
+
+    return {
+      scope: adminScope(),
+      preview,
+    }
+  })
+
+  app.put('/api/admin/content/slices', async (request, reply) => {
+    const session = requireAdminSession(authConfig, request, reply)
+    if (!session) return
+
+    const parsed = adminContentUpdateBodySchema.safeParse(request.body)
+    if (!parsed.success) {
+      return sendError(reply, 400, 'invalid_admin_content_payload', 'Admin content update payload is invalid')
+    }
+
+    try {
+      const result = await content.updateContentSlice(parsed.data as ContentUpdateInput)
+      if (!result) {
+        return sendError(reply, 404, 'not_found', 'Content selection not found')
+      }
+
+      if (result.status === 'conflict') {
+        return sendError(reply, 409, 'content_revision_conflict', 'Content was changed by another save. Reload and try again.')
+      }
+
+      return {
+        scope: adminScope(),
+        preview: result.preview,
+      }
+    } catch (error) {
+      if (error instanceof ContentConfigurationError) {
+        return sendError(reply, 400, 'invalid_admin_content_update', error.message)
+      }
+
+      throw error
     }
   })
 }

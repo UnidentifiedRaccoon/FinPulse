@@ -122,6 +122,19 @@ async function createAdminAuth() {
   }
 }
 
+async function loginAdmin(app: Awaited<ReturnType<typeof createApp>>['app']) {
+  const loginResponse = await app.inject({
+    method: 'POST',
+    url: '/api/admin/auth/login',
+    payload: {
+      login: 'admin@example.com',
+      password: 'admin-passphrase',
+    },
+  })
+  expect(loginResponse.statusCode).toBe(200)
+  return sessionCookie(loginResponse)
+}
+
 function expectNoPrivateAnswerLeak(payload: unknown) {
   const serialized = JSON.stringify(payload)
   expect(serialized).not.toContain('СЕКРЕТНЫЙ личный ответ')
@@ -828,6 +841,218 @@ describe('backend API', () => {
         ]),
       })
       expectNoPrivateAnswerLeak(detailWithoutAnswersResponse.json())
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('publishes an admin card text slice and serves it through learner content APIs', async () => {
+    const { app } = await setupTestApp({
+      adminAuth: await createAdminAuth(),
+    })
+
+    try {
+      const adminCookie = await loginAdmin(app)
+      const treeResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/content/tree',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(treeResponse.statusCode).toBe(200)
+      expect(treeResponse.json()).toMatchObject({
+        tree: {
+          levels: expect.arrayContaining([
+            expect.objectContaining({
+              slug: 'level-1-start',
+              sections: expect.arrayContaining([
+                expect.objectContaining({
+                  slug: 'money-and-operations',
+                  lessons: expect.arrayContaining([
+                    expect.objectContaining({
+                      slug: 'where-money-goes',
+                      cards: expect.arrayContaining([
+                        expect.objectContaining({
+                          id: 'card_l1s1l1_01_hook',
+                        }),
+                      ]),
+                    }),
+                  ]),
+                }),
+              ]),
+            }),
+          ]),
+        },
+      })
+
+      const previewResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/content/preview?kind=card&levelSlug=level-1-start&sectionSlug=money-and-operations&lessonSlug=where-money-goes&cardId=card_l1s1l1_01_hook',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(previewResponse.statusCode).toBe(200)
+      const previewPayload = previewResponse.json() as {
+        preview: {
+          revision: number
+          slice: {
+            id: string
+            title: string
+            question: string
+          } & Record<string, unknown>
+        }
+      }
+      const nextSlice = {
+        ...previewPayload.preview.slice,
+        title: 'Деньги были... или редактор уже поменял?',
+        question: `${previewPayload.preview.slice.question}\n\nТестовая правка методиста.`,
+      }
+
+      const publishResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/admin/content/slices',
+        headers: {
+          cookie: adminCookie,
+        },
+        payload: {
+          kind: 'card',
+          levelSlug: 'level-1-start',
+          sectionSlug: 'money-and-operations',
+          lessonSlug: 'where-money-goes',
+          cardId: 'card_l1s1l1_01_hook',
+          revision: previewPayload.preview.revision,
+          slice: nextSlice,
+        },
+      })
+      expect(publishResponse.statusCode).toBe(200)
+      expect(publishResponse.json()).toMatchObject({
+        preview: {
+          revision: previewPayload.preview.revision + 1,
+          slice: {
+            id: 'card_l1s1l1_01_hook',
+            title: 'Деньги были... или редактор уже поменял?',
+          },
+        },
+      })
+
+      const learnerLessonResponse = await app.inject('/api/lessons/where-money-goes')
+      expect(learnerLessonResponse.statusCode).toBe(200)
+      expect(learnerLessonResponse.json()).toMatchObject({
+        lesson: {
+          cards: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'card_l1s1l1_01_hook',
+              title: 'Деньги были... или редактор уже поменял?',
+              question: expect.stringContaining('Тестовая правка методиста.'),
+            }),
+          ]),
+        },
+      })
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('rejects protected admin content fields and stale content revisions', async () => {
+    const { app } = await setupTestApp({
+      adminAuth: await createAdminAuth(),
+    })
+
+    try {
+      const adminCookie = await loginAdmin(app)
+      const previewResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/content/preview?kind=card&levelSlug=level-1-start&sectionSlug=money-and-operations&lessonSlug=where-money-goes&cardId=card_l1s1l1_01_hook',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(previewResponse.statusCode).toBe(200)
+      const previewPayload = previewResponse.json() as {
+        preview: {
+          revision: number
+          slice: {
+            id: string
+            title: string
+            question: string
+          } & Record<string, unknown>
+        }
+      }
+
+      const protectedFieldResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/admin/content/slices',
+        headers: {
+          cookie: adminCookie,
+        },
+        payload: {
+          kind: 'card',
+          levelSlug: 'level-1-start',
+          sectionSlug: 'money-and-operations',
+          lessonSlug: 'where-money-goes',
+          cardId: 'card_l1s1l1_01_hook',
+          revision: previewPayload.preview.revision,
+          slice: {
+            ...previewPayload.preview.slice,
+            id: 'changed_card_id',
+          },
+        },
+      })
+      expect(protectedFieldResponse.statusCode).toBe(400)
+      expect(protectedFieldResponse.json()).toMatchObject({
+        error: {
+          code: 'invalid_admin_content_update',
+        },
+      })
+
+      const firstPublishResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/admin/content/slices',
+        headers: {
+          cookie: adminCookie,
+        },
+        payload: {
+          kind: 'card',
+          levelSlug: 'level-1-start',
+          sectionSlug: 'money-and-operations',
+          lessonSlug: 'where-money-goes',
+          cardId: 'card_l1s1l1_01_hook',
+          revision: previewPayload.preview.revision,
+          slice: {
+            ...previewPayload.preview.slice,
+            title: 'Первая правка методиста',
+          },
+        },
+      })
+      expect(firstPublishResponse.statusCode).toBe(200)
+
+      const stalePublishResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/admin/content/slices',
+        headers: {
+          cookie: adminCookie,
+        },
+        payload: {
+          kind: 'card',
+          levelSlug: 'level-1-start',
+          sectionSlug: 'money-and-operations',
+          lessonSlug: 'where-money-goes',
+          cardId: 'card_l1s1l1_01_hook',
+          revision: previewPayload.preview.revision,
+          slice: {
+            ...previewPayload.preview.slice,
+            title: 'Запоздалая правка методиста',
+          },
+        },
+      })
+      expect(stalePublishResponse.statusCode).toBe(409)
+      expect(stalePublishResponse.json()).toMatchObject({
+        error: {
+          code: 'content_revision_conflict',
+        },
+      })
     } finally {
       await app.close()
     }

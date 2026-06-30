@@ -17,7 +17,7 @@ Use files under `harness/tasks/active/` for real active work.
 
 | ID | Status | Task | Intended write set | Notes |
 |---|---:|---|---|---|
-| _None_ | - | - | - | - |
+| _none_ | - | - | - | - |
 
 ## Review Queue Snapshot
 
@@ -25,6 +25,8 @@ Recent review tasks that define the current top of stack:
 
 | ID | Status | Task | Notes |
 |---|---:|---|---|
+| T-163 | review | DB-backed content editor | Moves published runtime content to PostgreSQL JSONB, keeps JSON as seed fixtures, adds seed/check/pull commands, DB-backed content service, admin content API, and `/content` editor with guarded direct publish. Content seed/check/DB-check/pull, focused backend/admin tests, typecheck, lint, web/admin builds, full verify with local PostgreSQL test URL, and diff check passed. |
+| T-162 | review | Content editor pass for lessons 5-8 | Applies `finpulse-content-editor` rubric to У1.5-У1.8, syncing Section 2 runtime JSON and source Markdown. Content validation, focused content test, full verify with local PostgreSQL test URL, and diff check passed; initial verify without DB env failed at the known backend-test URL requirement. |
 | T-161 | review | FinPulse content editor skill | Adds project-owned `skills/finpulse-content-editor` with workflow, editorial rubric extracted from lesson 1-4 edits, and agent UI metadata. Structure/frontmatter/content smoke checks and diff check passed; official quick validator needs PyYAML. |
 | T-160 | review | Lesson 1-4 review edits | Adds interactive feedback titles/retry feedback support, applies selected edits to first four money-and-operations lessons, syncs source Markdown and docs. Content validation, focused renderer/content/App tests, typecheck, lint, web build, and diff check passed; full verify still needs a backend test DB URL. |
 | T-159 | review | Column header height and clamp | Column headers now use a neutral gray surface, 57px minimum height in the product result, and explicit two-line clamp. Focused renderer/App tests, typecheck, lint, Browser QA, and diff check passed; full verify still needs a backend test DB URL. |

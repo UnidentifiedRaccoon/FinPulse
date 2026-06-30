@@ -2,12 +2,13 @@
 
 ## Decision summary
 
-Use a Vite React + TypeScript SPA for the learner frontend. Starting in Stage 2, use a small Fastify + PostgreSQL backend for learner identity, session-backed progress, private reflection/artifact answers, and read-only content API delivery.
+Use a Vite React + TypeScript SPA for the learner frontend. Starting in Stage 2, use a small Fastify + PostgreSQL backend for learner identity, session-backed progress, private reflection/artifact answers, and content API delivery.
 
-ADR-0010 adds a separate internal Next.js admin surface under `apps/admin` for a read-only curator progress board. ADR-0011 deploys that admin surface as a separate Yandex Serverless Container. This is not a migration of the learner app and does not change the learner SPA decision.
+ADR-0010 adds a separate internal Next.js admin surface under `apps/admin` for a curator progress board. ADR-0011 deploys that admin surface as a separate Yandex Serverless Container. ADR-0012 adds a guarded content editor to the same admin surface and moves runtime published content to PostgreSQL JSONB documents. This is not a migration of the learner app and does not change the learner SPA decision.
 
 Rationale:
-- content remains canonical static JSON;
+- PostgreSQL is already the runtime persistence dependency;
+- methodologist text edits need a direct preview-and-publish workflow;
 - progress now needs server-owned persistence;
 - there are no production financial operations;
 - SEO and server rendering are not the primary MVP constraints;
@@ -44,7 +45,7 @@ Build/dev:      Vite
 UI runtime:     React + TypeScript
 Routing:        React Router in SPA/declarative mode
 State:          React state first; add Zustand only when small cross-route client state appears
-Data:           JSON files, validated by script/schema
+Data:           Backend content API backed by PostgreSQL JSONB documents
 Styling:        Tailwind CSS
 UI primitives:  shadcn/ui
 Tests:          Vitest + Testing Library when components stabilize
@@ -57,7 +58,7 @@ HTTP server:    Fastify
 Persistence:    PostgreSQL through async repositories
 Auth:           login/password with hashed passwords
 Sessions:       server-side session id in httpOnly cookie
-Content API:    read-only responses hydrated from validated JSON files
+Content API:    responses hydrated from PostgreSQL JSONB content documents
 Tests:          Vitest integration tests against isolated PostgreSQL schemas/databases
 ```
 
@@ -115,23 +116,28 @@ server/
 The `server/modules/**` folder is generic backend module organization and is
 not part of the educational content hierarchy.
 
-Alternative for runtime-editable static content:
-
-```txt
-public/content/program.json
-```
-
-Use `src/content/` when content is bundled with the app. Use `public/content/` when content should be replaceable without rebuilding the JavaScript bundle.
+`src/content/**` remains in the repo as the seed fixture source for fresh databases and content validation, not as the learner runtime source after ADR-0012.
 
 ## Data flow
 
 ```txt
-JSON content file
-  -> content validator / typed domain model
+PostgreSQL JSONB content documents
+  -> content repository
+  -> hydrate + validate typed domain model
   -> backend content API
   -> frontend API client
   -> React pages/components
   -> local UI state or optional small client store when justified
+```
+
+```txt
+Admin content edit
+  -> Next.js admin /content editor
+  -> authenticated /api/admin/content/** route
+  -> guarded JSON slice replacement
+  -> hydrate + validate full content graph
+  -> PostgreSQL JSONB document update with revision + 1
+  -> learner content API immediately serves refreshed content
 ```
 
 ```txt
@@ -170,18 +176,20 @@ Do not use Zustand for:
 ## Content loading policy
 
 Current implementation:
-- use `src/content/program.json` as the program manifest;
-- keep Level metadata in `src/content/levels/<level>/level.json`;
-- keep full Section runtime content in `src/content/levels/<level>/sections/<section>.json`;
-- hydrate and validate the split files on the backend and in test-only loaders;
+- use PostgreSQL JSONB content documents as the published runtime source;
+- store program metadata, level metadata + section order, section metadata + lesson order, and one full lesson document per lesson;
+- hydrate and validate the DB graph on the backend before serving public content;
+- use `src/content/program.json`, `src/content/levels/<level>/level.json`, and `src/content/levels/<level>/sections/<section>.json` as seed fixtures;
 - keep pure ordering helpers in `src/content/order.ts` so rendered routes do not import Zod schemas;
-- validate before build using `scripts/check-content-json.mjs`.
+- validate seed fixtures with `scripts/check-content-json.mjs`;
+- validate database content with `npm run check:content:db`.
 
-Stage 2 runtime policy:
-- JSON files remain source-of-truth in the repo;
-- the backend reads and validates the same split JSON graph;
+Stage 2 runtime policy after ADR-0012:
+- PostgreSQL content tables are source-of-truth for published content;
+- the backend reads and validates the DB-backed graph;
 - frontend rendered routes fetch program/level/section/lesson data from `/api/**`;
-- content API routes are read-only unless a later ADR introduces CMS/admin tooling.
+- public learner content API routes remain read-only to learners;
+- admin content writes go through authenticated `/api/admin/content/**`, revision checks, guarded slice replacement, and server-side validation.
 
 ## Backend/API boundary
 
@@ -219,6 +227,9 @@ GET  /api/admin/auth/me
 GET  /api/admin/summary
 GET  /api/admin/users
 GET  /api/admin/users/:userId/progress
+GET  /api/admin/content/tree
+GET  /api/admin/content/preview
+PUT  /api/admin/content/slices
 ```
 
 Auth, progress, and reflection answer policy:
@@ -244,6 +255,8 @@ Persistence boundary:
 - API request/response contracts should not expose PostgreSQL implementation details;
 - migrations should be deterministic and committed with the backend code;
 - local development and CI should use isolated PostgreSQL schemas/databases rather than generated SQLite files.
+- content writes should replace full JSONB documents at program/level/section/lesson granularity instead of mutating ad hoc nested SQL paths;
+- content updates must validate the full hydrated graph before publication and must reject stale `revision` values with `409 content_revision_conflict`.
 
 ## Deployment
 
@@ -258,6 +271,7 @@ Runtime expectations:
 - PostgreSQL connection settings come from environment variables, with the deployed DB password supplied through GitHub secret `FINPULSE_DATABASE_PASSWORD`; the runtime also supports Lockbox payload lookup through `FINPULSE_DATABASE_PASSWORD_SECRET_ID` for non-VPC deployments;
 - no database password, session secret, or connection string should be committed;
 - production admin credentials are injected as `FINPULSE_ADMIN_LOGIN`, `FINPULSE_ADMIN_PASSWORD_HASH`, and `FINPULSE_ADMIN_SESSION_SECRET` into the backend container, not the Next.js admin container;
+- content tables are created by `server/db/schema.sql`; fresh empty content tables are seeded from bundled `src/content/**` fixtures on backend startup, and operators can explicitly run `npm run content:seed`.
 - Yandex Managed PostgreSQL is reachable through the deployed Serverless Container VPC network configuration; the DB security group allows the Serverless service subnet CIDR `198.19.0.0/16` on port `6432`;
 - the backend applies the committed idempotent schema SQL on startup; introduce a versioned migration ledger before broad schema evolution.
 

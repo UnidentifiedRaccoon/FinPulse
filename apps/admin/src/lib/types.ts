@@ -113,3 +113,66 @@ export type AdminMeResponse = {
   }
   scope: AdminScope
 }
+
+export type AdminContentCardNode = {
+  id: string
+  type: string
+  title: string | null
+  order: number
+}
+
+export type AdminContentTreeResponse = {
+  scope: AdminScope
+  tree: {
+    program: {
+      slug: string
+      title: string
+    }
+    levels: Array<{
+      slug: string
+      title: string
+      revision: number
+      sections: Array<{
+        slug: string
+        title: string
+        revision: number
+        lessons: Array<{
+          slug: string
+          title: string
+          revision: number
+          cards: AdminContentCardNode[]
+        }>
+      }>
+    }>
+  }
+}
+
+export type AdminContentSelection =
+  | {
+      kind: 'level'
+      levelSlug: string
+    }
+  | {
+      kind: 'section'
+      levelSlug: string
+      sectionSlug: string
+    }
+  | {
+      kind: 'card'
+      levelSlug: string
+      sectionSlug: string
+      lessonSlug: string
+      cardId: string
+    }
+
+export type AdminContentPreview = {
+  kind: AdminContentSelection['kind']
+  revision: number
+  slice: unknown
+  preview: Record<string, unknown>
+}
+
+export type AdminContentPreviewResponse = {
+  scope: AdminScope
+  preview: AdminContentPreview
+}

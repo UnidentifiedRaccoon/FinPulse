@@ -1,6 +1,7 @@
 import { Pool, type PoolConfig, type QueryResult, type QueryResultRow } from 'pg'
 
 import { AdminReadModelRepository } from './adminReadModelRepository'
+import { ContentRepository } from './contentRepository'
 import { ProgressRepository } from './progressRepository'
 import { ReflectionAnswersRepository } from './reflectionAnswersRepository'
 import { runMigrations } from './migrate'
@@ -47,6 +48,7 @@ export type DatabaseEnvironment = {
 export type AppDatabase = {
   pool: Pool
   adminReadModel: AdminReadModelRepository
+  content: ContentRepository
   users: UsersRepository
   sessions: SessionsRepository
   progress: ProgressRepository
@@ -97,6 +99,7 @@ export function createAppDatabase(pool: Pool, options: AppDatabaseLifecycleOptio
   return {
     pool,
     adminReadModel: new AdminReadModelRepository(pool),
+    content: new ContentRepository(pool),
     users: new UsersRepository(pool),
     sessions: new SessionsRepository(pool),
     progress: new ProgressRepository(pool),

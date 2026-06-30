@@ -1,8 +1,10 @@
-# Content Model — Split JSON Source of Truth
+# Content Model — DB Runtime with Split JSON Seed Fixtures
 
 ## Goal
 
-Represent the educational program as small JSON files that can be edited, reviewed, and validated without turning runtime content into one giant file.
+Represent the educational program as validated `Program -> Level -> Section -> Lesson -> Card` data while allowing methodologist text edits through the internal admin editor.
+
+Published runtime content is stored in PostgreSQL JSONB documents. The split JSON files under `src/content/**` remain the seed fixture and migration source for fresh databases.
 
 The approved educational hierarchy is:
 
@@ -18,7 +20,7 @@ Runtime JSON, validators, TypeScript domain types, content API payloads,
 frontend routes, and persistence context use this hierarchy directly. Old
 `module`/`unit` API/browser routes and payloads are not supported.
 
-## Runtime files
+## Seed fixture files
 
 ```txt
 src/content/
@@ -30,13 +32,34 @@ src/content/
         section_01_money_and_operations.json
 ```
 
-`program.json` is the program manifest. It stores program metadata and
+`program.json` is the seed program manifest. It stores program metadata and
 references Level JSON files through the `levels` key.
 
-`level.json` stores Level metadata and references Section JSON files through
+`level.json` stores seed Level metadata and references Section JSON files through
 the `sections` key.
 
-Section files store the full runtime lesson/card content for the Section.
+Section files store seed Section metadata plus full lesson/card content for that Section.
+
+## Runtime database documents
+
+ADR-0012 makes PostgreSQL JSONB the published runtime content source:
+
+```txt
+content_programs(slug, payload jsonb, revision, updated_at)
+content_levels(slug, payload jsonb, revision, updated_at)
+content_sections(level_slug, section_slug, payload jsonb, revision, updated_at)
+content_lessons(level_slug, section_slug, lesson_slug, payload jsonb, revision, updated_at)
+```
+
+Runtime document granularity:
+- `content_programs.payload` stores program metadata and ordered level refs.
+- `content_levels.payload` stores level metadata and ordered section refs.
+- `content_sections.payload` stores section metadata and ordered lesson refs.
+- `content_lessons.payload` stores one complete lesson, including all cards.
+
+The backend hydrates these documents into the same `Program -> Level -> Section -> Lesson -> Card` graph and validates it with the shared content model before serving public content or accepting admin edits.
+
+Run `npm run content:seed` to replace content tables with the current seed fixtures. Fresh empty content tables may also be seeded automatically on backend startup from bundled fixtures.
 
 ## File shapes
 
@@ -375,9 +398,17 @@ Validation checks:
 - active Level 1 lessons contain exactly eight cards and match the required
   screen-by-screen Level 1 architecture.
 
+Database-backed validation:
+
+```bash
+npm run check:content:db
+```
+
+This command loads the content tables, hydrates the full graph, and validates the same runtime model. Use `npm run content:seed` first when a local database has empty content tables.
+
 ## Backend API policy
 
-Stage 2 serves the same hydrated Program -> Level -> Section -> Lesson -> Card graph through read-only backend API routes.
+Stage 2 serves the same hydrated Program -> Level -> Section -> Lesson -> Card graph through backend API routes. Public learner content routes are read-only to learners and read from the PostgreSQL content tables.
 
 Primary content API routes:
 
@@ -389,7 +420,15 @@ GET /api/sections/:sectionSlug
 GET /api/lessons/:lessonSlug
 ```
 
-The JSON files remain the canonical source-of-truth. The backend must validate and hydrate the graph with the same model before returning content responses. Frontend routes fetch program/level/section/lesson data from the primary API. Content edits still happen in the repo JSON files and must pass `npm run check:content`.
+PostgreSQL JSONB content documents are the canonical source for published runtime content. The backend must validate and hydrate the graph with the same model before returning content responses. Frontend routes fetch program/level/section/lesson data from the primary API. Seed fixture edits in the repo must pass `npm run check:content`; database content must pass `npm run check:content:db`.
+
+Admin content editing policy:
+- the internal admin `/content` editor may update level metadata, section metadata, or a single lesson card slice;
+- saves replace the containing full JSONB document in TypeScript, then validate the full graph before persisting;
+- v1 allows text field edits and string-array edits only;
+- structural fields such as `id`, `slug`, `type`, `order`, `sourceSection`, `checkability`, and answer-checking keys are protected by UI and backend checks;
+- stale document revisions return `409 content_revision_conflict`;
+- if content is missing from PostgreSQL, backend startup or content access should fail as configuration error rather than silently reading old JSON files as runtime fallback.
 
 Saved progress may reference stable `lesson.slug` and `card.id` values only. It must not create a parallel content schema or rewrite lesson/card data.
 

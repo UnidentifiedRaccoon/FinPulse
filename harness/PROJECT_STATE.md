@@ -1,6 +1,6 @@
 # Project State — FinPulse Learning MVP
 
-Last updated: 2026-06-28
+Last updated: 2026-06-30
 
 This file is the compact current-state snapshot for agents. Detailed task history
 lives in `harness/tasks/review/T-*.md`; do not re-expand this file into a task
@@ -11,11 +11,12 @@ log.
 `main` contains the Stage 2 learner MVP plus stacked review work through T-150.
 The current workspace additionally includes T-152 content updates for Level 1
 Section 2, T-153/T-154 section passport UI/content updates, and T-156/T-159
-categorization-column review work, T-160 lesson 1-4 review edits, and T-161
-project-owned content editor skill. The learner app is a Vite React TypeScript
+categorization-column review work, T-160 lesson 1-4 review edits, T-161
+project-owned content editor skill, T-162 content editor pass for lessons
+5-8, and T-163 DB-backed content editor work. The learner app is a Vite React TypeScript
 SPA backed by a Fastify/PostgreSQL API. A separate Next.js internal admin app exists under
 `apps/admin` for the read-only curator progress board accepted by ADR-0010 and
-ADR-0011.
+ADR-0011, now extended with the ADR-0012 content editor.
 
 Recent state that matters for new work:
 - approved educational hierarchy is `Program -> Level -> Section -> Lesson -> Card`;
@@ -24,6 +25,11 @@ Recent state that matters for new work:
 - legacy `Module` / `Unit`, `t1-start`, and `t1_start` runtime/API names are
   historical only and must not be reintroduced;
 - active content is Level 1, two sections, eight lessons;
+- published runtime content is stored in PostgreSQL JSONB content tables; `src/content/**`
+  is now the seed fixture/migration source, not the runtime fallback after
+  startup seeding;
+- the internal admin `/content` editor can update guarded level/section/card
+  text slices through `/api/admin/content/**`;
 - section path headings render learner-facing titles without the `Раздел N.`
   prefix and show a small chevron-only trigger for expandable descriptions
   sourced from `section.description`;
@@ -55,14 +61,17 @@ Recent state that matters for new work:
 - reusable project skills live under `skills/**`; `skills/finpulse-content-editor`
   is the current editorial automation contract for improving methodologist
   lesson copy and returning only `Needs review` items;
+- Level 1 lessons 5-8 have been polished with the project content editor rubric;
+  Section 2 runtime JSON and source Markdown are synced for that pass;
 - route/loading/lesson transitions and mobile card rhythm are already applied;
 - stale design experiment routes were removed after rollout.
 
 ## Locked MVP assumptions
 
 - Mobile-first educational web app.
-- Static educational program content.
-- JSON remains the canonical runtime content source.
+- Educational program content.
+- PostgreSQL JSONB remains the canonical published runtime content source; JSON files
+  remain seed fixtures.
 - Learner frontend stays React + TypeScript + Vite SPA unless an ADR changes it.
 - Tailwind CSS + shadcn/ui are the design-system baseline.
 - Fastify backend is accepted for Stage 2 content/auth/progress/reflection APIs.
@@ -72,7 +81,7 @@ Recent state that matters for new work:
 - React local state first; add Zustand only for justified small cross-route UI
   state.
 - No diagnostics, rewards/gamification, analytics dashboards, payments,
-  production financial operations, personalized recommendations, CMS, or
+  production financial operations, personalized recommendations, broad CMS, or
   learner-facing admin scope.
 - Backend-owned progress is not diagnostics, scoring, analytics, or
   recommendations.
@@ -83,7 +92,9 @@ Recent state that matters for new work:
 
 ## Active runtime content
 
-Runtime content lives under `src/content/levels/**`.
+Published runtime content lives in PostgreSQL JSONB content tables and is
+hydrated by the backend content service. Seed fixtures live under
+`src/content/levels/**`.
 
 - Program manifest: `src/content/program.json`
 - Level: `level-1-start`, title `Уровень 1 · Старт`
@@ -114,7 +125,8 @@ Backend:
 - Fastify serves `/api/**` and the built learner SPA in production.
 - PostgreSQL repositories own users, sessions, progress, reflection answers, and
   admin read models.
-- Content API hydrates and validates split JSON files from the repository.
+- Content API hydrates and validates PostgreSQL JSONB content documents, seeded
+  from `src/content/**` when content tables are empty.
 - Sessions use httpOnly cookies.
 - Admin auth uses a separate `finpulse_admin_session` cookie and env-provided
   credentials.
@@ -123,9 +135,11 @@ Internal admin:
 - `apps/admin` is a separate Next.js app.
 - It rewrites `/api/**` to the Fastify backend.
 - It exposes a read-only curator progress board.
+- It exposes `/content` for guarded methodologist edits to level, section, and
+  lesson-card text slices with live preview and direct DB publication.
 - It must not expose private reflection/artifact answer text by default.
-- Organizations, RBAC, answer review, analytics dashboards, and CMS/content
-  editing remain out of scope.
+- Organizations, RBAC, answer review, analytics dashboards, rollback/audit/PR
+  publication workflows, and broad CMS scope remain out of scope.
 
 ## Current verification state
 
@@ -150,6 +164,23 @@ Known local verification caveat:
 - GitHub Actions provides a PostgreSQL service and `FINPULSE_TEST_DATABASE_URL`.
 
 Most recent recorded checks:
+- T-163: `npm run content:seed`, `npm run check:content`,
+  `npm run check:content:db`, `npm run content:pull`, `npm run typecheck`,
+  `npm run test:admin`,
+  `FINPULSE_TEST_DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse npm run test:run -- server/app.test.ts`,
+  `npm run lint`, `npm run build:web`, `npm run build:admin`,
+  `FINPULSE_TEST_DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse npm run verify`,
+  and `git diff --check` passed. A first backend test run without database env
+  reproduced the known `FINPULSE_TEST_DATABASE_URL`, `FINPULSE_DATABASE_URL`,
+  or `DATABASE_URL` requirement. `content:pull` export output was removed after
+  the smoke check.
+- T-162: `npm run check:content`,
+  `npm run test:run -- src/content/program.test.ts`, `git diff --check`, and
+  `FINPULSE_TEST_DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse npm run verify`
+  passed. A first `npm run verify` without database env reproduced the known
+  backend-test failure requiring `FINPULSE_TEST_DATABASE_URL`,
+  `FINPULSE_DATABASE_URL`, or `DATABASE_URL`. The full passing verify emitted
+  the existing Vite/Storybook chunk-size warnings.
 - T-161: `find skills/finpulse-content-editor -maxdepth 3 -type f -print`,
   Node metadata/frontmatter smoke check, `rg` policy smoke check, `wc -l`, and
   `git diff --check` passed. The skill-creator `quick_validate.py` check was

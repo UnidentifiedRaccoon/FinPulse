@@ -48,7 +48,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
     dropSchemaOnClose: options.dropDatabaseSchemaOnClose,
     max: options.databasePoolMax,
   })
-  const content = createContentService(options.contentRoot)
+  const content = await createContentService(db.content, options.contentRoot)
   const app = fastify({
     logger: options.logger ?? false,
   })

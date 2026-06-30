@@ -443,3 +443,58 @@ Revisit when:
 - admin needs a custom domain, private network-only access, or IP allowlisting;
 - more than one admin user is required;
 - admin writes, answer review, or CMS capabilities are requested.
+
+## ADR-0012 — PostgreSQL JSONB runtime content and internal editor
+
+Status: Accepted
+
+Decision: Use PostgreSQL JSONB documents as the runtime source for published educational content, with document granularity split by program, level, section, and lesson. Keep the current `src/content/**` split JSON files only as seed fixtures and migration input for the MVP.
+
+This supersedes only the content-source parts of ADR-0002, ADR-0006, ADR-0008, ADR-0010, and ADR-0011:
+- the learner frontend remains a Vite React SPA;
+- the internal admin remains the separate Next.js app from ADR-0010/ADR-0011;
+- PostgreSQL remains the single backend persistence engine;
+- the approved hierarchy stays `Program -> Level -> Section -> Lesson -> Card`;
+- public learner content API route shapes stay unchanged.
+
+Runtime storage:
+- `content_programs(slug, payload jsonb, revision, updated_at)` stores program metadata and ordered level refs;
+- `content_levels(slug, payload jsonb, revision, updated_at)` stores level metadata and ordered section refs;
+- `content_sections(level_slug, section_slug, payload jsonb, revision, updated_at)` stores section metadata and ordered lesson refs;
+- `content_lessons(level_slug, section_slug, lesson_slug, payload jsonb, revision, updated_at)` stores one full lesson JSON document per lesson.
+
+Admin editing scope:
+- add `/content` to the internal admin app;
+- expose an authenticated content tree, preview, and slice update API under `/api/admin/content/**`;
+- let the methodologist edit only the selected level, section, or lesson-card slice shown in preview;
+- save by replacing the full containing JSONB document after server-side validation;
+- increment the document `revision` on each successful save;
+- return `409 content_revision_conflict` when the submitted revision is stale;
+- the learner API reads updated content immediately from the database without redeploy.
+
+Guardrails:
+- v1 permits edits to text fields and arrays of text variants only;
+- structural fields are protected, including `id`, `slug`, `type`, `order`, `card.id`, `sourceSection`, `checkability`, and answer-checking keys such as correct option/category ids;
+- all saves hydrate the full content graph and validate it with the existing content model before publishing;
+- if content is missing from PostgreSQL, the backend treats it as configuration failure instead of silently falling back to file JSON after startup seeding.
+
+Seeding and local development:
+- `npm run content:seed` loads current `src/content/**` fixtures into the content tables;
+- the backend may seed empty content tables from bundled fixtures on startup to make first rollout and fresh local schemas work;
+- `npm run check:content` validates file fixtures;
+- `npm run check:content:db` validates the database-backed graph;
+- `npm run content:pull` exports current DB content to `tmp/content-db-export` for local inspection or manual sync.
+
+Out of scope for this MVP step:
+- audit log, rollback versions, draft/published pointers, GitHub PR flow, locks, scheduled publication, multi-admin collaboration, organizations/RBAC, analytics dashboards, diagnostics, rewards, recommendations, and production financial operations.
+
+Risks:
+- content text diffs move out of Git history after publication through admin;
+- direct production edits rely on server-side validation and revision conflicts rather than editorial branch review;
+- backend instances cache the content graph in memory and refresh it after admin writes in the same process; externally edited DB content may require process restart or a later cache invalidation mechanism.
+
+Revisit when:
+- more than one content editor works concurrently;
+- editorial review, rollback, audit, or release trains become important;
+- content volume grows enough that lesson-level JSONB documents become too coarse;
+- production operations require a DB export/import workflow with approvals.

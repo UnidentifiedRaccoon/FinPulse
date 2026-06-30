@@ -1,4 +1,12 @@
-import type { AdminMeResponse, AdminSummaryResponse, AdminUserProgressResponse, AdminUsersResponse } from './types'
+import type {
+  AdminContentPreviewResponse,
+  AdminContentSelection,
+  AdminContentTreeResponse,
+  AdminMeResponse,
+  AdminSummaryResponse,
+  AdminUserProgressResponse,
+  AdminUsersResponse,
+} from './types'
 
 export class AdminApiError extends Error {
   status: number
@@ -36,6 +44,24 @@ export const adminApi = {
     return request<AdminUsersResponse>(`/api/admin/users${query ? `?${query}` : ''}`)
   },
   getUserProgress: (userId: string) => request<AdminUserProgressResponse>(`/api/admin/users/${encodeURIComponent(userId)}/progress`),
+  getContentTree: () => request<AdminContentTreeResponse>('/api/admin/content/tree'),
+  getContentPreview: (selection: AdminContentSelection) => {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(selection)) {
+      params.set(key, value)
+    }
+
+    return request<AdminContentPreviewResponse>(`/api/admin/content/preview?${params.toString()}`)
+  },
+  updateContentSlice: (selection: AdminContentSelection, revision: number, slice: unknown) =>
+    request<AdminContentPreviewResponse>('/api/admin/content/slices', {
+      method: 'PUT',
+      body: JSON.stringify({
+        ...selection,
+        revision,
+        slice,
+      }),
+    }),
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {

@@ -112,10 +112,21 @@ On push to `main`, `.github/workflows/deploy.yml` does the following:
 11. smoke-tests:
     - `/api/health`;
     - `/api/readyz`;
+    - `/api/program`;
     - `/`.
     - `/api/admin/auth/me` returns `401 admin_unauthenticated`, proving admin auth is configured and protected.
 
 The backend applies the committed `server/db/schema.sql` on startup through `openDatabase()` / `runMigrations()`. This is an idempotent schema bootstrap in a transaction, not a versioned migration ledger. In production, GitHub Actions passes the DB password from GitHub secret `FINPULSE_DATABASE_PASSWORD`; the password is not committed or printed.
+
+Runtime educational content is stored in PostgreSQL JSONB tables. On first rollout, empty content tables are seeded from the bundled `src/content/**` fixtures during backend startup. Operators can also run `npm run content:seed` from a secure shell with production DB env vars before or after the first content-table rollout. The command replaces content tables with the current seed fixtures; do not run it after methodologist production edits unless the intent is to overwrite production content with repo fixtures.
+
+Local/operator commands:
+
+```bash
+npm run content:seed      # replace DB content from src/content/** fixtures
+npm run check:content:db  # validate the DB-backed hydrated graph
+npm run content:pull      # export DB content to tmp/content-db-export for inspection
+```
 
 The DB security group allows the Serverless Containers service subnet range `198.19.0.0/16` on port `6432`. Yandex documents this as the source range used when a Serverless Container is attached to a VPC network.
 
@@ -233,6 +244,7 @@ The first login is the single admin configured in the backend production contain
 APP_URL="https://bbabho5nujsp32c8mvc7.containers.yandexcloud.net"
 curl -fsS "$APP_URL/api/health"
 curl -fsS "$APP_URL/api/readyz"
+curl -fsS "$APP_URL/api/program" | grep -qi 'ФинПульс'
 curl -fsS "$APP_URL/" | grep -qi '<html'
 code="$(curl -sS -o /tmp/finpulse-admin-auth.json -w "%{http_code}" "$APP_URL/api/admin/auth/me" || true)"
 test "$code" = "401"
