@@ -1,6 +1,6 @@
 # Project State — FinPulse Learning MVP
 
-Last updated: 2026-07-04
+Last updated: 2026-07-05
 
 This file is the compact current-state snapshot for agents. Detailed task history
 lives in `harness/tasks/review/T-*.md`; do not re-expand this file into a task
@@ -20,7 +20,8 @@ learner preview work, T-168 project-owned lesson methodologist skill,
 T-169 Level 1 Section 3 risk-return lesson content, T-170 bounded admin
 preview dialog work, T-172 admin user progress map work, T-173 Level 1
 lessons 10-16 content integration, T-174 admin JSON editor syntax
-highlighting, and T-175 content editor polish for lessons 9-16. The
+highlighting, T-175 content editor polish for lessons 9-16, and T-176
+adult financial competencies documentation source. The
 learner app is a Vite React TypeScript SPA backed by a Fastify/PostgreSQL API.
 A separate Next.js internal admin app exists under
 `apps/admin` for the read-only curator progress board accepted by ADR-0010 and
@@ -89,6 +90,11 @@ Recent state that matters for new work:
   the product result, and two-line ellipsis/clamp for long labels;
 - plain labels, ids, CTA labels, variants, statistic values, and technical keys
   remain plain text;
+- `docs/methodology/adult_financial_competencies_2026.md` is the local
+  normalized catalog of adult competencies from the 2026 Unified Financial
+  Literacy and Financial Culture Competency Framework; use it for course topic
+  coverage and adult competency mapping, not as a source for current rates,
+  limits, or legal values;
 - `skills/finpulse-lesson-methodologist` is the project-owned methodologist
   skill for creating source Markdown and runtime JSON lesson drafts from
   approved topics, enforcing the eight-screen lesson architecture for Level 1
@@ -99,7 +105,9 @@ Recent state that matters for new work:
   and returning only `Needs review` items;
 - `skills/fin-literacy-expert` is the project-owned financial-literacy SME
   skill for domain briefs, fact-checking, source/safety review, and keeping
-  educational explanations separate from financial recommendations;
+  educational explanations separate from financial recommendations; it now
+  references `docs/methodology/adult_financial_competencies_2026.md` when
+  mapping adult topics and checking competency coverage;
 - Level 1 lessons 5-8 have been polished with the project content editor rubric;
   Section 2 runtime JSON and source Markdown are synced for that pass;
 - Level 1 lessons 9-16 have now received a deeper `finpulse-content-editor`
@@ -217,6 +225,14 @@ Known local verification caveat:
 - GitHub Actions provides a PostgreSQL service and `FINPULSE_TEST_DATABASE_URL`.
 
 Most recent recorded checks:
+- T-176: copied
+  `/Users/elena/Downloads/adult_financial_competencies_2026.md` to
+  `docs/methodology/adult_financial_competencies_2026.md` and normalized only
+  one final blank line; `git diff --check` and a skill reference smoke check
+  passed. `npm run verify` passed content validation, runtime import guard,
+  typecheck, and lint, then reproduced the known backend-test failure because
+  this shell has no
+  `FINPULSE_TEST_DATABASE_URL`, `FINPULSE_DATABASE_URL`, or `DATABASE_URL`.
 - T-175: `npm run check:content`,
   `npm run test:run -- src/content/program.test.ts`, targeted Node smoke for
   lessons 9-16, `git diff --check`,
@@ -378,6 +394,7 @@ Most recent recorded checks:
 - Content model: `docs/CONTENT_MODEL.md`
 - General methodology: `docs/methodology/METHODOLOGY.md`
 - Lesson authoring regulation: `docs/methodology/AUTHORING.md`
+- Adult competencies framework: `docs/methodology/adult_financial_competencies_2026.md`
 - Design system: `docs/DESIGN_SYSTEM.md`
 - QA scenario map: `docs/QA_USER_SCENARIO_MAP.md`
 - Deploy runbook: `docs/operations/yandex-cloud-finpulse-deploy.md`
