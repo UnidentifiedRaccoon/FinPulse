@@ -1,11 +1,11 @@
-import { api, type ProgressResponse } from '@/api/client'
-import { useApiQuery } from '@/api/useApiQuery'
+import type { ProgressResponse } from '@/api/client'
+import { useLearningContentQuery } from '@/api/contentClient'
 import { buildProgramLearningPath } from '@/features/program-navigation/learningPath'
 import { LevelPathNode } from '@/features/program-navigation/LevelPathNode'
 import { ProgramOverviewSkeleton } from '@/shared/ui/RouteLoadingSkeletons'
 
 export function ProgramOverviewPage({ progress }: { progress: ProgressResponse | null }) {
-  const programQuery = useApiQuery(api.getProgram, [])
+  const programQuery = useLearningContentQuery((client) => client.getProgram(), [])
 
   if (programQuery.status === 'loading') {
     return <ProgramOverviewSkeleton />

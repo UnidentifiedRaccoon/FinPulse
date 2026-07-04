@@ -1,0 +1,17 @@
+{
+  "id": "finpulse-learning-mvp",
+  "slug": "finpulse-learning-mvp",
+  "title": "ФинПульс",
+  "levels": [
+    {
+      "id": "level_1_start",
+      "path": "levels/level_1_start/level.json",
+      "slug": "level-1-start",
+      "order": 1,
+      "title": "Уровень 1 · Старт",
+      "description": "Первые шаги, чтобы навести порядок в деньгах, увидеть базовые траты и внедрить парочку простых привычек."
+    }
+  ],
+  "description": "Мобильный тренажёр финансовой грамотности, культуры и привычек.",
+  "schemaVersion": 1
+}

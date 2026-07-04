@@ -12,9 +12,9 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import { api, type ApiUser, type ProgressResponse, type ReflectionAnswer, type ReflectionAnswersResponse } from '@/api/client'
+import type { ApiUser, ProgressResponse, ReflectionAnswer, ReflectionAnswersResponse } from '@/api/client'
+import { useLearningContentQuery } from '@/api/contentClient'
 import type { Program } from '@/content/program'
-import { useApiQuery } from '@/api/useApiQuery'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
@@ -116,7 +116,7 @@ function ProfileEntry({
   progress: ProgressResponse | null
   reflectionAnswers: ReflectionAnswersResponse | null
 }) {
-  const programQuery = useApiQuery(api.getProgram, [])
+  const programQuery = useLearningContentQuery((client) => client.getProgram(), [])
   const program = programQuery.status === 'success' ? programQuery.data : null
   const stats = buildProfileStats(program, progress)
   const identityLabel = isEmailLogin(user.login) ? 'Email' : 'Логин'

@@ -18,12 +18,13 @@
     "incremental": true,
     "types": [
       "node",
+      "vite/client",
       "vitest/globals",
       "@testing-library/jest-dom/vitest"
     ],
     "paths": {
       "@/*": [
-        "./src/*"
+        "../../src/*"
       ]
     },
     "noUnusedLocals": true,

@@ -1,8 +1,8 @@
 import { ChevronLeft } from 'lucide-react'
 import { Link, Navigate, useLocation, useNavigationType, useParams } from 'react-router'
 
-import { api, type ProgressResponse } from '@/api/client'
-import { useApiQuery } from '@/api/useApiQuery'
+import type { ProgressResponse } from '@/api/client'
+import { useLearningContentQuery } from '@/api/contentClient'
 import { Button } from '@/components/ui/button'
 import { LessonPathMap } from '@/features/program-navigation/LessonPathMap'
 import { buildSectionLearningPath } from '@/features/program-navigation/learningPath'
@@ -14,7 +14,7 @@ export function SectionPage({ progress }: { progress: ProgressResponse | null })
   const { levelSlug, sectionSlug } = useParams()
   const location = useLocation()
   const navigationType = useNavigationType()
-  const sectionQuery = useApiQuery(() => api.getSection(sectionSlug ?? ''), [sectionSlug])
+  const sectionQuery = useLearningContentQuery((client) => client.getSection(sectionSlug ?? ''), [sectionSlug])
 
   usePathReturnScroll({
     isReady: sectionQuery.status === 'success',

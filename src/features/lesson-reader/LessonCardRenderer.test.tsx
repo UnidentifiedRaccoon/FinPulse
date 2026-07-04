@@ -637,6 +637,85 @@ describe('LessonSession', () => {
     expect(screen.queryByRole('button', { name: 'Аренда квартиры: Обязательное' })).not.toBeInTheDocument()
   })
 
+  it('resets the current preview screen without leaving the active card', async () => {
+    const user = userEvent.setup()
+    const onPreviewScreenReset = vi.fn()
+    const cards: Card[] = [
+      {
+        id: 'card-theory-one',
+        type: 'theory',
+        order: 1,
+        title: 'Первый шаг',
+        body: 'Короткое объяснение.',
+      },
+      {
+        id: 'card-theory-two',
+        type: 'theory',
+        order: 2,
+        title: 'Второй шаг',
+        body: 'Ещё одно объяснение.',
+      },
+      {
+        id: 'card-categorization-preview-reset',
+        type: 'categorization',
+        order: 3,
+        title: 'Раздели траты',
+        question: 'Распредели траты по группам.',
+        categories: [
+          { id: 'mandatory', label: 'Обязательное' },
+          { id: 'desired', label: 'Желаемое' },
+        ],
+        items: [
+          { id: 'rent', label: 'Аренда квартиры', correctCategoryId: 'mandatory' },
+          { id: 'coffee', label: 'Кофе навынос', correctCategoryId: 'desired' },
+          { id: 'utilities', label: 'Оплата ЖКХ', correctCategoryId: 'mandatory' },
+        ],
+      },
+      {
+        id: 'card-summary',
+        type: 'summary',
+        order: 4,
+        title: 'Итог',
+        points: ['Пункт'],
+      },
+    ]
+    const details = createLessonDetails(cards)
+    const renderPreviewSession = (previewScreenResetKey: number) => (
+      <MemoryRouter initialEntries={['/lessons/test-lesson']}>
+        <LessonSession
+          canSaveProgress={false}
+          details={details}
+          isLessonCompleted={false}
+          onPreviewScreenReset={onPreviewScreenReset}
+          previewScreenResetKey={previewScreenResetKey}
+        />
+      </MemoryRouter>
+    )
+    const view = render(renderPreviewSession(0))
+
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+    await user.click(screen.getByRole('button', { name: 'Далее' }))
+
+    expect(screen.getByRole('heading', { name: 'Раздели траты' })).toBeInTheDocument()
+    expect(screen.getByText('3 из 4')).toBeInTheDocument()
+    await user.click(within(screen.getByRole('group', { name: 'Аренда квартиры' })).getByRole('radio', { name: 'Обязательное' }))
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Кофе навынос' })).toBeInTheDocument())
+
+    view.rerender(renderPreviewSession(1))
+
+    expect(screen.getByRole('heading', { name: 'Раздели траты' })).toBeInTheDocument()
+    expect(screen.getByText('3 из 4')).toBeInTheDocument()
+    const firstItem = screen.getByRole('group', { name: 'Аренда квартиры' })
+    expect(within(firstItem).getByRole('radio', { name: 'Обязательное' })).not.toBeChecked()
+    expect(screen.queryByRole('group', { name: 'Кофе навынос' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Проверить' })).toBeDisabled()
+    expect(onPreviewScreenReset).toHaveBeenCalledWith({
+      cardId: 'card-categorization-preview-reset',
+      lessonSlug: 'test-lesson',
+      resetLessonCompletion: false,
+    })
+  })
+
   it('resets the lesson screen scroll when moving between cards', async () => {
     const user = userEvent.setup()
     const { restore: restoreScrollIntoView, scrollIntoView } = mockElementScrollIntoView()

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import type { AdminUserProgressResponse } from '../../lib/types'
@@ -29,7 +29,7 @@ const detail: AdminUserProgressResponse = {
   },
   totals: {
     totalLessons: 2,
-    totalCards: 16,
+    totalCards: 4,
   },
   lessons: [
     {
@@ -39,15 +39,27 @@ const detail: AdminUserProgressResponse = {
       sectionTitle: 'Раздел 1. Деньги и операции',
       lessonSlug: 'where-money-goes',
       lessonTitle: 'Куда уходят деньги',
+      lessonOrder: 1,
       status: 'completed',
       viewedAt: '2026-06-10T10:00:00.000Z',
       completedAt: '2026-06-10T10:30:00.000Z',
       updatedAt: '2026-06-10T10:30:00.000Z',
       cards: [
         {
+          cardId: 'card_l1s1l1_01_hook',
+          cardType: 'single_choice',
+          cardTitle: 'Деньги были... или нет?',
+          cardOrder: 1,
+          status: 'completed',
+          viewedAt: '2026-06-10T10:00:00.000Z',
+          completedAt: '2026-06-10T10:04:00.000Z',
+          updatedAt: '2026-06-10T10:04:00.000Z',
+        },
+        {
           cardId: 'card_l1s1l1_05_surprise_reflection',
           cardType: 'reflection',
           cardTitle: 'Неожиданная трата',
+          cardOrder: 2,
           status: 'completed',
           viewedAt: '2026-06-10T10:15:00.000Z',
           completedAt: '2026-06-10T10:16:00.000Z',
@@ -55,11 +67,46 @@ const detail: AdminUserProgressResponse = {
         },
       ],
     },
+    {
+      levelSlug: 'level-1-start',
+      levelTitle: 'Уровень 1 · Старт',
+      sectionSlug: 'money-and-operations',
+      sectionTitle: 'Раздел 1. Деньги и операции',
+      lessonSlug: 'mandatory-and-desired',
+      lessonTitle: 'Обязательное и желаемое',
+      lessonOrder: 2,
+      status: 'viewed',
+      viewedAt: '2026-06-11T09:00:00.000Z',
+      completedAt: null,
+      updatedAt: '2026-06-11T09:12:00.000Z',
+      cards: [
+        {
+          cardId: 'card_l1s1l2_01_hook',
+          cardType: 'single_choice',
+          cardTitle: 'Это мне точно нужно?',
+          cardOrder: 1,
+          status: 'completed',
+          viewedAt: '2026-06-11T09:02:00.000Z',
+          completedAt: '2026-06-11T09:04:00.000Z',
+          updatedAt: '2026-06-11T09:04:00.000Z',
+        },
+        {
+          cardId: 'card_l1s1l2_02_expenses',
+          cardType: 'artifact',
+          cardTitle: 'Размечаем твои траты',
+          cardOrder: 2,
+          status: 'viewed',
+          viewedAt: '2026-06-11T09:12:00.000Z',
+          completedAt: null,
+          updatedAt: '2026-06-11T09:12:00.000Z',
+        },
+      ],
+    },
   ],
 }
 
 describe('UserProgressDetail', () => {
-  it('renders lesson statuses without private reflection answer text', () => {
+  it('renders the learning path map without private reflection answer text', () => {
     const { container } = render(
       <UserProgressDetail
         detail={detail}
@@ -70,8 +117,20 @@ describe('UserProgressDetail', () => {
     )
 
     expect(screen.getByText('learner.email@example.com')).toBeInTheDocument()
-    expect(screen.getByText('Куда уходят деньги')).toBeInTheDocument()
+    const currentPosition = screen.getByRole('region', { name: 'Текущая позиция' })
+    expect(within(currentPosition).getByText('Обязательное и желаемое')).toBeInTheDocument()
+    expect(
+      within(currentPosition).getByText('Уровень 1 · Старт / Раздел 1. Деньги и операции / Урок 2 / Экран 2 из 2'),
+    ).toBeInTheDocument()
+    expect(within(currentPosition).getByText('Размечаем твои траты')).toBeInTheDocument()
+    const sectionProgress = screen.getByLabelText('Прогресс раздела')
+    expect(sectionProgress).toHaveTextContent('1 / 2 уроков')
+    expect(sectionProgress).toHaveTextContent('3 / 4 экранов')
+    expect(screen.getAllByText('Экран 2').length).toBeGreaterThanOrEqual(2)
     expect(screen.getAllByText('Завершён').length).toBeGreaterThan(0)
+    const lessonRows = container.querySelectorAll('details.progress-lesson')
+    expect(lessonRows[0]).not.toHaveAttribute('open')
+    expect(lessonRows[1]).toHaveAttribute('open')
     expect(screen.queryByText('Тексты reflection/artifact ответов в этот борд не включаются.')).not.toBeInTheDocument()
     expect(container).not.toHaveTextContent('СЕКРЕТНЫЙ личный ответ')
     expect(container).not.toHaveTextContent('singleValue')

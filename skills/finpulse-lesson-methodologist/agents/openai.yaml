@@ -1,0 +1,4 @@
+interface:
+  display_name: "FinPulse Lesson Methodologist"
+  short_description: "Builds FinPulse lesson drafts safely"
+  default_prompt: "Use $finpulse-lesson-methodologist to turn an approved FinPulse topic and source material into synced Markdown and runtime JSON lesson drafts."

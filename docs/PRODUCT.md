@@ -27,15 +27,16 @@ Included:
 - Stage 2 persisted viewed/completed progress for lessons/cards;
 - Stage 2 private saved answers for authenticated reflection/artifact cards as a personal artifact;
 - internal read-only curator progress board accepted by ADR-0010;
+- internal content editor accepted by ADR-0012 for guarded methodologist edits to published lesson text;
 - responsive mobile-first design;
-- JSON as content source.
+- PostgreSQL JSONB as runtime content source, with current JSON files retained as seed fixtures.
 
 Excluded:
 - user cabinets/profile management beyond the minimal learner login, learning progress, and private answer artifact;
 - diagnostics/tests as a product system;
 - rewards/gamification;
 - analytics dashboards;
-- admin panel/CMS for content editing or learner-facing product management;
+- learner-facing admin scope or broad CMS/product-management tooling beyond the internal content editor accepted by ADR-0012;
 - payments;
 - production financial operations;
 - personalized recommendations.
@@ -63,13 +64,15 @@ Excluded:
 
 ## Internal admin exception
 
-ADR-0010 accepts a separate internal Next.js admin surface for the first curator progress board. ADR-0011 accepts deploying it as a separate internal production surface, not as part of the learner SPA. It is read-only and separate from the learner app. It shows user login/email and progress aggregates, but does not show reflection/artifact answer text by default.
+ADR-0010 accepts a separate internal Next.js admin surface for the first curator progress board. ADR-0011 accepts deploying it as a separate internal production surface, not as part of the learner SPA. ADR-0012 extends this same admin surface with a content editor for guarded text edits to published educational content.
+
+The admin remains separate from the learner app. The progress board shows user login/email and progress aggregates, but does not show reflection/artifact answer text by default. The content editor writes to PostgreSQL JSONB content documents through backend validation and revision checks.
 
 Still out of scope:
 - organizations and RBAC;
 - answer-text review;
 - analytics dashboards;
-- content editing/CMS;
+- broad CMS workflows such as audit logs, rollback versions, PR publishing, scheduled releases, and multi-editor permissions;
 - learner app migration to Next.js.
 
 ## Initial routes

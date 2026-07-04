@@ -1,6 +1,7 @@
 'use client'
 
-import { BookOpen, LogOut, Users } from 'lucide-react'
+import { BookOpen, FileJson2, LogOut, Users } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 type AdminShellProps = {
@@ -10,6 +11,9 @@ type AdminShellProps = {
 }
 
 export function AdminShell({ adminLogin, children, onLogout }: AdminShellProps) {
+  const pathname = usePathname() ?? '/'
+  const title = pathname.startsWith('/content') ? 'Редактор контента' : 'Кураторский борд'
+
   return (
     <main className="admin-shell">
       <aside className="admin-sidebar" aria-label="Admin navigation">
@@ -21,9 +25,13 @@ export function AdminShell({ adminLogin, children, onLogout }: AdminShellProps) 
           </div>
         </div>
         <nav className="admin-nav" aria-label="Разделы админки">
-          <a className="admin-nav-link active" href="/">
+          <a className={`admin-nav-link ${pathname === '/' ? 'active' : ''}`} href="/">
             <Users size={18} />
             <span>Пользователи</span>
+          </a>
+          <a className={`admin-nav-link ${pathname.startsWith('/content') ? 'active' : ''}`} href="/content">
+            <FileJson2 size={18} />
+            <span>Контент</span>
           </a>
           <span className="admin-nav-link disabled">
             <BookOpen size={18} />
@@ -35,7 +43,7 @@ export function AdminShell({ adminLogin, children, onLogout }: AdminShellProps) 
       <section className="admin-main">
         <header className="admin-header">
           <div>
-            <h1>Кураторский борд</h1>
+            <h1>{title}</h1>
           </div>
           <div className="session-block">
             <div className="session-login">{adminLogin ?? 'admin'}</div>

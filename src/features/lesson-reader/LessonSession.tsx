@@ -11,11 +11,10 @@ import { Mascot } from '@/shared/ui/Mascot'
 import { createLessonReturnState } from '@/shared/routeTransitions'
 
 import { RichTextParagraphs } from './card-renderers/shared'
-import { LessonBottomAction } from './LessonBottomAction'
-import { LessonCardFrame } from './LessonCardFrame'
-import { LessonCardRenderer, type LessonCardInteractionProps } from './LessonCardRenderer'
+import { getPrimaryLessonAction } from './lessonActions'
+import type { LessonCardInteractionProps } from './LessonCardRenderer'
 import { LessonFeedback } from './LessonFeedback'
-import { LessonProgressHeader } from './LessonProgressHeader'
+import { LessonScreenShell, type LessonCardTransition } from './LessonScreenShell'
 import { formatLessonHeaderContext } from './lessonHeaderContext'
 import type {
   ArtifactState,
@@ -38,36 +37,43 @@ import {
   getCategoryLabel,
   getChoiceOptions,
   isCategorizationAnswerCorrect,
-  isCategorizationAnswerFilled,
-  isArtifactAnswerFilled,
   isInteractiveChoice,
   isInteractiveCategorization,
   isInteractiveMultiSelect,
   isMultiSelectAnswerCorrect,
-  isMultiSelectAnswerFilled,
-  isReflectionAnswerFilled,
 } from './lessonInteraction'
 
-type LessonCardTransition = 'none' | 'forward' | 'back'
+export type PreviewScreenResetPayload = {
+  cardId: string
+  lessonSlug: string
+  resetLessonCompletion: boolean
+}
 
 export function LessonSession({
   details,
+  initialCardId,
   isLessonCompleted,
   onCardViewed,
   onCardCompleted,
+  onPreviewScreenReset,
   onReflectionAnswerSave,
   onLessonCompleted,
+  previewScreenResetKey,
 }: {
   details: LessonDetails
+  initialCardId?: string
   isLessonCompleted: boolean
   canSaveProgress: boolean
   onCardViewed?: (cardId: string) => void | Promise<void>
   onCardCompleted?: (cardId: string) => void | Promise<void>
+  onPreviewScreenReset?: (payload: PreviewScreenResetPayload) => void
   onReflectionAnswerSave?: (cardId: string, payload: ReflectionAnswerPayload) => void | Promise<void>
   onLessonCompleted?: (lessonSlug: string) => void | Promise<void>
+  previewScreenResetKey?: number
 }) {
   const cards = useMemo(() => getOrderedCards(details.lesson), [details.lesson])
-  const [activeIndex, setActiveIndex] = useState(0)
+  const initialActiveIndex = useMemo(() => getInitialActiveCardIndex(cards, initialCardId), [cards, initialCardId])
+  const [activeIndex, setActiveIndex] = useState(initialActiveIndex)
   const [cardTransition, setCardTransition] = useState<LessonCardTransition>('none')
   const [isComplete, setIsComplete] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -79,7 +85,14 @@ export function LessonSession({
   const [checklistStates, setChecklistStates] = useState<Record<string, ChecklistState>>({})
   const [reflectionStates, setReflectionStates] = useState<Record<string, ReflectionState>>({})
   const [artifactStates, setArtifactStates] = useState<Record<string, ArtifactState>>({})
+  const [cardRenderVersions, setCardRenderVersions] = useState<Record<string, number>>({})
+  const [handledPreviewScreenResetKey, setHandledPreviewScreenResetKey] = useState(previewScreenResetKey)
+  const [pendingPreviewScreenReset, setPendingPreviewScreenReset] = useState<{
+    key: number
+    payload: PreviewScreenResetPayload
+  } | null>(null)
   const viewedCardIdsRef = useRef(new Set<string>())
+  const deliveredPreviewScreenResetKeyRef = useRef<number | undefined>(undefined)
   const completionPanelRef = useRef<HTMLElement | null>(null)
   const setCompletionPanelElement = useCallback((element: HTMLElement | null) => {
     completionPanelRef.current = element
@@ -93,11 +106,51 @@ export function LessonSession({
   const showLessonIntro = activeIndex === 0 && Boolean(lessonGoal)
   const lessonReturnState = useMemo(() => createLessonReturnState(details.lesson.slug), [details.lesson.slug])
 
+  if (handledPreviewScreenResetKey !== previewScreenResetKey) {
+    setHandledPreviewScreenResetKey(previewScreenResetKey)
+
+    if (previewScreenResetKey !== undefined && activeCard) {
+      const cardId = activeCard.id
+      const resetLessonCompletion = isComplete && isLastCard
+
+      setChoiceStates((current) => removeCardState(current, cardId))
+      setMultiSelectStates((current) => removeCardState(current, cardId))
+      setCategorizationStates((current) => removeCardState(current, cardId))
+      setChecklistStates((current) => removeCardState(current, cardId))
+      setReflectionStates((current) => removeCardState(current, cardId))
+      setArtifactStates((current) => removeCardState(current, cardId))
+      setCardRenderVersions((current) => ({
+        ...current,
+        [cardId]: (current[cardId] ?? 0) + 1,
+      }))
+      setActionError('')
+      setIsSaving(false)
+      setIsComplete(false)
+      setCardTransition('none')
+      setPendingPreviewScreenReset({
+        key: previewScreenResetKey,
+        payload: {
+          cardId,
+          lessonSlug: details.lesson.slug,
+          resetLessonCompletion,
+        },
+      })
+    }
+  }
+
   useEffect(() => {
     if (!activeCard || !onCardViewed || viewedCardIdsRef.current.has(activeCard.id)) return
     viewedCardIdsRef.current.add(activeCard.id)
     void onCardViewed(activeCard.id)
   }, [activeCard, onCardViewed])
+
+  useEffect(() => {
+    if (!pendingPreviewScreenReset) return
+    if (deliveredPreviewScreenResetKeyRef.current === pendingPreviewScreenReset.key) return
+
+    deliveredPreviewScreenResetKeyRef.current = pendingPreviewScreenReset.key
+    onPreviewScreenReset?.(pendingPreviewScreenReset.payload)
+  }, [onPreviewScreenReset, pendingPreviewScreenReset])
 
   useLayoutEffect(() => {
     resetLessonScreenScroll()
@@ -124,15 +177,16 @@ export function LessonSession({
   const activeCategorizationState = categorizationStates[activeCard.id] ?? emptyCategorizationState
   const activeReflectionState = reflectionStates[activeCard.id] ?? emptyReflectionState
   const activeArtifactState = activeCard.type === 'artifact' ? (artifactStates[activeCard.id] ?? createArtifactState(activeCard)) : undefined
-  const action = getPrimaryAction(
-    activeCard,
-    activeChoiceState,
-    activeMultiSelectState,
-    activeCategorizationState,
-    activeReflectionState,
-    activeArtifactState,
+  const activeCardRenderVersion = cardRenderVersions[activeCard.id] ?? 0
+  const action = getPrimaryLessonAction({
+    card: activeCard,
+    choiceState: activeChoiceState,
+    multiSelectState: activeMultiSelectState,
+    categorizationState: activeCategorizationState,
+    reflectionState: activeReflectionState,
+    artifactState: activeArtifactState,
     isLastCard,
-  )
+  })
   const bottomFeedback = getBottomFeedback(activeCard, activeChoiceState, activeMultiSelectState, activeCategorizationState)
   const interaction = getInteractionProps({
     card: activeCard,
@@ -237,43 +291,33 @@ export function LessonSession({
     setActiveIndex((current) => Math.max(current - 1, 0))
   }
 
-  const cardTransitionClass =
-    cardTransition === 'none'
-      ? ''
-      : `fr-lesson-card-transition fr-lesson-card-transition--${cardTransition}`
-
   return (
-    <article className="flex min-h-svh flex-col bg-[var(--fr-surface-canvas)] sm:rounded-3xl">
-      <LessonProgressHeader
-        backLabel={`Вернуться к уровню ${details.level.title}`}
-        backState={lessonReturnState}
-        backTo={`/levels/${details.level.slug}`}
-        context={context}
-        current={currentPosition}
-        isComplete={isComplete}
-        isSavedComplete={isLessonCompleted}
-        title={details.lesson.title}
-        total={cards.length}
-      />
-
-      <div
-        className={`mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-4 pt-4 sm:px-4 sm:pt-5 ${
-          isComplete ? 'pb-[calc(2rem+env(safe-area-inset-bottom))]' : 'pb-4 sm:pb-5'
-        }`}
-      >
-        <div
-          className={`flex flex-col gap-4 ${cardTransitionClass}`}
-          data-lesson-card-transition={cardTransition}
-          key={activeCard.id}
-        >
-          {showLessonIntro && lessonGoal ? <LessonGoalCard learningGoal={lessonGoal} /> : null}
-
-          <LessonCardFrame card={activeCard} current={currentPosition} total={cards.length}>
-            <LessonCardRenderer card={activeCard} interaction={interaction} showInlineFeedback={false} />
-          </LessonCardFrame>
-        </div>
-
-        {isComplete ? (
+    <LessonScreenShell
+      bottomAction={
+        isComplete
+          ? null
+          : {
+              feedback: actionError ? (
+                <LessonFeedback tone="retry" title="Не сохранено">
+                  {actionError}
+                </LessonFeedback>
+              ) : (
+                bottomFeedback
+              ),
+              isBusy: isSaving,
+              onPrimary: handlePrimaryAction,
+              onSecondary: activeIndex > 0 ? handleSecondaryAction : undefined,
+              primaryDisabled: action.disabled,
+              primaryLabel: action.label,
+              primaryTone: action.tone,
+              secondaryLabel: activeIndex > 0 ? 'Назад' : undefined,
+            }
+      }
+      card={activeCard}
+      cardRenderKey={`${activeCard.id}:${activeCardRenderVersion}`}
+      cardTransition={cardTransition}
+      completion={
+        isComplete ? (
           <InlineLessonCompletion
             current={cards.length}
             details={details}
@@ -283,36 +327,23 @@ export function LessonSession({
             returnState={lessonReturnState}
             total={cards.length}
           />
-        ) : null}
-      </div>
-
-      {isComplete ? null : (
-        <LessonBottomAction
-          feedback={actionError ? <LessonFeedback tone="retry" title="Не сохранено">{actionError}</LessonFeedback> : bottomFeedback}
-          isBusy={isSaving}
-          onPrimary={handlePrimaryAction}
-          onSecondary={activeIndex > 0 ? handleSecondaryAction : undefined}
-          primaryDisabled={action.disabled}
-          primaryLabel={action.label}
-          primaryTone={action.tone}
-          secondaryLabel={activeIndex > 0 ? 'Назад' : undefined}
-        />
-      )}
-    </article>
-  )
-}
-
-function LessonGoalCard({ learningGoal }: { learningGoal: string }) {
-  return (
-    <section
-      aria-label="Цель урока"
-      className="w-full overflow-hidden rounded-[20px] border border-[var(--fr-color-sky-500)]/35 bg-[var(--fr-surface-card)] text-[var(--fr-text-primary)] shadow-[var(--fr-shadow-sm)]"
-    >
-      <div className="bg-[var(--fr-color-sky-500)] px-4 py-2 text-[11px] font-black uppercase leading-4 tracking-normal text-[var(--fr-text-inverse)]">
-        Цель урока
-      </div>
-      <p className="px-4 py-3 text-pretty text-[15px] font-black leading-6 text-[var(--fr-text-primary)]">{learningGoal}</p>
-    </section>
+        ) : null
+      }
+      header={{
+        backLabel: `Вернуться к уровню ${details.level.title}`,
+        backState: lessonReturnState,
+        backTo: `/levels/${details.level.slug}`,
+        context,
+        current: currentPosition,
+        isComplete,
+        isSavedComplete: isLessonCompleted,
+        title: details.lesson.title,
+        total: cards.length,
+      }}
+      interaction={interaction}
+      lessonGoal={lessonGoal}
+      showLessonGoal={showLessonIntro}
+    />
   )
 }
 
@@ -554,105 +585,6 @@ function getInteractionProps({
   }
 }
 
-function getPrimaryAction(
-  card: Card,
-  choiceState: ChoiceState,
-  multiSelectState: MultiSelectState,
-  categorizationState: CategorizationState,
-  reflectionState: ReflectionState,
-  artifactState: ArtifactState | undefined,
-  isLastCard: boolean,
-) {
-  const advanceLabel = getAdvanceActionLabel(card, isLastCard)
-
-  if (isInteractiveChoice(card)) {
-    const hasSelectedOption = Boolean(choiceState.selectedOptionId)
-    const hasObjectiveAnswer = Boolean(getCorrectOption(card))
-
-    if (hasObjectiveAnswer && !choiceState.isChecked) {
-      return {
-        label: 'Проверить',
-        tone: 'check' as const,
-        mode: 'check' as const,
-        disabled: !hasSelectedOption,
-      }
-    }
-
-    return {
-      label: advanceLabel,
-      tone: isLastCard ? ('finish' as const) : ('continue' as const),
-      mode: 'advance' as const,
-      disabled: !hasSelectedOption,
-    }
-  }
-
-  if (isInteractiveMultiSelect(card)) {
-    if (!multiSelectState.isChecked) {
-      return {
-        label: 'Проверить',
-        tone: 'check' as const,
-        mode: 'check-multi-select' as const,
-        disabled: !isMultiSelectAnswerFilled(multiSelectState),
-      }
-    }
-
-    return {
-      label: advanceLabel,
-      tone: isLastCard ? ('finish' as const) : ('continue' as const),
-      mode: 'advance' as const,
-      disabled: false,
-    }
-  }
-
-  if (isInteractiveCategorization(card)) {
-    if (!categorizationState.isChecked) {
-      return {
-        label: 'Проверить',
-        tone: 'check' as const,
-        mode: 'check-categorization' as const,
-        disabled: !isCategorizationAnswerFilled(card, categorizationState),
-      }
-    }
-
-    return {
-      label: advanceLabel,
-      tone: isLastCard ? ('finish' as const) : ('continue' as const),
-      mode: 'advance' as const,
-      disabled: false,
-    }
-  }
-
-  if (card.type === 'reflection') {
-    return {
-      label: advanceLabel,
-      tone: isLastCard ? ('finish' as const) : ('continue' as const),
-      mode: 'advance' as const,
-      disabled: !isReflectionAnswerFilled(card, reflectionState),
-    }
-  }
-
-  if (card.type === 'artifact') {
-    return {
-      label: advanceLabel,
-      tone: isLastCard ? ('finish' as const) : ('continue' as const),
-      mode: 'advance' as const,
-      disabled: !isArtifactAnswerFilled(card, artifactState ?? createArtifactState(card)),
-    }
-  }
-
-  return {
-    label: advanceLabel,
-    tone: isLastCard ? ('finish' as const) : ('continue' as const),
-    mode: 'advance' as const,
-    disabled: false,
-  }
-}
-
-function getAdvanceActionLabel(card: Card, isLastCard: boolean) {
-  if (isLastCard) return 'Завершить'
-  return card.ctaLabel ?? 'Далее'
-}
-
 function getPersistableAnswerPayload(
   card: Card,
   reflectionStates: Record<string, ReflectionState>,
@@ -675,6 +607,12 @@ function removeCardState<State>(stateByCardId: Record<string, State>, cardId: st
   const nextState = { ...stateByCardId }
   delete nextState[cardId]
   return nextState
+}
+
+function getInitialActiveCardIndex(cards: Card[], initialCardId: string | undefined) {
+  if (!initialCardId) return 0
+  const cardIndex = cards.findIndex((card) => card.id === initialCardId)
+  return cardIndex >= 0 ? cardIndex : 0
 }
 
 function getBottomFeedback(

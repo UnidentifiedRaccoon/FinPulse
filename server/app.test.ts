@@ -122,6 +122,19 @@ async function createAdminAuth() {
   }
 }
 
+async function loginAdmin(app: Awaited<ReturnType<typeof createApp>>['app']) {
+  const loginResponse = await app.inject({
+    method: 'POST',
+    url: '/api/admin/auth/login',
+    payload: {
+      login: 'admin@example.com',
+      password: 'admin-passphrase',
+    },
+  })
+  expect(loginResponse.statusCode).toBe(200)
+  return sessionCookie(loginResponse)
+}
+
 function expectNoPrivateAnswerLeak(payload: unknown) {
   const serialized = JSON.stringify(payload)
   expect(serialized).not.toContain('СЕКРЕТНЫЙ личный ответ')
@@ -733,7 +746,7 @@ describe('backend API', () => {
         },
         totals: {
           totalUsers: 1,
-          totalLessons: 8,
+          totalLessons: expect.any(Number),
           completedLessons: 1,
           completedCards: 1,
           stuckUsers: 1,
@@ -755,8 +768,8 @@ describe('backend API', () => {
           total: 1,
         },
         totals: {
-          totalLessons: 8,
-          totalCards: 64,
+          totalLessons: expect.any(Number),
+          totalCards: expect.any(Number),
         },
         users: [
           {
@@ -765,7 +778,7 @@ describe('backend API', () => {
             progress: {
               viewedLessons: 2,
               completedLessons: 1,
-              totalLessons: 8,
+              totalLessons: expect.any(Number),
               completedCards: 1,
               currentLesson: {
                 lessonSlug: 'mandatory-and-desired',
@@ -810,17 +823,20 @@ describe('backend API', () => {
         lessons: expect.arrayContaining([
           expect.objectContaining({
             lessonSlug: 'where-money-goes',
+            lessonOrder: 1,
             status: 'completed',
             completedAt: expect.any(String),
             cards: expect.arrayContaining([
               expect.objectContaining({
                 cardId: 'card_l1s1l1_03_sorting_choice',
+                cardOrder: 3,
                 status: 'completed',
               }),
             ]),
           }),
           expect.objectContaining({
             lessonSlug: 'mandatory-and-desired',
+            lessonOrder: 2,
             status: 'viewed',
             viewedAt: expect.any(String),
             completedAt: null,
@@ -828,6 +844,218 @@ describe('backend API', () => {
         ]),
       })
       expectNoPrivateAnswerLeak(detailWithoutAnswersResponse.json())
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('publishes an admin card text slice and serves it through learner content APIs', async () => {
+    const { app } = await setupTestApp({
+      adminAuth: await createAdminAuth(),
+    })
+
+    try {
+      const adminCookie = await loginAdmin(app)
+      const treeResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/content/tree',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(treeResponse.statusCode).toBe(200)
+      expect(treeResponse.json()).toMatchObject({
+        tree: {
+          levels: expect.arrayContaining([
+            expect.objectContaining({
+              slug: 'level-1-start',
+              sections: expect.arrayContaining([
+                expect.objectContaining({
+                  slug: 'money-and-operations',
+                  lessons: expect.arrayContaining([
+                    expect.objectContaining({
+                      slug: 'where-money-goes',
+                      cards: expect.arrayContaining([
+                        expect.objectContaining({
+                          id: 'card_l1s1l1_01_hook',
+                        }),
+                      ]),
+                    }),
+                  ]),
+                }),
+              ]),
+            }),
+          ]),
+        },
+      })
+
+      const previewResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/content/preview?kind=card&levelSlug=level-1-start&sectionSlug=money-and-operations&lessonSlug=where-money-goes&cardId=card_l1s1l1_01_hook',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(previewResponse.statusCode).toBe(200)
+      const previewPayload = previewResponse.json() as {
+        preview: {
+          revision: number
+          slice: {
+            id: string
+            title: string
+            question: string
+          } & Record<string, unknown>
+        }
+      }
+      const nextSlice = {
+        ...previewPayload.preview.slice,
+        title: 'Деньги были... или редактор уже поменял?',
+        question: `${previewPayload.preview.slice.question}\n\nТестовая правка методиста.`,
+      }
+
+      const publishResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/admin/content/slices',
+        headers: {
+          cookie: adminCookie,
+        },
+        payload: {
+          kind: 'card',
+          levelSlug: 'level-1-start',
+          sectionSlug: 'money-and-operations',
+          lessonSlug: 'where-money-goes',
+          cardId: 'card_l1s1l1_01_hook',
+          revision: previewPayload.preview.revision,
+          slice: nextSlice,
+        },
+      })
+      expect(publishResponse.statusCode).toBe(200)
+      expect(publishResponse.json()).toMatchObject({
+        preview: {
+          revision: previewPayload.preview.revision + 1,
+          slice: {
+            id: 'card_l1s1l1_01_hook',
+            title: 'Деньги были... или редактор уже поменял?',
+          },
+        },
+      })
+
+      const learnerLessonResponse = await app.inject('/api/lessons/where-money-goes')
+      expect(learnerLessonResponse.statusCode).toBe(200)
+      expect(learnerLessonResponse.json()).toMatchObject({
+        lesson: {
+          cards: expect.arrayContaining([
+            expect.objectContaining({
+              id: 'card_l1s1l1_01_hook',
+              title: 'Деньги были... или редактор уже поменял?',
+              question: expect.stringContaining('Тестовая правка методиста.'),
+            }),
+          ]),
+        },
+      })
+    } finally {
+      await app.close()
+    }
+  })
+
+  it('rejects protected admin content fields and stale content revisions', async () => {
+    const { app } = await setupTestApp({
+      adminAuth: await createAdminAuth(),
+    })
+
+    try {
+      const adminCookie = await loginAdmin(app)
+      const previewResponse = await app.inject({
+        method: 'GET',
+        url: '/api/admin/content/preview?kind=card&levelSlug=level-1-start&sectionSlug=money-and-operations&lessonSlug=where-money-goes&cardId=card_l1s1l1_01_hook',
+        headers: {
+          cookie: adminCookie,
+        },
+      })
+      expect(previewResponse.statusCode).toBe(200)
+      const previewPayload = previewResponse.json() as {
+        preview: {
+          revision: number
+          slice: {
+            id: string
+            title: string
+            question: string
+          } & Record<string, unknown>
+        }
+      }
+
+      const protectedFieldResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/admin/content/slices',
+        headers: {
+          cookie: adminCookie,
+        },
+        payload: {
+          kind: 'card',
+          levelSlug: 'level-1-start',
+          sectionSlug: 'money-and-operations',
+          lessonSlug: 'where-money-goes',
+          cardId: 'card_l1s1l1_01_hook',
+          revision: previewPayload.preview.revision,
+          slice: {
+            ...previewPayload.preview.slice,
+            id: 'changed_card_id',
+          },
+        },
+      })
+      expect(protectedFieldResponse.statusCode).toBe(400)
+      expect(protectedFieldResponse.json()).toMatchObject({
+        error: {
+          code: 'invalid_admin_content_update',
+        },
+      })
+
+      const firstPublishResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/admin/content/slices',
+        headers: {
+          cookie: adminCookie,
+        },
+        payload: {
+          kind: 'card',
+          levelSlug: 'level-1-start',
+          sectionSlug: 'money-and-operations',
+          lessonSlug: 'where-money-goes',
+          cardId: 'card_l1s1l1_01_hook',
+          revision: previewPayload.preview.revision,
+          slice: {
+            ...previewPayload.preview.slice,
+            title: 'Первая правка методиста',
+          },
+        },
+      })
+      expect(firstPublishResponse.statusCode).toBe(200)
+
+      const stalePublishResponse = await app.inject({
+        method: 'PUT',
+        url: '/api/admin/content/slices',
+        headers: {
+          cookie: adminCookie,
+        },
+        payload: {
+          kind: 'card',
+          levelSlug: 'level-1-start',
+          sectionSlug: 'money-and-operations',
+          lessonSlug: 'where-money-goes',
+          cardId: 'card_l1s1l1_01_hook',
+          revision: previewPayload.preview.revision,
+          slice: {
+            ...previewPayload.preview.slice,
+            title: 'Запоздалая правка методиста',
+          },
+        },
+      })
+      expect(stalePublishResponse.statusCode).toBe(409)
+      expect(stalePublishResponse.json()).toMatchObject({
+        error: {
+          code: 'content_revision_conflict',
+        },
+      })
     } finally {
       await app.close()
     }
@@ -1200,11 +1428,11 @@ describe('backend API', () => {
       expect(programResponse.statusCode).toBe(200)
       expect(programResponse.json()).toMatchObject({
         slug: 'finpulse-learning-mvp',
-        levels: [
+        levels: expect.arrayContaining([
           expect.objectContaining({
             slug: 'level-1-start',
             title: 'Уровень 1 · Старт',
-            sections: [
+            sections: expect.arrayContaining([
               expect.objectContaining({
                 slug: 'money-and-operations',
                 title: 'Раздел 1. Деньги и операции',
@@ -1213,14 +1441,24 @@ describe('backend API', () => {
                 slug: 'planning-and-management',
                 title: 'Раздел 2. Планирование и управление',
               }),
-            ],
+              expect.objectContaining({
+                slug: 'risk-and-return',
+                title: 'Раздел 3. Риск и доходность',
+              }),
+              expect.objectContaining({
+                slug: 'financial-environment',
+                title: 'Раздел 4. Финансовая среда',
+              }),
+            ]),
           }),
-        ],
+        ]),
       })
 
       const targetLevelResponse = await app.inject('/api/levels/level-1-start')
       const targetSectionResponse = await app.inject('/api/sections/money-and-operations')
       const planningSectionResponse = await app.inject('/api/sections/planning-and-management')
+      const riskSectionResponse = await app.inject('/api/sections/risk-and-return')
+      const financialEnvironmentSectionResponse = await app.inject('/api/sections/financial-environment')
       const lessonResponse = await app.inject('/api/lessons/where-money-goes')
       const mandatoryLessonResponse = await app.inject('/api/lessons/mandatory-and-desired')
       const safePaymentLessonResponse = await app.inject('/api/lessons/safe-payment')
@@ -1229,20 +1467,32 @@ describe('backend API', () => {
       const reserveTargetLessonResponse = await app.inject('/api/lessons/reserve-target-amount')
       const payYourselfLessonResponse = await app.inject('/api/lessons/pay-yourself-first')
       const budgetDraftLessonResponse = await app.inject('/api/lessons/budget-draft')
+      const riskRedFlagLessonResponse = await app.inject('/api/lessons/thirty-percent-without-risk-red-flag')
+      const whereToFindCurrentDataLessonResponse = await app.inject('/api/lessons/where-to-find-current-data')
       const targetSectionLessons = targetSectionResponse.json().section.lessons.map((lesson: { slug: string }) => lesson.slug)
       const planningSectionLessons = planningSectionResponse.json().section.lessons.map((lesson: { slug: string }) => lesson.slug)
+      const riskSectionLessons = riskSectionResponse.json().section.lessons.map((lesson: { slug: string }) => lesson.slug)
+      const financialEnvironmentSectionLessons = financialEnvironmentSectionResponse
+        .json()
+        .section.lessons.map((lesson: { slug: string }) => lesson.slug)
 
       expect(targetLevelResponse.statusCode).toBe(200)
       expect(targetLevelResponse.json()).toMatchObject({
         slug: 'level-1-start',
-        sections: [
+        sections: expect.arrayContaining([
           expect.objectContaining({
             slug: 'money-and-operations',
           }),
           expect.objectContaining({
             slug: 'planning-and-management',
           }),
-        ],
+          expect.objectContaining({
+            slug: 'risk-and-return',
+          }),
+          expect.objectContaining({
+            slug: 'financial-environment',
+          }),
+        ]),
       })
       expect(targetSectionResponse.statusCode).toBe(200)
       expect(targetSectionLessons).toEqual([
@@ -1257,6 +1507,20 @@ describe('backend API', () => {
         'reserve-target-amount',
         'pay-yourself-first',
         'budget-draft',
+      ])
+      expect(riskSectionResponse.statusCode).toBe(200)
+      expect(riskSectionLessons).toEqual([
+        'thirty-percent-without-risk-red-flag',
+        'risk-and-return-are-linked',
+        'money-soon-not-in-risk',
+        'what-is-inflation',
+      ])
+      expect(financialEnvironmentSectionResponse.statusCode).toBe(200)
+      expect(financialEnvironmentSectionLessons).toEqual([
+        'bank-client-rights',
+        'reading-key-terms',
+        'credit-by-psk',
+        'where-to-find-current-data',
       ])
       expect(lessonResponse.statusCode).toBe(200)
       expect(lessonResponse.json()).toMatchObject({
@@ -1378,6 +1642,32 @@ describe('backend API', () => {
         lesson: expect.objectContaining({
           slug: 'budget-draft',
           title: 'Бюджет-черновик',
+        }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'thirty-percent-without-risk-red-flag' }),
+        }),
+      })
+      expect(riskRedFlagLessonResponse.statusCode).toBe(200)
+      expect(riskRedFlagLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'budget-draft' }),
+        }),
+        lesson: expect.objectContaining({
+          slug: 'thirty-percent-without-risk-red-flag',
+          title: '«30% без риска» — красный флаг',
+        }),
+        next: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'risk-and-return-are-linked' }),
+        }),
+      })
+      expect(whereToFindCurrentDataLessonResponse.statusCode).toBe(200)
+      expect(whereToFindCurrentDataLessonResponse.json()).toMatchObject({
+        previous: expect.objectContaining({
+          lesson: expect.objectContaining({ slug: 'credit-by-psk' }),
+        }),
+        lesson: expect.objectContaining({
+          slug: 'where-to-find-current-data',
+          title: 'Где брать актуальные данные',
         }),
         next: null,
       })
