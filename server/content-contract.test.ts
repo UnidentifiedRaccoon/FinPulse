@@ -102,6 +102,8 @@ describe('content API contract', () => {
       const reserveTargetLessonResponse = await app.inject('/api/lessons/reserve-target-amount')
       const payYourselfLessonResponse = await app.inject('/api/lessons/pay-yourself-first')
       const budgetDraftLessonResponse = await app.inject('/api/lessons/budget-draft')
+      const riskRedFlagLessonResponse = await app.inject('/api/lessons/thirty-percent-without-risk-red-flag')
+      const whereToFindCurrentDataLessonResponse = await app.inject('/api/lessons/where-to-find-current-data')
       const removedEmergencyFundLessonResponse = await app.inject('/api/lessons/why-emergency-fund')
       const removedReserveLessonResponse = await app.inject('/api/lessons/reserve-amount')
 
@@ -137,7 +139,13 @@ describe('content API contract', () => {
       expect(budgetDraftLessonResponse.statusCode).toBe(200)
       expect(lessonDetailsSchema.safeParse(budgetDraftLessonResponse.json()).success).toBe(true)
       expect(budgetDraftLessonResponse.json().previous.lesson.slug).toBe('pay-yourself-first')
-      expect(budgetDraftLessonResponse.json().next).toBeNull()
+      expect(budgetDraftLessonResponse.json().next.lesson.slug).toBe('thirty-percent-without-risk-red-flag')
+      expect(riskRedFlagLessonResponse.statusCode).toBe(200)
+      expect(lessonDetailsSchema.safeParse(riskRedFlagLessonResponse.json()).success).toBe(true)
+      expect(riskRedFlagLessonResponse.json().previous.lesson.slug).toBe('budget-draft')
+      expect(whereToFindCurrentDataLessonResponse.statusCode).toBe(200)
+      expect(lessonDetailsSchema.safeParse(whereToFindCurrentDataLessonResponse.json()).success).toBe(true)
+      expect(whereToFindCurrentDataLessonResponse.json().next).toBeNull()
       expect(removedEmergencyFundLessonResponse.statusCode).toBe(404)
       expect(removedReserveLessonResponse.statusCode).toBe(404)
     } finally {

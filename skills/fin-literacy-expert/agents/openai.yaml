@@ -1,0 +1,7 @@
+interface:
+  display_name: "Fin Literacy Expert"
+  short_description: "Checks financial-literacy facts safely"
+  default_prompt: "Use $fin-literacy-expert to fact-check FinPulse financial-literacy content and flag safety risks."
+
+policy:
+  allow_implicit_invocation: true

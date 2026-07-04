@@ -1,0 +1,481 @@
+import type { ReactNode } from 'react'
+import { useCallback, useState } from 'react'
+import { CircleUserRound, LogIn, LogOut, Map, type LucideIcon } from 'lucide-react'
+import { Link, Navigate, Route, Routes, useLocation, useNavigate, useNavigationType } from 'react-router'
+
+import type { ApiUser, ProgressResponse, ReflectionAnswerPayload, ReflectionAnswersResponse } from '@/api/client'
+import { Button } from '@/components/ui/button'
+import type { PreviewScreenResetPayload } from '@/features/lesson-reader/LessonSession'
+import { CategorizationColumnsExperimentPage } from '@/pages/CategorizationColumnsExperimentPage'
+import { EntryPage } from '@/pages/EntryPage'
+import { LessonPage } from '@/pages/LessonPage'
+import { LevelPage } from '@/pages/LevelPage'
+import { ProgramOverviewPage } from '@/pages/ProgramOverviewPage'
+import { SectionPage } from '@/pages/SectionPage'
+import { cn } from '@/lib/utils'
+import { CATEGORIZATION_COLUMNS_PREVIEW_PATH, isCategorizationColumnsPreviewPath } from '@/app/learnerRoutes'
+import { getRouteTransitionKind, type RouteTransitionKind } from '@/shared/routeTransitions'
+
+export function LearnerAppShell({
+  user,
+  authError,
+  progressError,
+  reflectionError,
+  reflectionAnswers,
+  progress,
+  isAuthBusy,
+  isAuthReady,
+  onLogin,
+  onRegister,
+  onLogout,
+  markLessonProgress,
+  markCardProgress,
+  saveReflectionAnswer,
+  chrome = 'production',
+  initialCardId,
+  onPreviewScreenReset,
+  previewScreenResetKey,
+}: {
+  user: ApiUser | null
+  authError: string
+  progressError: string
+  reflectionError: string
+  reflectionAnswers: ReflectionAnswersResponse | null
+  progress: ProgressResponse | null
+  isAuthBusy: boolean
+  isAuthReady: boolean
+  onLogin: (login: string, password: string) => Promise<void>
+  onRegister: (login: string, password: string) => Promise<void>
+  onLogout: () => Promise<boolean>
+  markLessonProgress: (lessonSlug: string, payload: { viewed?: boolean; completed?: boolean }) => Promise<void>
+  markCardProgress: (cardId: string, payload: { viewed?: boolean; completed?: boolean }) => Promise<void>
+  saveReflectionAnswer: (cardId: string, payload: ReflectionAnswerPayload) => Promise<void>
+  chrome?: 'production' | 'embedded-preview'
+  initialCardId?: string
+  onPreviewScreenReset?: (payload: PreviewScreenResetPayload) => void
+  previewScreenResetKey?: number
+}) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const navigationType = useNavigationType()
+  const isLessonRoute = location.pathname.startsWith('/lessons/')
+  const isPathRoute = location.pathname.startsWith('/levels/')
+  const isDesignPreviewRoute = isCategorizationColumnsPreviewPath(location.pathname)
+  const isEmbeddedPreview = chrome === 'embedded-preview'
+  const showAuthenticatedShell = Boolean(user) && !isDesignPreviewRoute
+  const showDesktopChrome = showAuthenticatedShell && !isEmbeddedPreview
+  const showMobileNavigation = showAuthenticatedShell && !isLessonRoute && !isEmbeddedPreview
+  const [routeTransitionState, setRouteTransitionState] = useState<{
+    pathname: string
+    transition: RouteTransitionKind
+  }>(() => ({
+    pathname: location.pathname,
+    transition: 'none',
+  }))
+  let routeTransition = routeTransitionState.transition
+  if (routeTransitionState.pathname !== location.pathname) {
+    const nextRouteTransitionState = {
+      pathname: location.pathname,
+      transition: getRouteTransitionKind(routeTransitionState.pathname, location.pathname, navigationType),
+    }
+    setRouteTransitionState(nextRouteTransitionState)
+    routeTransition = nextRouteTransitionState.transition
+  }
+  const handleLogoutAndRedirect = useCallback(async () => {
+    const didLogout = await onLogout()
+    if (didLogout) {
+      navigate('/', { replace: true })
+    }
+  }, [navigate, onLogout])
+
+  return (
+    <div
+      className={cn(
+        'min-h-svh bg-[var(--fr-surface-canvas)] text-[var(--fr-text-primary)]',
+        showDesktopChrome && 'lg:pl-[18rem]',
+      )}
+      data-learner-chrome={chrome}
+    >
+      {showDesktopChrome ? (
+        <DesktopAppSidebar
+          authError={authError}
+          isAuthBusy={isAuthBusy}
+          onLogout={handleLogoutAndRedirect}
+          pathname={location.pathname}
+          user={user}
+        />
+      ) : null}
+
+      <main
+        className={cn(
+          'mx-auto w-full',
+          getMainLayoutClass({
+            isDesignPreviewRoute,
+            isLessonRoute,
+            isPathRoute,
+            showAuthenticatedShell,
+          }),
+          showMobileNavigation ? 'pb-[calc(6.75rem+env(safe-area-inset-bottom))] lg:pb-8' : null,
+        )}
+      >
+        {showAuthenticatedShell
+          ? [progressError, reflectionError].filter(Boolean).map((error) => (
+              <p
+                className="mb-4 w-full rounded-[18px] border border-[var(--fr-color-danger-500)]/30 bg-[var(--fr-color-danger-50)] p-3 text-sm leading-6 text-[var(--fr-color-danger-500)]"
+                key={error}
+              >
+                {error}
+              </p>
+            ))
+          : null}
+        {isDesignPreviewRoute ? (
+          <Routes>
+            <Route path={CATEGORIZATION_COLUMNS_PREVIEW_PATH} element={<CategorizationColumnsExperimentPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        ) : showAuthenticatedShell ? (
+          <RouteTransitionFrame pathname={location.pathname} transition={routeTransition}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/program" replace />} />
+              <Route
+                path="/profile"
+                element={
+                  <EntryPage
+                    authError={authError}
+                    isAuthBusy={isAuthBusy}
+                    isAuthReady={isAuthReady}
+                    onLogin={onLogin}
+                    onLogout={handleLogoutAndRedirect}
+                    onRegister={onRegister}
+                    progress={progress}
+                    reflectionAnswers={reflectionAnswers}
+                    user={user}
+                  />
+                }
+              />
+              <Route path="/program" element={<ProgramOverviewPage progress={progress} />} />
+              <Route path="/levels/:levelSlug" element={<LevelPage progress={progress} />} />
+              <Route path="/levels/:levelSlug/sections/:sectionSlug" element={<SectionPage progress={progress} />} />
+              <Route
+                path="/lessons/:lessonSlug"
+                element={
+                  <LessonPage
+                    initialCardId={initialCardId}
+                    markCardProgress={markCardProgress}
+                    markLessonProgress={markLessonProgress}
+                    onPreviewScreenReset={onPreviewScreenReset}
+                    progress={progress}
+                    previewScreenResetKey={previewScreenResetKey}
+                    saveReflectionAnswer={saveReflectionAnswer}
+                    user={user}
+                  />
+                }
+              />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </RouteTransitionFrame>
+        ) : (
+          <EntryPage
+            authError={authError}
+            isAuthBusy={isAuthBusy}
+            isAuthReady={isAuthReady}
+            onLogin={onLogin}
+            onLogout={handleLogoutAndRedirect}
+            onRegister={onRegister}
+            progress={null}
+            reflectionAnswers={null}
+            user={null}
+          />
+        )}
+      </main>
+
+      {showMobileNavigation ? (
+        <MobileBottomNavigation
+          authError={authError}
+          pathname={location.pathname}
+          user={user}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+function getMainLayoutClass({
+  isDesignPreviewRoute,
+  isLessonRoute,
+  isPathRoute,
+  showAuthenticatedShell,
+}: {
+  isDesignPreviewRoute: boolean
+  isLessonRoute: boolean
+  isPathRoute: boolean
+  showAuthenticatedShell: boolean
+}) {
+  if (isDesignPreviewRoute) return 'max-w-none px-0 py-0'
+
+  if (showAuthenticatedShell && isPathRoute) return 'max-w-[720px] px-0 py-0'
+  if (showAuthenticatedShell && isLessonRoute) return 'max-w-none px-0 py-0 lg:px-8 lg:py-6'
+  return 'max-w-[560px] px-0 py-5 sm:py-6 lg:max-w-[720px]'
+}
+
+type NavigationItem = {
+  label: string
+  to: string
+  Icon: LucideIcon
+  isActive: (pathname: string) => boolean
+}
+
+const learningNavigationItem: NavigationItem = {
+  label: 'Обучение',
+  to: '/program',
+  Icon: Map,
+  isActive: (pathname) =>
+    pathname === '/program' ||
+    pathname.startsWith('/levels/') ||
+    pathname.startsWith('/lessons/'),
+}
+
+const accountNavigationItem: NavigationItem = {
+  label: 'Профиль',
+  to: '/profile',
+  Icon: CircleUserRound,
+  isActive: (pathname) => pathname === '/profile',
+}
+
+function RouteTransitionFrame({
+  children,
+  pathname,
+  transition,
+}: {
+  children: ReactNode
+  pathname: string
+  transition: RouteTransitionKind
+}) {
+  return (
+    <div
+      className={cn(
+        transition !== 'none' && 'fr-route-transition',
+        transition !== 'none' && `fr-route-transition--${transition}`,
+      )}
+      data-route-pathname={pathname}
+      data-route-transition={transition}
+      key={pathname}
+    >
+      {children}
+    </div>
+  )
+}
+
+function NotFoundPage() {
+  return (
+    <section className="flex min-h-[55vh] flex-col justify-center gap-4" aria-labelledby="not-found-heading">
+      <div className="min-w-0">
+        <p className="text-xs font-black uppercase leading-4 tracking-normal text-[var(--fr-color-sky-600)]">404</p>
+        <h1 id="not-found-heading" className="mt-1 text-3xl font-black leading-10 tracking-normal text-[var(--fr-text-primary)]">
+          Страница не найдена
+        </h1>
+        <p className="mt-2 text-sm leading-6 text-[var(--fr-text-secondary)]">
+          Такого учебного маршрута в текущем MVP нет.
+        </p>
+      </div>
+      <Button asChild className="w-fit">
+        <Link to="/program">К обучению</Link>
+      </Button>
+    </section>
+  )
+}
+
+const desktopNavigationItems: NavigationItem[] = [learningNavigationItem, accountNavigationItem]
+
+function getMobileNavigationItems(user: ApiUser | null): NavigationItem[] {
+  return [
+    learningNavigationItem,
+    {
+      label: user ? 'Профиль' : 'Войти',
+      to: user ? '/profile' : '/',
+      Icon: user ? CircleUserRound : LogIn,
+      isActive: (pathname) => (user ? pathname === '/profile' : pathname === '/'),
+    },
+  ]
+}
+
+const navigationIconClassName =
+  'flex items-center justify-center rounded-2xl text-[var(--fr-color-sky-500)] transition group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100'
+
+const mobileNavigationItemClassName =
+  'group flex min-h-14 items-center justify-center border border-transparent font-black uppercase tracking-normal text-[var(--fr-text-secondary)] transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25 disabled:opacity-50 motion-reduce:transition-none flex-col gap-1 rounded-[18px] px-2 py-2 text-[11px] leading-4 hover:bg-[var(--fr-surface-soft)] hover:text-[var(--fr-color-sky-600)]'
+
+const logoutButtonClassName =
+  'min-h-11 w-full justify-start rounded-[18px] px-3 text-[var(--fr-text-secondary)] hover:bg-[var(--fr-surface-soft)]'
+
+function DesktopAppSidebar({
+  user,
+  authError,
+  isAuthBusy,
+  onLogout,
+  pathname,
+}: {
+  user: ApiUser | null
+  authError: string
+  isAuthBusy: boolean
+  onLogout: () => Promise<void>
+  pathname: string
+}) {
+  return (
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-[var(--fr-border-default)] bg-[var(--fr-surface-card)] lg:flex">
+      <div className="px-6 pb-6 pt-8">
+        <Link
+          aria-label="ФинПульс"
+          className="inline-flex min-h-11 items-center rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25"
+          to="/program"
+        >
+          <img
+            alt=""
+            aria-hidden="true"
+            className="h-auto w-[212px] max-w-full object-contain"
+            height={265}
+            src="/assets/brand/finpulse-large-logo.png"
+            width={1400}
+          />
+        </Link>
+      </div>
+
+      <AppNavigation ariaLabel="Боковое меню приложения" items={desktopNavigationItems} pathname={pathname} variant="desktop" />
+
+      <DesktopAccountDock
+        authError={authError}
+        isAuthBusy={isAuthBusy}
+        onLogout={onLogout}
+        user={user}
+      />
+    </aside>
+  )
+}
+
+function DesktopAccountDock({
+  user,
+  authError,
+  isAuthBusy,
+  onLogout,
+}: {
+  user: ApiUser | null
+  authError: string
+  isAuthBusy: boolean
+  onLogout: () => Promise<void>
+}) {
+  return (
+    <div className="mt-auto flex flex-col gap-3 border-t border-[var(--fr-border-subtle)] p-4">
+      {user ? (
+        <>
+          <div className="min-w-0 px-2">
+            <p className="truncate text-sm font-bold leading-5 text-[var(--fr-text-primary)]">{user.login}</p>
+          </div>
+          <Button className={logoutButtonClassName} disabled={isAuthBusy} onClick={onLogout} type="button" variant="ghost">
+            <LogOut data-icon="inline-start" />
+            Выйти
+          </Button>
+        </>
+      ) : (
+        <Button asChild className="min-h-12 w-full justify-start rounded-[18px]" variant="outline">
+          <Link to="/">
+            <LogIn data-icon="inline-start" />
+            Войти
+          </Link>
+        </Button>
+      )}
+      {authError ? <p className="text-sm leading-5 text-[var(--fr-color-danger-500)]">{authError}</p> : null}
+    </div>
+  )
+}
+
+function MobileBottomNavigation({
+  user,
+  authError,
+  pathname,
+}: {
+  user: ApiUser | null
+  authError: string
+  pathname: string
+}) {
+  const mobileItems = getMobileNavigationItems(user)
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--fr-border-default)] bg-[var(--fr-surface-card)]/96 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(18,52,89,0.08)] backdrop-blur lg:hidden">
+      <div className="mx-auto flex w-full max-w-[560px] flex-col gap-2">
+        {authError ? <p className="text-xs leading-4 text-[var(--fr-color-danger-500)]">{authError}</p> : null}
+        <nav
+          aria-label="Нижнее меню приложения"
+          className="grid w-full grid-cols-2 gap-2"
+        >
+          {mobileItems.map((item) => (
+            <AppNavigationLink isActive={item.isActive(pathname)} item={item} key={item.label} variant="mobile" />
+          ))}
+        </nav>
+      </div>
+    </div>
+  )
+}
+
+function AppNavigation({
+  ariaLabel,
+  items,
+  pathname,
+  variant,
+}: {
+  ariaLabel: string
+  items: NavigationItem[]
+  pathname: string
+  variant: 'desktop' | 'mobile'
+}) {
+  return (
+    <nav
+      aria-label={ariaLabel}
+      className={cn(
+        variant === 'desktop' && 'flex flex-1 flex-col gap-2 px-4',
+        variant === 'mobile' && 'mx-auto grid w-full max-w-[560px] grid-cols-2 gap-2',
+      )}
+    >
+      {items.map((item) => (
+        <AppNavigationLink isActive={item.isActive(pathname)} item={item} key={item.label} variant={variant} />
+      ))}
+    </nav>
+  )
+}
+
+function AppNavigationLink({
+  item,
+  isActive,
+  variant,
+}: {
+  item: NavigationItem
+  isActive: boolean
+  variant: 'desktop' | 'mobile'
+}) {
+  const Icon = item.Icon
+
+  return (
+    <Link
+      aria-current={isActive ? 'page' : undefined}
+      className={cn(
+        'group flex min-h-14 items-center border border-transparent font-black uppercase tracking-normal text-[var(--fr-text-secondary)] transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-sky-500)]/25 motion-reduce:transition-none',
+        variant === 'desktop' &&
+          'gap-4 rounded-[22px] px-4 text-sm leading-5 hover:bg-[var(--fr-surface-soft)] hover:text-[var(--fr-color-sky-600)]',
+        variant === 'mobile' && mobileNavigationItemClassName,
+        isActive && 'border-[var(--fr-color-sky-400)] bg-[var(--fr-color-brand-50)] text-[var(--fr-color-sky-600)]',
+      )}
+      to={item.to}
+    >
+      <span
+        className={cn(
+          navigationIconClassName,
+          variant === 'desktop' && 'size-10',
+          variant === 'mobile' && 'size-8',
+          isActive && 'text-[var(--fr-color-sky-600)]',
+        )}
+      >
+        <Icon aria-hidden="true" className={cn(variant === 'desktop' ? 'size-7' : 'size-6')} />
+      </span>
+      <span className="truncate">{item.label}</span>
+    </Link>
+  )
+}

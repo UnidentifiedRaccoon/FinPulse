@@ -1,6 +1,6 @@
 # Project State — FinPulse Learning MVP
 
-Last updated: 2026-06-30
+Last updated: 2026-07-04
 
 This file is the compact current-state snapshot for agents. Detailed task history
 lives in `harness/tasks/review/T-*.md`; do not re-expand this file into a task
@@ -13,8 +13,16 @@ The current workspace additionally includes T-152 content updates for Level 1
 Section 2, T-153/T-154 section passport UI/content updates, and T-156/T-159
 categorization-column review work, T-160 lesson 1-4 review edits, T-161
 project-owned content editor skill, T-162 content editor pass for lessons
-5-8, and T-163 DB-backed content editor work. The learner app is a Vite React TypeScript
-SPA backed by a Fastify/PostgreSQL API. A separate Next.js internal admin app exists under
+5-8, T-163 DB-backed content editor work, T-164 production-renderer admin
+content preview work, T-165 full lesson-shell admin preview parity work,
+T-166 project-owned financial-literacy expert skill, T-167 route-level admin
+learner preview work, T-168 project-owned lesson methodologist skill,
+T-169 Level 1 Section 3 risk-return lesson content, T-170 bounded admin
+preview dialog work, T-172 admin user progress map work, T-173 Level 1
+lessons 10-16 content integration, T-174 admin JSON editor syntax
+highlighting, and T-175 content editor polish for lessons 9-16. The
+learner app is a Vite React TypeScript SPA backed by a Fastify/PostgreSQL API.
+A separate Next.js internal admin app exists under
 `apps/admin` for the read-only curator progress board accepted by ADR-0010 and
 ADR-0011, now extended with the ADR-0012 content editor.
 
@@ -24,12 +32,35 @@ Recent state that matters for new work:
   `Level` / `Section` directly;
 - legacy `Module` / `Unit`, `t1-start`, and `t1_start` runtime/API names are
   historical only and must not be reintroduced;
-- active content is Level 1, two sections, eight lessons;
+- active content is Level 1, four sections, sixteen lessons;
 - published runtime content is stored in PostgreSQL JSONB content tables; `src/content/**`
   is now the seed fixture/migration source, not the runtime fallback after
   startup seeding;
 - the internal admin `/content` editor can update guarded level/section/card
   text slices through `/api/admin/content/**`;
+- the admin `/content` JSON editor remains a native textarea and now renders an
+  aria-hidden syntax-highlight overlay for keys, strings, numbers, booleans,
+  null, and punctuation;
+- admin card preview now reuses the learner production `LessonCardFrame` and
+  `LessonCardRenderer` instead of a handmade preview approximation;
+- admin card preview now renders the shared production `LessonScreenShell`,
+  including the learner progress header, lesson goal, card frame/renderer, and
+  bottom action, with shared learner CSS imported by both apps;
+- admin `/content` preview now embeds the real learner route runtime via
+  `MemoryRouter`, a `LearningContentClient` overlay, and synthetic local-only
+  preview progress/reflection state; valid JSON edits update the route preview
+  live, while invalid JSON keeps the last valid preview graph with an editor
+  error; the preview reset control clears only the current learner screen state
+  without remounting the whole embedded route; the admin Tailwind build scans
+  the shared learner app/pages/program navigation sources so route previews keep
+  production layout styling; learner
+  dialogs opened inside the route preview are bounded to the preview pane rather
+  than the whole admin browser viewport;
+- admin user details now render progress as a Level -> Section -> Lesson ->
+  Screen map with a current-position summary, section progress ratios, lesson
+  rows, and screen checklists; the read-only admin progress API includes
+  `lessonOrder` and `cardOrder` for explicit ordering and still excludes
+  private reflection/artifact answer text;
 - section path headings render learner-facing titles without the `Раздел N.`
   prefix and show a small chevron-only trigger for expandable descriptions
   sourced from `section.description`;
@@ -58,11 +89,23 @@ Recent state that matters for new work:
   the product result, and two-line ellipsis/clamp for long labels;
 - plain labels, ids, CTA labels, variants, statistic values, and technical keys
   remain plain text;
+- `skills/finpulse-lesson-methodologist` is the project-owned methodologist
+  skill for creating source Markdown and runtime JSON lesson drafts from
+  approved topics, enforcing the eight-screen lesson architecture for Level 1
+  and later levels, requiring `fin-literacy-expert` review, and handing prose
+  polish to `finpulse-content-editor`;
 - reusable project skills live under `skills/**`; `skills/finpulse-content-editor`
-  is the current editorial automation contract for improving methodologist
-  lesson copy and returning only `Needs review` items;
+  is the editorial automation contract for improving methodologist lesson copy
+  and returning only `Needs review` items;
+- `skills/fin-literacy-expert` is the project-owned financial-literacy SME
+  skill for domain briefs, fact-checking, source/safety review, and keeping
+  educational explanations separate from financial recommendations;
 - Level 1 lessons 5-8 have been polished with the project content editor rubric;
   Section 2 runtime JSON and source Markdown are synced for that pass;
+- Level 1 lessons 9-16 have now received a deeper `finpulse-content-editor`
+  polish pass; Section 3/4 runtime JSON and source Markdown are synced, while
+  protected lesson structure, statistics, source links, and education-vs-advice
+  boundaries remain unchanged;
 - route/loading/lesson transitions and mobile card rhythm are already applied;
 - stale design experiment routes were removed after rollout.
 
@@ -108,6 +151,16 @@ hydrated by the backend content service. Seed fixtures live under
   - `reserve-target-amount` — `Сколько держать в резерве`
   - `pay-yourself-first` — `Правило «сначала себе»`
   - `budget-draft` — `Бюджет-черновик`
+- Section: `risk-and-return`, title `Раздел 3. Риск и доходность`
+  - `thirty-percent-without-risk-red-flag` — `«30% без риска» — красный флаг`
+  - `risk-and-return-are-linked` — `Риск и доходность связаны`
+  - `money-soon-not-in-risk` — `Деньги «на скоро» — не в риск`
+  - `what-is-inflation` — `Что такое инфляция`
+- Section: `financial-environment`, title `Раздел 4. Финансовая среда`
+  - `bank-client-rights` — `Права клиента банка`
+  - `reading-key-terms` — `Читаем ключевые условия`
+  - `credit-by-psk` — `Кредит по ПСК`
+  - `where-to-find-current-data` — `Где брать актуальные данные`
 
 Legacy content slugs from earlier graphs intentionally return 404 through the
 content API. Historical references may remain in old task files only.
@@ -164,6 +217,78 @@ Known local verification caveat:
 - GitHub Actions provides a PostgreSQL service and `FINPULSE_TEST_DATABASE_URL`.
 
 Most recent recorded checks:
+- T-175: `npm run check:content`,
+  `npm run test:run -- src/content/program.test.ts`, targeted Node smoke for
+  lessons 9-16, `git diff --check`,
+  `npm run content:pull tmp/content-db-export-before-t175`,
+  `npm run content:seed`, and `npm run check:content:db` passed. The local DB
+  seed now contains 1 program, 1 level, 4 sections, and 16 lessons.
+- T-174: `npm run test:admin -- apps/admin/src/components/admin/ContentEditor.test.tsx`,
+  `npm run test:admin`, `npm run typecheck:admin`, `npm run lint`,
+  `npm run build:admin`, and `git diff --check` passed.
+- T-173: `npm run check:content`,
+  `npm run test:run -- src/content/program.test.ts`, `git diff --check`,
+  custom Level 1 new-lesson contract smoke,
+  `npm run content:pull tmp/content-db-export-before-t170`,
+  `npm run content:seed`, and `npm run check:content:db` passed. The local DB
+  seed now contains 1 program, 1 level, 4 sections, and 16 lessons.
+- T-172: `npm run test:admin`,
+  `FINPULSE_TEST_DATABASE_URL=postgres://finpulse:finpulse@127.0.0.1:5432/finpulse npm run test:run -- server/app.test.ts -t "returns read-only admin progress summaries without private reflection answer text"`,
+  `npm run typecheck`, `npm run lint`, `npm run build:admin`, and
+  `git diff --check` passed. `npm run test:run -- server/app.test.ts` without
+  DB env reproduced the known backend-test DB URL requirement. The full backend
+  suite with the local DB URL still fails in the existing content API shape test
+  because parallel content work exposes 16 lessons / 4 sections while the old
+  assertion expects the earlier smaller graph.
+- T-170: `npm run test:admin`, `npm run typecheck`, `npm run lint`,
+  `FINPULSE_API_PORT=3027 npm run build:admin`, and `git diff --check` passed.
+  Browser QA on `/content` with local backend `3027` and admin production build
+  `3028` verified a lesson-node dialog opened with bounded overlay/content:
+  the overlay rect matched the preview rect, the dialog content stayed inside
+  the preview after width capping, and no framework/runtime overlay appeared.
+- T-169: `npm run check:content`, `git diff --check`,
+  `npm run content:pull tmp/content-db-export-before-t169`,
+  `npm run content:seed`, and `npm run check:content:db` passed. The local DB
+  seed now contains 1 program, 1 level, 3 sections, and 9 lessons; the DB check
+  reports `finpulse-learning-mvp`, 1 level, 9 lessons. The pre-seed local DB
+  content backup is under `tmp/content-db-export-before-t169`.
+- T-168: `python3 /Users/elena/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/finpulse-lesson-methodologist`
+  was attempted but could not run because this Python environment lacks
+  `yaml`/PyYAML. Node metadata/frontmatter smoke check, `wc -l`, and
+  `git diff --check` passed.
+- T-167: `npm run test:admin`,
+  `npm run test:run -- src/features/lesson-reader/LessonCardRenderer.test.tsx src/App.test.tsx`,
+  `npm run typecheck`, `npm run lint`, `npm run build:admin`,
+  `npm run build:web`, `npm run check:content`, and `git diff --check`
+  passed. Browser QA on `/content` with a local backend on `3017` and admin
+  production build on `3018` verified real learner route preview rendering,
+  lesson click-through to completion, route navigation, reset behavior, invalid
+  JSON fallback, no learner progress/reflection backend calls, and no horizontal
+  overflow at 1280px or 390px. Follow-up visual parity fix added admin Tailwind
+  sources for learner app/pages/program navigation and restored production main
+  layout classes for embedded preview; `npm run build:admin`,
+  `npm run typecheck`, and `git diff --check` passed. `build:web` emitted the
+  existing Vite chunk-size warning.
+- T-166: `find skills/fin-literacy-expert -maxdepth 3 -type f -print`,
+  Node metadata/frontmatter smoke check, `wc -l`, `ln -sfn` local Codex skill
+  discovery setup, and `git diff --check` passed. The skill-creator
+  `quick_validate.py` check was attempted but could not run because this Python
+  environment lacks `yaml`/PyYAML.
+- T-165: `npm run test:admin`, `npm run typecheck`, `npm run lint`,
+  `npm run build:admin`, `npm run build`, `npm run check:content`, and
+  `git diff --check` passed. Browser/Playwright QA captured before/after
+  screenshots under `harness/artifacts/T-165-admin-preview-shell/screenshots/`,
+  verified admin preview uses the shared production lesson shell with header,
+  lesson goal, card, and bottom action, verified old admin preview frame classes
+  are absent, and verified no document-level horizontal overflow at 1024px or
+  390px. `npm run build` emitted the existing Vite chunk-size warning.
+- T-164: `npm run test:admin`, `npm run typecheck`, `npm run lint`,
+  `npm run build:admin`, Browser QA on `http://localhost:3002/content` at
+  1280x720 and 390x844 with a local backend on `3011`, and `git diff --check`
+  passed. Browser QA verified production frame styles, real rich text/options,
+  card-tree selection changing the production preview, and no document-level
+  horizontal overflow at 390px. The only console warning observed was a Next dev
+  Turbopack HMR warning, not an app/runtime error.
 - T-163: `npm run content:seed`, `npm run check:content`,
   `npm run check:content:db`, `npm run content:pull`, `npm run typecheck`,
   `npm run test:admin`,

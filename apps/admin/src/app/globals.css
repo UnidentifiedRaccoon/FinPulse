@@ -1,3 +1,16 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "../../../../src/styles/lesson-reader.css";
+
+@source "../../../../src/app";
+@source "../../../../src/pages";
+@source "../../../../src/features/program-navigation";
+@source "../../../../src/features/lesson-reader";
+@source "../../../../src/shared";
+@source "../../../../src/components/ui";
+
 :root {
   --admin-bg: #f6f8fb;
   --admin-surface: #ffffff;
@@ -230,6 +243,12 @@ button:disabled {
   width: 36px;
   height: 36px;
   padding: 0;
+}
+
+.icon-text-button {
+  flex: 0 0 auto;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .admin-shell {
@@ -647,45 +666,17 @@ th.sticky-login-column {
   overflow: auto;
 }
 
-.detail-header {
+.detail-sticky-region {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
   border-bottom: 1px solid var(--admin-border-soft);
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
 }
 
-.lesson-list {
-  display: grid;
-  gap: 12px;
-  padding: 14px 18px 18px;
-}
-
-.lesson-detail {
-  border: 1px solid var(--admin-border-soft);
-  border-radius: 8px;
-  padding: 14px;
-}
-
-.lesson-detail-main {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.lesson-detail h3 {
-  margin: 0;
-  font-size: 0.98rem;
-  line-height: 1.3;
-}
-
-.lesson-detail p {
-  margin: 4px 0 0;
-  color: var(--admin-text-muted);
-  font-size: 0.82rem;
-  line-height: 1.25;
+.detail-header {
+  border-bottom: 1px solid var(--admin-border-soft);
 }
 
 .status-badge.not_started {
@@ -709,48 +700,295 @@ th.sticky-login-column {
   padding: 0 7px;
 }
 
-.timestamp-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 12px 0 0;
+.current-position-card,
+.progress-map {
+  margin: 14px 18px 0;
 }
 
-.timestamp-grid div {
+.current-position-card {
+  margin-bottom: 14px;
+}
+
+.current-position-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(20, 32, 51, 0.05);
+  padding: 14px;
+}
+
+.current-position-heading,
+.progress-section-heading,
+.progress-lesson-summary,
+.screen-progress-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.current-position-heading h3,
+.progress-section-heading h3 {
+  margin: 3px 0 0;
+  color: var(--admin-text);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.progress-breadcrumb {
+  margin: 0;
+  color: var(--admin-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.current-position-facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.current-position-facts div {
   min-width: 0;
   border-radius: 8px;
   background: var(--admin-surface-soft);
   padding: 8px;
 }
 
-.timestamp-grid dt {
+.current-position-facts dt,
+.screen-timestamps dt {
   color: var(--admin-text-muted);
   font-size: 0.72rem;
   font-weight: 760;
   text-transform: uppercase;
 }
 
-.timestamp-grid dd {
+.current-position-facts dd,
+.screen-timestamps dd {
   margin: 4px 0 0;
   color: var(--admin-text);
   font-size: 0.78rem;
   line-height: 1.2;
 }
 
-.card-progress-list {
+.progress-map {
   display: grid;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 14px;
+  padding-bottom: 18px;
 }
 
-.card-progress-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
+.progress-section {
+  border: 1px solid var(--admin-border-soft);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.progress-section.current {
+  border-color: rgba(18, 103, 216, 0.28);
+  box-shadow: inset 3px 0 0 var(--admin-blue);
+}
+
+.progress-section-heading {
+  border-bottom: 1px solid var(--admin-border-soft);
+  padding: 13px 14px;
+}
+
+.progress-section-heading p {
+  margin: 0;
   color: var(--admin-text-muted);
-  font-size: 0.82rem;
+  font-size: 0.75rem;
+  font-weight: 740;
+  line-height: 1.2;
+}
+
+.progress-section-ratios {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.progress-section-ratios span {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--admin-surface-soft);
+  color: var(--admin-text-muted);
+  font-size: 0.72rem;
+  font-weight: 760;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+.progress-lesson-list {
+  display: grid;
+}
+
+.progress-lesson {
+  border-bottom: 1px solid var(--admin-border-soft);
+}
+
+.progress-lesson:last-child {
+  border-bottom: 0;
+}
+
+.progress-lesson.current {
+  background: linear-gradient(90deg, rgba(219, 234, 254, 0.48), rgba(255, 255, 255, 0));
+}
+
+.progress-lesson-summary {
+  align-items: center;
+  cursor: pointer;
+  min-height: 58px;
+  list-style: none;
+  padding: 10px 12px;
+}
+
+.progress-lesson-summary::-webkit-details-marker {
+  display: none;
+}
+
+.progress-lesson-summary:focus-visible {
+  outline: 2px solid var(--admin-blue);
+  outline-offset: -2px;
+}
+
+.lesson-order-marker {
+  display: grid;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--admin-surface-soft);
+  color: var(--admin-text-muted);
+  font-size: 0.78rem;
+  font-weight: 780;
+}
+
+.progress-lesson.current .lesson-order-marker {
+  background: var(--admin-surface-strong);
+  color: var(--admin-blue-strong);
+}
+
+.progress-lesson-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 3px;
+}
+
+.progress-lesson-title {
+  overflow: hidden;
+  color: var(--admin-text);
+  font-size: 0.9rem;
+  font-weight: 740;
   line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress-lesson-meta {
+  color: var(--admin-text-muted);
+  font-size: 0.76rem;
+  line-height: 1.25;
+}
+
+.lesson-expand-icon {
+  flex: 0 0 auto;
+  color: var(--admin-text-muted);
+  transition: transform 160ms ease;
+}
+
+.progress-lesson[open] .lesson-expand-icon {
+  transform: rotate(180deg);
+}
+
+.screen-progress-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0 12px 12px 50px;
+}
+
+.screen-progress-item {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 9px;
+  border-left: 1px solid var(--admin-border-soft);
+  list-style: none;
+  padding: 0 0 12px 11px;
+}
+
+.screen-progress-item:last-child {
+  padding-bottom: 0;
+}
+
+.screen-progress-item.current {
+  border-left-color: var(--admin-blue);
+}
+
+.screen-status-icon {
+  margin-left: -21px;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.screen-status-icon.not_started {
+  color: var(--admin-text-soft);
+}
+
+.screen-status-icon.viewed {
+  color: var(--admin-teal);
+}
+
+.screen-status-icon.completed {
+  color: var(--admin-green);
+}
+
+.screen-progress-main {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  border-radius: 8px;
+  background: var(--admin-surface-soft);
+  padding: 9px;
+}
+
+.screen-progress-item.current .screen-progress-main {
+  background: #edf5ff;
+  box-shadow: inset 0 0 0 1px rgba(18, 103, 216, 0.2);
+}
+
+.screen-number {
+  color: var(--admin-text-muted);
+  font-size: 0.72rem;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.screen-title {
+  min-width: 0;
+  color: var(--admin-text);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.28;
+}
+
+.screen-type {
+  color: var(--admin-text-muted);
+  font-size: 0.74rem;
+  line-height: 1.25;
+}
+
+.screen-timestamps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
 }
 
 .content-editor-grid {
@@ -759,6 +997,7 @@ th.sticky-login-column {
   grid-template-columns: minmax(250px, 300px) minmax(360px, 0.95fr) minmax(360px, 1fr);
   gap: 14px;
   min-height: 0;
+  min-width: 0;
 }
 
 .content-tree-panel,
@@ -871,25 +1110,84 @@ th.sticky-login-column {
   color: var(--admin-blue-strong);
 }
 
-.json-editor {
+.json-editor-shell {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  resize: none;
-  border: 0;
   border-bottom: 1px solid var(--admin-border-soft);
   background: #0f172a;
-  color: #e5edf7;
+  overflow: hidden;
+}
+
+.json-editor-shell:focus-within {
+  box-shadow: inset 0 0 0 3px rgba(18, 103, 216, 0.28);
+}
+
+.json-editor-highlight,
+.json-editor {
+  margin: 0;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 0.82rem;
   line-height: 1.55;
-  outline: none;
   padding: 16px;
   tab-size: 2;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.json-editor:focus {
-  box-shadow: inset 0 0 0 3px rgba(18, 103, 216, 0.28);
+.json-editor-highlight {
+  position: absolute;
+  inset: 0;
+  color: #e5edf7;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.json-editor {
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: 100%;
+  min-height: 100%;
+  width: 100%;
+  resize: none;
+  border: 0;
+  background: transparent;
+  caret-color: #e5edf7;
+  color: transparent;
+  outline: none;
+  overflow: auto;
+  -webkit-text-fill-color: transparent;
+}
+
+.json-editor:disabled {
+  opacity: 1;
+}
+
+.json-editor::selection {
+  background: rgba(96, 165, 250, 0.35);
+}
+
+.json-token.key {
+  color: #93c5fd;
+}
+
+.json-token.string {
+  color: #86efac;
+}
+
+.json-token.number {
+  color: #fdba74;
+}
+
+.json-token.boolean,
+.json-token.null {
+  color: #f0abfc;
+}
+
+.json-token.punctuation {
+  color: #cbd5e1;
 }
 
 .content-editor-actions {
@@ -949,9 +1247,7 @@ th.sticky-login-column {
   text-transform: uppercase;
 }
 
-.admin-preview-card h3,
-.admin-lesson-card-preview h3,
-.preview-mini-block h4 {
+.admin-preview-card h3 {
   margin: 0;
   color: var(--admin-text);
   letter-spacing: 0;
@@ -969,125 +1265,67 @@ th.sticky-login-column {
   line-height: 1.5;
 }
 
-.admin-phone-preview {
-  width: min(100%, 430px);
-  margin: 18px auto;
-  overflow: hidden;
-  border: 1px solid var(--admin-border);
-  border-radius: 8px;
-  background: #f7fbff;
+.admin-route-preview-shell {
+  min-height: 100%;
+  background: var(--fr-surface-canvas);
+  font-family:
+    "Geist Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
-.admin-phone-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  background: var(--admin-blue);
-  color: #ffffff;
-  font-size: 0.78rem;
-  font-weight: 800;
-  padding: 10px 14px;
-  text-transform: uppercase;
+.admin-route-preview-shell > .inline-error {
+  margin: 12px;
 }
 
-.admin-lesson-card-preview {
-  display: grid;
-  gap: 14px;
-  margin: 14px;
-  border: 1px solid var(--admin-border);
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 16px;
+.admin-route-preview-shell [data-learner-chrome="embedded-preview"] {
+  min-height: 100%;
 }
 
-.admin-lesson-card-preview h3 {
-  font-size: 1.25rem;
-  line-height: 1.55rem;
+@media (max-width: 1180px) {
+  .content-editor-grid {
+    grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+    overflow: auto;
+  }
+
+  .content-preview-panel {
+    grid-column: 1 / -1;
+    min-height: 720px;
+  }
 }
 
-.preview-text {
-  display: grid;
-  gap: 10px;
-  color: var(--admin-text);
-  font-size: 0.96rem;
-  line-height: 1.55;
-}
+@media (max-width: 900px) {
+  .content-editor-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-.preview-text p {
-  margin: 0;
-}
+  .content-tree-panel,
+  .content-json-panel,
+  .content-preview-panel {
+    min-height: 360px;
+  }
 
-.preview-option-list {
-  display: grid;
-  gap: 8px;
-}
-
-.preview-option,
-.preview-mini-block {
-  border: 1px solid var(--admin-border-soft);
-  border-radius: 8px;
-  background: var(--admin-surface-soft);
-}
-
-.preview-option {
-  min-height: 42px;
-  padding: 11px 12px;
-}
-
-.preview-mini-block {
-  display: grid;
-  gap: 8px;
-  padding: 12px;
-}
-
-.preview-mini-block h4 {
-  font-size: 0.84rem;
-  line-height: 1.2;
-}
-
-.preview-mini-block ul {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-  padding-left: 18px;
-}
-
-.preview-chip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.preview-chip-list span {
-  border-radius: 999px;
-  background: #ffffff;
-  color: var(--admin-text-muted);
-  font-size: 0.78rem;
-  font-weight: 720;
-  padding: 6px 8px;
+  .json-editor-shell {
+    min-height: 320px;
+  }
 }
 
 @container detail-panel (min-width: 640px) {
-  .lesson-detail {
+  .current-position-card {
     padding: 16px;
   }
 
-  .lesson-detail-main {
-    align-items: center;
-  }
-
-  .timestamp-grid {
-    gap: 10px;
-  }
-
-  .timestamp-grid div {
-    padding: 10px;
-  }
-
-  .card-progress-list {
+  .current-position-facts,
+  .screen-timestamps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 12px;
+  }
+
+  .progress-lesson-summary {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto 16px;
+  }
+
+  .screen-progress-list {
+    padding-left: 58px;
   }
 }
 
@@ -1210,7 +1448,8 @@ th.sticky-login-column {
   }
 
   .metric-grid,
-  .timestamp-grid {
+  .current-position-facts,
+  .screen-timestamps {
     grid-template-columns: 1fr;
   }
 

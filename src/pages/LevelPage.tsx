@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft } from 'lucide-react'
 import { Link, Navigate, useLocation, useNavigationType, useParams } from 'react-router'
 
-import { api, type ProgressResponse } from '@/api/client'
-import { useApiQuery } from '@/api/useApiQuery'
+import type { ProgressResponse } from '@/api/client'
+import { useLearningContentQuery } from '@/api/contentClient'
 import { Button } from '@/components/ui/button'
 import { getOrderedLevels } from '@/content/order'
 import { LessonPathMap, LevelTransitionCard } from '@/features/program-navigation/LessonPathMap'
@@ -20,8 +20,8 @@ export function LevelPage({ progress }: { progress: ProgressResponse | null }) {
   const { levelSlug } = useParams()
   const location = useLocation()
   const navigationType = useNavigationType()
-  const levelQuery = useApiQuery(() => api.getLevel(levelSlug ?? ''), [levelSlug])
-  const programQuery = useApiQuery(api.getProgram, [])
+  const levelQuery = useLearningContentQuery((client) => client.getLevel(levelSlug ?? ''), [levelSlug])
+  const programQuery = useLearningContentQuery((client) => client.getProgram(), [])
   const levelPathState = useMemo(() => {
     if (levelQuery.status !== 'success') return null
 

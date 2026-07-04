@@ -22,6 +22,22 @@
       "description": "Раздел помогает понять финансовую подушку, посчитать ориентир резерва, настроить правило «сначала себе» и собрать простой бюджет-черновик.",
       "order": 2,
       "path": "sections/section_02_planning_and_management.json"
+    },
+    {
+      "id": "section_l1_s3_risk_return",
+      "slug": "risk-and-return",
+      "title": "Раздел 3. Риск и доходность",
+      "description": "Раздел помогает увидеть связь риска и доходности, распознавать обещания «без риска» и проверять финансовые организации в официальных источниках.",
+      "order": 3,
+      "path": "sections/section_03_risk_and_return.json"
+    },
+    {
+      "id": "section_l1_s4_financial_environment",
+      "slug": "financial-environment",
+      "title": "Раздел 4. Финансовая среда",
+      "description": "Раздел помогает понимать права клиента банка, читать ключевые условия, оценивать кредит через ПСК и находить актуальные финансовые данные в официальных источниках.",
+      "order": 4,
+      "path": "sections/section_04_financial_environment.json"
     }
   ]
 }

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { Navigate, useParams } from 'react-router'
 
-import { api, type ApiUser, type ProgressResponse, type ReflectionAnswerPayload } from '@/api/client'
-import { useApiQuery } from '@/api/useApiQuery'
-import { LessonSession } from '@/features/lesson-reader/LessonSession'
+import type { ApiUser, ProgressResponse, ReflectionAnswerPayload } from '@/api/client'
+import { useLearningContentQuery } from '@/api/contentClient'
+import { LessonSession, type PreviewScreenResetPayload } from '@/features/lesson-reader/LessonSession'
 import { LessonPageSkeleton } from '@/shared/ui/RouteLoadingSkeletons'
 
 export function LessonPage({
@@ -12,16 +12,22 @@ export function LessonPage({
   markLessonProgress,
   markCardProgress,
   saveReflectionAnswer,
+  initialCardId,
+  onPreviewScreenReset,
+  previewScreenResetKey,
 }: {
   user: ApiUser | null
   progress: ProgressResponse | null
   markLessonProgress: (lessonSlug: string, payload: { viewed?: boolean; completed?: boolean }) => Promise<void>
   markCardProgress: (cardId: string, payload: { viewed?: boolean; completed?: boolean }) => Promise<void>
   saveReflectionAnswer: (cardId: string, payload: ReflectionAnswerPayload) => Promise<void>
+  initialCardId?: string
+  onPreviewScreenReset?: (payload: PreviewScreenResetPayload) => void
+  previewScreenResetKey?: number
 }) {
   const { lessonSlug } = useParams()
   const viewedLessonSlugsRef = useRef(new Set<string>())
-  const lessonQuery = useApiQuery(() => api.getLesson(lessonSlug ?? ''), [lessonSlug])
+  const lessonQuery = useLearningContentQuery((client) => client.getLesson(lessonSlug ?? ''), [lessonSlug])
   const loadedLessonSlug = lessonQuery.status === 'success' ? lessonQuery.data.lesson.slug : null
   const handleCardCompleted = useCallback(
     (cardId: string) => markCardProgress(cardId, { completed: true }),
@@ -65,11 +71,14 @@ export function LessonPage({
     <LessonSession
       canSaveProgress={Boolean(user)}
       details={current}
+      initialCardId={initialCardId}
       isLessonCompleted={isCompleted}
       onCardCompleted={user ? handleCardCompleted : undefined}
       onCardViewed={user ? handleCardViewed : undefined}
+      onPreviewScreenReset={onPreviewScreenReset}
       onReflectionAnswerSave={user ? handleReflectionAnswerSave : undefined}
       onLessonCompleted={user ? handleLessonCompleted : undefined}
+      previewScreenResetKey={previewScreenResetKey}
     />
   )
 }

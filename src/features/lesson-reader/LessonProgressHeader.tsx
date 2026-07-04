@@ -7,6 +7,7 @@ export function LessonProgressHeader({
   backTo,
   backState,
   backLabel,
+  isBackDisabled,
   context,
   title,
   current,
@@ -14,9 +15,10 @@ export function LessonProgressHeader({
   isComplete,
   isSavedComplete,
 }: {
-  backTo: string
+  backTo?: string
   backState?: unknown
   backLabel: string
+  isBackDisabled?: boolean
   context: string
   title: string
   current: number
@@ -30,14 +32,26 @@ export function LessonProgressHeader({
     <header className="sticky top-0 z-10 border-b border-[var(--fr-border-subtle)] bg-[var(--fr-surface-canvas)]/95 px-4 pb-3 pt-3 backdrop-blur sm:rounded-b-2xl sm:border-x">
       <div className="mx-auto flex w-full max-w-[480px] flex-col gap-3">
         <div className="grid grid-cols-[44px_minmax(0,1fr)_minmax(4.75rem,auto)] items-center gap-3">
-          <Link
-            aria-label={backLabel}
-            className="flex size-11 items-center justify-center rounded-xl text-[var(--fr-text-secondary)] transition-[background-color,color,box-shadow] hover:bg-[var(--fr-surface-soft)] hover:text-[var(--fr-text-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
-            state={backState}
-            to={backTo}
-          >
-            <ChevronLeft aria-hidden="true" />
-          </Link>
+          {backTo && !isBackDisabled ? (
+            <Link
+              aria-label={backLabel}
+              className="flex size-11 items-center justify-center rounded-xl text-[var(--fr-text-secondary)] transition-[background-color,color,box-shadow] hover:bg-[var(--fr-surface-soft)] hover:text-[var(--fr-text-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
+              state={backState}
+              to={backTo}
+            >
+              <ChevronLeft aria-hidden="true" />
+            </Link>
+          ) : (
+            <button
+              aria-label={backLabel}
+              aria-disabled="true"
+              className="flex size-11 items-center justify-center rounded-xl text-[var(--fr-text-secondary)] transition-[background-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--fr-color-brand-500)]/15"
+              tabIndex={-1}
+              type="button"
+            >
+              <ChevronLeft aria-hidden="true" />
+            </button>
+          )}
           <div className="min-w-0 self-center">
             <p className="truncate text-xs font-semibold leading-5 text-[var(--fr-text-tertiary)]">{context}</p>
             <h1 className="truncate text-base font-bold leading-6 tracking-normal text-[var(--fr-text-primary)]">

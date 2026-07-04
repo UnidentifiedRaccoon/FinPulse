@@ -91,6 +91,7 @@ export type AdminUserProgressResponse = {
     sectionTitle: string
     lessonSlug: string
     lessonTitle: string
+    lessonOrder: number
     status: LessonProgressStatus
     viewedAt: string | null
     completedAt: string | null
@@ -99,6 +100,7 @@ export type AdminUserProgressResponse = {
       cardId: string
       cardType: string
       cardTitle: string | null
+      cardOrder: number
       status: LessonProgressStatus
       viewedAt: string | null
       completedAt: string | null

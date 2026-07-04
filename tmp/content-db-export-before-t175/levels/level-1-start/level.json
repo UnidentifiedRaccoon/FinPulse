@@ -1,0 +1,43 @@
+{
+  "id": "level_1_start",
+  "slug": "level-1-start",
+  "order": 1,
+  "title": "Уровень 1 · Старт",
+  "source": "docs/methodology/METHODOLOGY.md",
+  "sections": [
+    {
+      "id": "section_l1_s1_money_operations",
+      "path": "sections/section_01_money_and_operations.json",
+      "slug": "money-and-operations",
+      "order": 1,
+      "title": "Раздел 1. Деньги и операции",
+      "description": "Деньги и операции - это бытовые ситуации, с которыми мы сталкиваемся каждый день, когда оплачиваем покупки и делаем переводы. Уроки в этом разделе помогут сформировать привычки осознанных трат и бдительности с финансовыми мошенниками."
+    },
+    {
+      "id": "section_l1_s2_planning_management",
+      "path": "sections/section_02_planning_and_management.json",
+      "slug": "planning-and-management",
+      "order": 2,
+      "title": "Раздел 2. Планирование и управление",
+      "description": "Раздел помогает понять финансовую подушку, посчитать ориентир резерва, настроить правило «сначала себе» и собрать простой бюджет-черновик."
+    },
+    {
+      "id": "section_l1_s3_risk_return",
+      "path": "sections/section_03_risk_and_return.json",
+      "slug": "risk-and-return",
+      "order": 3,
+      "title": "Раздел 3. Риск и доходность",
+      "description": "Раздел помогает увидеть связь риска и доходности, распознавать обещания «без риска» и проверять финансовые организации в официальных источниках."
+    },
+    {
+      "id": "section_l1_s4_financial_environment",
+      "path": "sections/section_04_financial_environment.json",
+      "slug": "financial-environment",
+      "order": 4,
+      "title": "Раздел 4. Финансовая среда",
+      "description": "Раздел помогает понимать права клиента банка, читать ключевые условия, оценивать кредит через ПСК и находить актуальные финансовые данные в официальных источниках."
+    }
+  ],
+  "description": "Первые шаги, чтобы навести порядок в деньгах, увидеть базовые траты и внедрить парочку простых привычек.",
+  "schemaVersion": 1
+}

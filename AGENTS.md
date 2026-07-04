@@ -56,6 +56,16 @@ Before changing files, every agent must read:
 8. `harness/PARALLEL_AGENT_PROTOCOL.md` when working in parallel
 9. `docs/engineering/contributing.md` before creating branches, commits, pushes, or PRs
 
+## Project skills
+
+Reusable project skills live under `skills/**` and should be committed with the
+repo. Use `skills/finpulse-lesson-methodologist` to create source Markdown and
+runtime JSON lesson drafts from approved topics with the eight-screen lesson
+architecture. Use `skills/fin-literacy-expert` for financial-literacy domain
+briefs, fact-checking, source/safety review, and education-vs-advice
+boundaries. Use `skills/finpulse-content-editor` for applying safe lesson copy
+edits.
+
 ## Work loop
 
 For every task:

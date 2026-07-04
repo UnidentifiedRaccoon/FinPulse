@@ -872,12 +872,12 @@ describe('App', () => {
     const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     const sectionHeadings = within(lessonPath).getAllByRole('heading').map((heading) => heading.textContent)
 
-    expect(sectionHeadings).toEqual(['Деньги и операции', 'Планирование и управление'])
+    expect(sectionHeadings).toEqual(['Деньги и операции', 'Планирование и управление', 'Риск и доходность', 'Финансовая среда'])
     expect(within(lessonPath).queryByText(/^Раздел$/)).toBeNull()
     expect(within(lessonPath).queryByText(/Юнит/)).toBeNull()
     expect(within(lessonPath).queryByText('Пройден')).toBeNull()
     expect(within(lessonPath).queryByText('Сейчас')).toBeNull()
-    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(6)
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(14)
     const completedLessonButton = within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Пройден/ })
     const completedLessonCircle = completedLessonButton.querySelector('span.relative.flex')
     expect(completedLessonCircle?.className).toContain('group-hover:translate-y-[4px]')
@@ -893,7 +893,7 @@ describe('App', () => {
     const lessonPath = await screen.findByRole('region', { name: 'Разделы уровня' })
     expect(within(lessonPath).getByText('Начать')).toBeTruthy()
     expect(within(lessonPath).getByRole('button', { name: /Куда уходят деньги\. Текущий урок/ })).toBeTruthy()
-    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(7)
+    expect(within(lessonPath).queryAllByRole('button', { name: /Недоступный урок/ })).toHaveLength(15)
   })
 
   it('renders the level sticky header for the target section', async () => {

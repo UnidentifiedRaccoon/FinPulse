@@ -120,6 +120,7 @@ const detailResponse: AdminUserProgressResponse = {
       sectionTitle: 'Раздел 1. Деньги и операции',
       lessonSlug: 'where-money-goes',
       lessonTitle: 'Куда уходят деньги',
+      lessonOrder: 1,
       status: 'completed',
       viewedAt: '2026-06-10T10:00:00.000Z',
       completedAt: '2026-06-10T10:30:00.000Z',
