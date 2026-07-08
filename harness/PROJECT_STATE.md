@@ -1,6 +1,6 @@
 # Project State — FinPulse Learning MVP
 
-Last updated: 2026-07-05
+Last updated: 2026-07-08
 
 This file is the compact current-state snapshot for agents. Detailed task history
 lives in `harness/tasks/review/T-*.md`; do not re-expand this file into a task
@@ -20,8 +20,11 @@ learner preview work, T-168 project-owned lesson methodologist skill,
 T-169 Level 1 Section 3 risk-return lesson content, T-170 bounded admin
 preview dialog work, T-172 admin user progress map work, T-173 Level 1
 lessons 10-16 content integration, T-174 admin JSON editor syntax
-highlighting, T-175 content editor polish for lessons 9-16, and T-176
-adult financial competencies documentation source. The
+highlighting, T-175 content editor polish for lessons 9-16, T-176 adult
+financial competencies documentation source, T-177 board/course game frame
+documentation, T-178 Gate 1 lore Source Pack work, T-179 Gate 2 lore
+Competency Table work, T-180 Gate 3 lore Project Bible work, T-181 locked
+lore level-object canon work, and T-182 Gate 3 approval decision work. The
 learner app is a Vite React TypeScript SPA backed by a Fastify/PostgreSQL API.
 A separate Next.js internal admin app exists under
 `apps/admin` for the read-only curator progress board accepted by ADR-0010 and
@@ -95,6 +98,48 @@ Recent state that matters for new work:
   Literacy and Financial Culture Competency Framework; use it for course topic
   coverage and adult competency mapping, not as a source for current rates,
   limits, or legal values;
+- `docs/methodology/finpulse_board_course_foundation.md` is the target
+  game/lore frame for the "Доска" concept; it links adult competencies,
+  emotions, narrative progress, and the lore production pipeline contract while
+  explicitly not adding runtime gamification, diagnostics, or HR analytics to
+  the current MVP;
+- `docs/methodology/production_model_financial_lore_pipeline.md` is the
+  in-repo production pipeline source for gated financial-emotional lore work,
+  from Source Pack through Competency Table, Project Bible, Macro Arc,
+  Section Grid, vertical slice, audits, and production handoff;
+- `docs/methodology/lore_source_pack.md` is the Gate 1 / Source Pack for the
+  production lore pipeline; it separates approved inputs from open questions
+  and temporary hypotheses, records generation risks and human decisions before
+  Gate 2 / Competency Table, and explicitly prevents story, lesson, runtime, or
+  gameplay generation in this gate;
+- `docs/methodology/lore_competency_table.md` is the Gate 2 / Competency Table
+  for the production lore pipeline; it normalizes production-relevant adult
+  competencies into checkable user actions, initial game-check ideas, coverage
+  audit, overload risks, and human decisions before Gate 3 / Project Bible,
+  while explicitly avoiding Project Bible, Macro Arc, Section Grid, Emotional
+  Model, Traceability Matrix, Lesson Cards, Screen Scripts, runtime changes, or
+  personal financial recommendations;
+- `docs/methodology/lore_project_bible.md` is the Gate 3 / Project Bible for
+  the production lore pipeline; it fixes the stable hero, city, new-work,
+  Board, NPC, emotion, tone, financial-safety, competency-usage, game-action,
+  privacy/B2B boundaries, and the human-approved final level-object canon before
+  Gate 4 / Macro Arc, includes bounded working NPC/recurring-prop sets for human
+  review, and explicitly avoids Macro Arc, Section Grid, Emotional Model,
+  Traceability Matrix, Lesson Cards, Screen Scripts, runtime changes, B2B/HR
+  analytics, rewards, streaks, and 80-lesson generation;
+- human decision 2026-07-07 locks the lore level-object canon as: Level 1
+  `Комната` / `Личная мастерская`, Level 2 `Машина` / `Дом на колёсах`,
+  Level 3 `Квартира` / `Студия-лофт`, Level 4 `Дом` / `Оранжерея`, and
+  Level 5 `Гостевой двор` / `Открытая мастерская`;
+- human decision 2026-07-08 approves `docs/methodology/lore_project_bible.md`
+  as Gate 3 source of truth for Gate 4 / Macro Arc; the new-work frame is a
+  universal workplace/company without a configurable industry shell; on each
+  level the user chooses one of the two approved level objects and collects
+  that chosen object through the level; the Gate 2 competency subset and
+  `MNY-*` / `PLN-*` / `RSK-*` / `ENV-*` IDs remain canonical for Macro Arc;
+  recurring prop vocabulary and NPC-functions are approved; final emotions are
+  derived after Macro Arc / Section Grid; source-update, high-risk topic, B2B
+  privacy, and next-gate boundaries are confirmed;
 - `skills/finpulse-lesson-methodologist` is the project-owned methodologist
   skill for creating source Markdown and runtime JSON lesson drafts from
   approved topics, enforcing the eight-screen lesson architecture for Level 1
@@ -225,6 +270,75 @@ Known local verification caveat:
 - GitHub Actions provides a PostgreSQL service and `FINPULSE_TEST_DATABASE_URL`.
 
 Most recent recorded checks:
+- T-182: recorded human approval decisions before Gate 4 in
+  `docs/methodology/lore_project_bible.md` and aligned
+  `docs/methodology/finpulse_board_course_foundation.md`. Gate 3 is approved as
+  source of truth for Gate 4 / Macro Arc. The new-work frame is universal and
+  explicitly has no configurable industry shell. Each level's two approved
+  objects are now a user choice, and the user collects the chosen object through
+  that level. No Macro Arc, Section Grid, Emotional Model, Traceability Matrix,
+  Lesson Cards, Screen Scripts, runtime JSON, schemas, frontend/backend code,
+  API, database, persistence, rewards, diagnostics, HR analytics, or personal
+  financial recommendations were introduced. `git diff --check` and
+  changed/new Markdown trailing-whitespace checks passed.
+- T-181: locked the human-approved lore level-object canon in
+  `docs/methodology/lore_project_bible.md` and aligned
+  `docs/methodology/finpulse_board_course_foundation.md`. The locked objects
+  are Level 1 `Комната` / `Личная мастерская`, Level 2 `Машина` /
+  `Дом на колёсах`, Level 3 `Квартира` / `Студия-лофт`, Level 4 `Дом` /
+  `Оранжерея`, and Level 5 `Гостевой двор` / `Открытая мастерская`. No Macro
+  Arc, Section Grid, Emotional Model, Traceability Matrix, Lesson Cards, Screen
+  Scripts, runtime JSON, schemas, frontend/backend code, API, database, or
+  persistence changes were made. `git diff --check` and changed/new Markdown
+  trailing-whitespace checks passed. `npm run verify` passed content
+  validation, runtime import guard, typecheck, and lint, then stopped in backend
+  tests on the known missing backend DB env.
+- T-180: added `docs/methodology/lore_project_bible.md` as Gate 3 / Project
+  Bible for the production lore pipeline, linked it from
+  `docs/methodology/README.md`, and moved
+  `harness/tasks/review/T-180-lore-project-bible.md` to review. The document
+  fixes stable hero, city, new-work, Board, NPC, emotion, tone,
+  financial-safety, competency-usage, game-action, and privacy/B2B boundaries
+  before Gate 4 / Macro Arc; includes bounded working sets of 5 NPC functions
+  and 5 recurring objects for human review; and does not create Macro Arc,
+  Section Grid, Emotional Model, Traceability Matrix, Lesson Cards, Screen
+  Scripts, runtime changes, B2B/HR analytics, rewards, streaks, personal
+  recommendations, or 80 lessons. Source synthesis, narrative-boundary,
+  financial-safety, and gate-compliance subagents ran read-only; the compliance
+  auditor passed after the NPC/object working sets were added. `git diff
+  --check` and changed/new Markdown trailing-whitespace checks passed.
+  `npm run verify` passed content validation, runtime import guard, typecheck,
+  and lint, then stopped in backend tests on the known missing backend DB env.
+- T-179: added `docs/methodology/lore_competency_table.md` as Gate 2 /
+  Competency Table for the production lore pipeline, linked it from
+  `docs/methodology/README.md`, and moved
+  `harness/tasks/review/T-179-lore-competency-table.md` to review. The document
+  normalizes production-relevant adult competencies into checkable user
+  actions, initial game-check ideas, coverage audit, overload risks, and human
+  decisions before Gate 3 / Project Bible; it does not create Project Bible,
+  Macro Arc, Section Grid, Emotional Model, Traceability Matrix, Lesson Cards,
+  Screen Scripts, runtime changes, or personal financial recommendations.
+  `git diff --check` and new Markdown trailing-whitespace checks passed.
+  `npm run verify` passed content validation, runtime import guard, typecheck,
+  and lint, then stopped in backend tests on the known missing backend DB env.
+- T-178: copied
+  `/Users/elena/Downloads/production_model_financial_lore_pipeline.md` to
+  `docs/methodology/production_model_financial_lore_pipeline.md` with matching
+  SHA-256, added `docs/methodology/lore_source_pack.md` as Gate 1 / Source Pack,
+  linked both files from `docs/methodology/README.md`, and updated the board
+  foundation pipeline reference to a relative Markdown link. `git diff --check`
+  and new Markdown trailing-whitespace checks passed. `npm run verify` passed
+  content validation, runtime import guard, typecheck, and lint, then stopped in
+  backend tests on the known missing backend DB env.
+- T-177: added `docs/methodology/finpulse_board_course_foundation.md` as the
+  target "Доска" game/lore frame linked to adult competencies and the lore
+  production pipeline contract; wired it from `docs/methodology/README.md`,
+  `docs/methodology/METHODOLOGY.md`, and project coordination docs.
+  `git diff --check`, new-file trailing-whitespace checks, and focused admin content
+  editor tests passed. `npm run verify` passed content validation, runtime
+  import guard, typecheck, and lint, then stopped in tests on the known missing
+  backend DB env plus one full-suite admin preview test that passed in focused
+  reruns.
 - T-176: copied
   `/Users/elena/Downloads/adult_financial_competencies_2026.md` to
   `docs/methodology/adult_financial_competencies_2026.md` and normalized only
@@ -395,6 +509,10 @@ Most recent recorded checks:
 - General methodology: `docs/methodology/METHODOLOGY.md`
 - Lesson authoring regulation: `docs/methodology/AUTHORING.md`
 - Adult competencies framework: `docs/methodology/adult_financial_competencies_2026.md`
+- Board/game frame: `docs/methodology/finpulse_board_course_foundation.md`
+- Lore production pipeline: `docs/methodology/production_model_financial_lore_pipeline.md`
+- Lore Source Pack: `docs/methodology/lore_source_pack.md`
+- Lore Project Bible: `docs/methodology/lore_project_bible.md`
 - Design system: `docs/DESIGN_SYSTEM.md`
 - QA scenario map: `docs/QA_USER_SCENARIO_MAP.md`
 - Deploy runbook: `docs/operations/yandex-cloud-finpulse-deploy.md`
