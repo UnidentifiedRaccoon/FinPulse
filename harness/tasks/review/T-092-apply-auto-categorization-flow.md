@@ -1,8 +1,6 @@
 # T-092 — Apply Auto Categorization Flow
 
-## Status
-
-review
+Status: review
 
 ## Request
 

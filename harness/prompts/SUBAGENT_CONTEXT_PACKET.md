@@ -1,55 +1,38 @@
-# Subagent Context Packet Template
+# Subagent Context Packet
 
 ```md
-You are working on FinPulse Learning MVP.
+You are working on one bounded FinPulse task.
 
-Model requirement: GPT-5.5, reasoning effort xhigh.
+Model: GPT-5.5, reasoning effort xhigh.
+
+Task ID / owner:
+Outcome:
 
 Read first:
 - AGENTS.md
 - harness/PROJECT_STATE.md
-- docs/ARCHITECTURE.md
-- docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md, if touching JSON,
-  methodology, or lesson content
-- <additional docs>
-
-Task ID:
-
-Task goal:
+- <only task-routed canonical sources>
 
 Allowed write set:
--
+- <paths, or "read-only">
 
 Do not touch:
--
-
-Important constraints:
-- mobile-first educational MVP;
-- approved educational hierarchy is Program -> Level -> Section -> Lesson ->
-  Card; do not reintroduce `module`/`unit` content architecture or
-  compatibility surfaces;
-- JSON data;
-- React + TypeScript SPA/Vite;
-- Zustand only for small client state;
-- Tailwind + shadcn/ui;
-- no accounts beyond accepted minimal learner auth, diagnostics, rewards,
-  analytics, personalized recommendations, or SSR migration;
-- Level 1 lesson content must follow the accepted eight-screen architecture:
-  `single_choice`, `theory`, `categorization`, `scenario`, `artifact`,
-  `reflection`, `artifact`, `summary`.
+- <paths/boundaries>
 
 Success criteria:
--
+- <checkable criteria>
 
 Required checks:
-- `./scripts/verify.sh` if scaffold exists
-- `npm run check:content` if content/JSON changed
-- <task-specific checks>
+- <focused/risk-appropriate commands>
 
 Return exactly:
-1. Summary
+1. Summary/outcome
 2. Files changed
-3. Checks run
-4. Risks
+3. Checks run (pass/fail/blocked/skipped)
+4. Residual risks
 5. Follow-up
 ```
+
+Do not paste full task archives, screenshots, raw traces, or unrelated docs into
+the packet. Add the Program -> Level -> Section -> Lesson -> Card constraint and
+content/methodology routes when the task touches educational content.

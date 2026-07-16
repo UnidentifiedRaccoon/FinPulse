@@ -1,8 +1,6 @@
 # T-124 — Methodology MD/DOCX sync
 
-## Status
-
-review
+Status: review
 
 ## Goal
 

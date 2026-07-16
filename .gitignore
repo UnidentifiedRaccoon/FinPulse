@@ -25,6 +25,10 @@ data/
 # Local harness source bundle. The harness contents are copied into repo root.
 finpulse-mvp-harness/
 finpulse-mvp-harness.zip
+harness/tasks/.create-task.lock
+
+# Local generated context packs.
+/tmp/gate5-dev-pack-*/
 
 # Editor directories and files
 .vscode/*

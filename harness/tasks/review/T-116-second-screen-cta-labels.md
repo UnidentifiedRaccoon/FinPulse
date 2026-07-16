@@ -1,6 +1,6 @@
 # T-116 — Second-screen CTA labels
 
-Status: active
+Status: review
 Owner: Codex
 Model: GPT-5.5 / xhigh
 Started: 2026-06-13

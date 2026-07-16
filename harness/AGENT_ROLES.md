@@ -1,74 +1,50 @@
 # Agent Roles
 
-These are modes, not necessarily separate systems.
+Roles are working modes. All roles follow `AGENTS.md`, the claimed task packet,
+and routed canonical context; this file does not duplicate product policy.
 
 ## Orchestrator
 
-Purpose: split work, spawn subagents, manage conflicts, integrate results.
+Owns decomposition, claims, shared-file ordering, integration, and final
+verification.
 
-Responsibilities:
-- read project state and workboard;
-- create bounded tasks;
-- assign write sets;
-- avoid parallel conflicts;
-- collect result packets;
-- run or delegate verification;
-- update workboard/state.
-
-Must not:
-- let subagents work with vague goals;
-- spawn overlapping edits without ordering;
-- merge unverified changes to shared files.
+- creates bounded, non-overlapping tasks;
+- gives subagents only relevant context and explicit write sets;
+- keeps `PROJECT_STATE.md` and `WORKBOARD.md` centralized;
+- checks result packets and runs the integrated verification gate;
+- resolves blockers/conflicts rather than letting builders race.
 
 ## Builder
 
-Purpose: implement one bounded task.
+Owns one active task and its declared write set.
 
-Responsibilities:
-- claim task;
-- read relevant docs;
-- edit only intended write set;
-- run checks;
-- return result packet.
+- states goal, exclusions, and plan before editing;
+- makes the smallest coherent change;
+- runs focused and risk-appropriate checks;
+- updates only its task packet unless the orchestrator assigns a shared file;
+- returns files, checks, risks, and follow-up.
 
 ## Verifier
 
-Purpose: evaluate whether a task is actually complete.
+Evaluates the integrated diff against the task goal and canonical contracts.
 
-Responsibilities:
-- inspect diff;
-- run checks;
-- verify acceptance criteria;
-- catch scope creep;
-- mark task as accepted or return concrete fixes.
+- reviews evidence and runs independent checks;
+- distinguishes pass, fail, blocked, and skipped checks;
+- catches scope creep, regressions, and false-green fast verification;
+- accepts, rejects with exact fixes, or accepts with an explicit follow-up;
+- does not add unrelated features.
 
-Verifier should avoid adding unrelated features.
+## Domain specialist
 
-## Content Structure Agent
+Provides a bounded brief or review in its specialty (for example financial
+literacy, methodology, accessibility, UI, security, or operations). A domain
+specialist should usually be read-only unless given an explicit write set.
 
-Purpose: shape JSON content model and examples.
+## Refactor/integration owner
 
-Responsibilities:
-- maintain `docs/CONTENT_MODEL.md`;
-- maintain schema and validation script;
-- avoid arbitrary HTML or unstable slugs;
-- keep content model agent-friendly.
+May change shared structure only after behavior and contracts are stable.
 
-## UI Agent
-
-Purpose: build mobile-first UI components.
-
-Responsibilities:
-- use Tailwind and shadcn/ui;
-- maintain accessibility;
-- keep components composable;
-- avoid dashboard/gamification scope.
-
-## Refactor Agent
-
-Purpose: improve structure after behavior exists.
-
-Responsibilities:
-- refactor only with tests/checks;
-- keep public behavior unchanged;
-- document architecture changes if significant.
+- sequences overlapping work;
+- preserves public behavior unless the task explicitly changes it;
+- requires regression coverage and integrated verification;
+- updates durable architecture docs when the boundary genuinely changes.

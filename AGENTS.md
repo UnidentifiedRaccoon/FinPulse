@@ -1,131 +1,136 @@
-# AGENTS.md — FinPulse Learning MVP Harness
+# AGENTS.md — FinPulse Learning MVP
 
-This file is the short map for all human and AI contributors. Keep it short. Put durable knowledge in `docs/` and run-state in `harness/`.
+This is the short operating map for human and AI contributors. Durable product
+and engineering knowledge belongs in `docs/`; current coordination belongs in
+`harness/`; detailed history belongs in task packets, not in summary files.
 
-## Project shape
+## Current product boundary
 
-FinPulse MVP is a mobile-first educational web app.
+FinPulse is a mobile-first educational web app.
 
-Current MVP scope:
-- educational program material only;
-- approved educational content architecture: Program -> Level -> Section -> Lesson -> Card;
-- JSON files as the data/source-of-truth;
-- React + TypeScript;
-- SPA, preferably Vite, not Next/SSR unless an ADR changes this;
-- Zustand for small client-side state only;
-- Tailwind CSS + shadcn/ui for design system and UI primitives.
+Accepted architecture:
 
-Runtime code, JSON, API payloads, routes, and persistence use Level and Section
-directly. Do not reintroduce Program -> Module -> Unit as the project
-architecture.
+- educational hierarchy: Program -> Level -> Section -> Lesson -> Card;
+- React + TypeScript learner SPA built with Vite;
+- Fastify API with PostgreSQL for published JSONB content, learner sessions,
+  progress, and private reflection/artifact answers;
+- repository JSON under `src/content/**` as validated seed/migration fixtures;
+- source lesson Markdown as authoring provenance synchronized with approved
+  runtime content;
+- separate internal Next.js app under `apps/admin` for the accepted progress
+  board and guarded content editor;
+- Tailwind CSS + shadcn/ui; React state first and Zustand only for justified
+  small cross-route client state.
 
-Explicitly out of scope for MVP:
-- user cabinets/accounts;
-- diagnostics;
-- rewards/gamification;
-- analytics dashboards;
-- backend/admin panel;
-- production financial operations;
-- personalized recommendations;
-- SSR/Next.js unless `docs/DECISIONS.md` is updated first.
+Runtime code, payloads, routes, persistence, and new docs use Level and Section
+directly. Do not reintroduce Program -> Module -> Unit as current architecture.
+
+Still out of scope unless a new decision explicitly accepts it:
+
+- broad learner account/profile management beyond current login, progress, and
+  private saved-answer artifact;
+- diagnostics, scoring, rewards, streaks, or gamification;
+- analytics/HR dashboards, organizations, RBAC, or answer-text review;
+- broad CMS workflows beyond the accepted guarded internal editor;
+- payments, production financial operations, or personalized recommendations;
+- migration of the learner app to Next.js/SSR.
 
 ## Model policy
 
-Default model for all agentic development work: **GPT-5.5 with reasoning effort `xhigh`**.
+Default for all agentic project work is GPT-5.5 with reasoning effort `xhigh`.
+Do not downgrade unless the user explicitly asks.
 
-This applies to:
-- orchestrator agents;
-- spawned subagents;
-- builder agents;
-- verifier/reviewer agents;
-- refactoring agents;
-- content-structure agents.
+## Context routing
 
-Do not downgrade the model or reasoning effort unless the user explicitly instructs it.
+Before any file change, read:
 
-## Required context before work
+1. `AGENTS.md`;
+2. `harness/PROJECT_STATE.md`;
+3. the claimed task packet, or create one for non-trivial work.
 
-Before changing files, every agent must read:
-1. `AGENTS.md`
-2. `harness/PROJECT_STATE.md`
-3. `harness/WORKBOARD.md`
-4. `docs/PRODUCT.md`
-5. `docs/ARCHITECTURE.md`
-6. `docs/CONTENT_MODEL.md` when touching JSON/content
-7. `docs/methodology/METHODOLOGY.md` and `docs/methodology/AUTHORING.md` when touching methodology or educational content
-8. `harness/PARALLEL_AGENT_PROTOCOL.md` when working in parallel
-9. `docs/engineering/contributing.md` before creating branches, commits, pushes, or PRs
+Load additional context only when the task needs it:
+
+| Task touches | Read before editing |
+|---|---|
+| product scope, routes, app/backend architecture | `docs/PRODUCT.md`, `docs/ARCHITECTURE.md` |
+| JSON/content model or seed fixtures | `docs/CONTENT_MODEL.md` |
+| methodology or educational content | `docs/methodology/METHODOLOGY.md`, `docs/methodology/AUTHORING.md` |
+| parallel orchestration/shared files | `harness/WORKBOARD.md`, `harness/PARALLEL_AGENT_PROTOCOL.md` |
+| privacy, auth, content publishing, deploy, destructive operations | `harness/RISK_POLICY.md` and the relevant canonical doc |
+| branch, commit, push, or PR | `docs/engineering/contributing.md` |
+
+Do not preload `harness/tasks/review/**`, screenshots, rendered documents, or
+raw run artifacts. Open a historical packet only when it is directly relevant.
 
 ## Project skills
 
-Reusable project skills live under `skills/**` and should be committed with the
-repo. Use `skills/finpulse-lesson-methodologist` to create source Markdown and
-runtime JSON lesson drafts from approved topics with the eight-screen lesson
-architecture. Use `skills/fin-literacy-expert` for financial-literacy domain
-briefs, fact-checking, source/safety review, and education-vs-advice
-boundaries. Use `skills/finpulse-content-editor` for applying safe lesson copy
-edits.
+Reusable project skills live under `skills/**`.
+
+- `skills/finpulse-lesson-methodologist`: source Markdown and runtime JSON
+  lesson drafts from approved topics using the eight-screen architecture;
+- `skills/fin-literacy-expert`: domain briefs, fact-checking, source/safety
+  review, and education-vs-advice boundaries;
+- `skills/finpulse-content-editor`: safe lesson-copy edits.
+
+Use the relevant skill when the task matches it; follow its own instructions.
 
 ## Work loop
 
-For every task:
-1. Claim or create a task in `harness/tasks/` unless the task is tiny and fully isolated.
-2. Define the expected file write set before editing.
-3. Make the smallest coherent change.
-4. Run `./scripts/verify.sh` or `npm run verify` if the project is scaffolded.
-5. Update the relevant task file and `harness/PROJECT_STATE.md` when state changes.
-6. If the user asks to publish, commit, push, or open a PR, follow `docs/engineering/contributing.md`.
-7. Stop after the current task; do not silently start unrelated work.
+1. Claim or create one task under `harness/tasks/` unless the change is tiny and
+   fully isolated.
+2. Declare the intended write set and out-of-scope boundary before editing.
+3. Make the smallest coherent change; do not mix unrelated cleanup.
+4. Run the cheapest checks that can disprove the change early, then the
+   risk-appropriate verification tier.
+5. Update the task result packet with files, checks, risks, and follow-up.
+6. The orchestrator updates `PROJECT_STATE.md` only for durable state changes
+   and `WORKBOARD.md` only for current priorities/decisions. Builders do not add
+   per-task logs to either file.
+7. Stop after the current task unless the user expands scope.
 
-## Parallel-agent rules
+Verification tiers:
 
-Parallel agents are expected. They must not break each other.
+- docs/harness-only: `npm run check:harness` and `git diff --check`;
+- normal local code/content iteration: focused checks plus
+  `npm run verify:fast`;
+- shared runtime, persistence, release, or final pre-merge verification:
+  `npm run verify` with a reachable PostgreSQL test database.
 
-Rules:
+Full CI verification remains the release gate. Never report a fast or focused
+run as a full pass.
+
+## Parallel work
+
 - One agent owns one task at a time.
-- Each task must declare an intended write set.
-- Avoid overlapping writes. If overlap is unavoidable, the orchestrator resolves ordering.
-- Do not edit another active task file unless acting as orchestrator or verifier.
-- Prefer small local worktrees per task. Use `docs/engineering/contributing.md` branch naming for any branch that will be pushed.
-- Subagents must receive a context packet, not the whole universe.
-- Subagents must return a concise result packet: files changed, checks run, risks, next steps.
+- Every active task declares a bounded write set.
+- Builders do not routinely edit shared coordination files.
+- The orchestrator resolves overlap before edits and integrates shared changes
+  once.
+- Subagents receive routed context, not the entire repository history.
+- Result packets must state files changed, checks run, risks, and next step.
 
-See `harness/PARALLEL_AGENT_PROTOCOL.md`.
+See `harness/PARALLEL_AGENT_PROTOCOL.md` for lifecycle and handoff rules.
 
-## Coding rules
+## Coding and UI rules
 
-- TypeScript strictness is preferred. Do not introduce `any` without a short comment explaining why.
-- Keep content data immutable. UI state belongs in components or small Zustand stores.
-- Do not put large static content in Zustand.
-- Validate JSON structure with `npm run check:content` or `node scripts/check-content-json.mjs`.
-- Use route-level lazy loading once the app has multiple substantial pages.
-- Keep mobile layout as the primary layout, desktop as graceful expansion.
-- Prefer composition over generic abstractions.
-- Do not introduce a backend dependency for MVP content delivery.
+- Prefer strict TypeScript. Avoid `any`; if unavoidable, explain it locally.
+- Keep published content immutable in UI code. Server state stays server-owned.
+- Do not store the content corpus in Zustand.
+- Validate seed JSON with `npm run check:content`.
+- Keep public learner routes API-backed; do not add direct runtime imports from
+  seed fixtures.
+- Prefer composition over generic abstractions and route-level lazy loading for
+  substantial pages.
+- Design mobile-first with semantic HTML, keyboard access, and comfortable
+  touch targets.
+- Reusable UI belongs in `src/shared/ui/` or the established equivalent; use
+  shadcn/ui primitives when they fit.
 
-## UI rules
+## Safety
 
-- Use shadcn/ui primitives when they fit.
-- Use Tailwind utility classes and shared tokens.
-- Keep touch targets comfortable on mobile.
-- Maintain semantic HTML and keyboard navigation.
-- New reusable UI components belong in `src/shared/ui/` or the project's chosen equivalent.
-
-## Verification baseline
-
-When available, verification should include:
-- TypeScript typecheck;
-- lint;
-- content JSON validation;
-- unit/component tests;
-- production build.
-
-Evals are intentionally deferred until product flows exist. See `evals/README.md`.
-
-## Do not do
-
-- Do not migrate to Next.js/SSR without an ADR.
-- Do not add accounts, diagnostics, rewards, analytics, or backend scope to MVP by accident.
-- Do not introduce paid/external services without user approval.
-- Do not commit secrets, tokens, private data, or real customer data.
+- Preserve unrelated user changes in a dirty worktree.
+- Do not add paid/external services, production writes, or new data exposure
+  without explicit scope.
+- Never commit secrets, `.env` files, private answers, or real customer data.
 - Do not rewrite broad architecture while implementing a narrow feature.
+- Any main-stack or product-boundary change requires `docs/DECISIONS.md`.

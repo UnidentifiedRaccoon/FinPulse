@@ -1,8 +1,6 @@
 # T-087 — Editable Auto-Flow Result Table
 
-## Status
-
-review
+Status: review
 
 ## Goal
 

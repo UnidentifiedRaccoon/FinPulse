@@ -1,72 +1,85 @@
 # Parallel Agent Protocol
 
-This project intentionally supports parallel agent workflows.
+Parallel work is encouraged when tasks have bounded, mostly non-overlapping
+write sets. The task filesystem is the coordination source of truth.
 
-## Core rule
+## Lifecycle
 
-Parallelism is allowed only when write sets are clear and mostly non-overlapping.
+| Directory | Allowed status | Meaning |
+|---|---|---|
+| `harness/tasks/inbox/` | `planned` | scoped but unclaimed |
+| `harness/tasks/active/` | `active`, `blocked` | currently owned work |
+| `harness/tasks/review/` | `review` | waiting for independent verification or a human decision |
+| `harness/tasks/done/` | `done` | accepted/verified outcome |
 
-## Task lifecycle
+Move a task; never copy it between lifecycle directories. Use
+`npm run task:move -- T-XXX <planned|active|blocked|review|done>` so the path and
+status change together. Legacy review packets predate this strict contract and
+remain historical provenance; the machine-enforced task contract applies to
+T-185 and later.
 
-1. Create a task file in `harness/tasks/inbox/` or use an existing planned task.
-2. Move/copy it to `harness/tasks/active/` when work starts.
-3. Fill in owner, branch/worktree, intended write set, and checks.
-4. Work only inside the declared write set unless the task file is updated.
-5. Move to `review` when ready.
-6. A verifier or orchestrator reviews and marks done.
+Create a task with an automatic next ID:
 
-## Task file naming
-
-```txt
-harness/tasks/active/T-004-routing-and-pages.md
+```bash
+npm run task:new -- "Short task title"
 ```
 
-## Branch/worktree naming
+The creator serializes ID reservation, scans all lanes, and refuses ID reuse.
+`npm run check:harness`
+validates active/new task structure and lifecycle integrity. Moving to `active`
+requires completed claim metadata; moving to `review` or `done` requires a
+non-empty result packet.
 
-```txt
-agent/T-004-routing-and-pages
-agent/T-005-lesson-block-renderer
-```
+## Claim before edits
 
-## Task template
+Before editing, the owner must:
+
+1. move the task to `active`;
+2. set `Owner`, `Started`, goal, intended write set, and out-of-scope boundary;
+3. run `npm run harness:status` and resolve active write-set overlap;
+4. load context using the routing table in `AGENTS.md`.
+
+One agent owns one active task. A task may be blocked in `active/`, but its
+packet must state the concrete blocker.
+
+List one repository path or glob per write-set bullet so overlap checks remain
+machine-readable; do not combine paths with commas or prose.
+
+## Task packet
 
 ```md
 # T-XXX — Short task name
 
 Status: active
-Owner: <agent-or-human-name>
+Owner: <agent-or-human>
 Model: GPT-5.5 / xhigh
 Started: YYYY-MM-DD
-Branch/worktree: agent/T-XXX-short-name
+Branch/worktree: current workspace or branch name
 
 ## Goal
 
-One clear outcome.
+One checkable outcome.
 
 ## Context
 
-Files/docs read before starting.
+- Required and task-specific sources actually read.
 
 ## Intended write set
 
-- `src/...`
-- `docs/...`
+- `path/or/glob`
 
 ## Out-of-scope
 
-- What this task must not touch.
+- Explicit boundaries.
 
 ## Plan
 
-1. ...
-2. ...
-3. ...
+1. Small ordered steps.
 
 ## Checks
 
-- [ ] `./scripts/verify.sh`
-- [ ] manual mobile smoke check, if UI
-- [ ] content validation, if content changed
+- [ ] Focused checks
+- [ ] Risk-appropriate verify tier
 
 ## Result packet
 
@@ -76,81 +89,66 @@ Files/docs read before starting.
 - Follow-up:
 ```
 
-## Orchestrator responsibilities
-
-The orchestrator may spawn subagents, but must:
-- give each subagent a bounded task;
-- include the relevant docs and current state;
-- define a write set;
-- define expected output format;
-- prevent overlapping edits;
-- integrate and verify final output.
+Do not add `PROJECT_STATE.md` or `WORKBOARD.md` to every builder write set. The
+orchestrator owns those shared files and updates them once only when durable
+state or current priorities change.
 
 ## Subagent context packet
 
-Use this format when spawning a subagent:
+Give every subagent:
 
-```md
-You are working on FinPulse Learning MVP.
+1. one bounded outcome;
+2. the task ID and owner;
+3. the relevant context routes from `AGENTS.md`;
+4. an explicit allowed write set (or `read-only`);
+5. explicit exclusions;
+6. success criteria and checks;
+7. the required result-packet format.
 
-Model requirement: GPT-5.5, reasoning effort xhigh.
+Do not paste the full review archive, raw traces, or unrelated canonical docs.
+For content tasks, state the approved Program -> Level -> Section -> Lesson ->
+Card hierarchy and route the agent to the content/methodology sources.
 
-Read first:
-- AGENTS.md
-- harness/PROJECT_STATE.md
-- docs/ARCHITECTURE.md
-- docs/CONTENT_MODEL.md and docs/methodology/AUTHORING.md, if touching JSON,
-  methodology, or lesson content
-- <task-specific docs>
+## Conflict rules
 
-Task:
-<one bounded task>
+- Exact or parent/child overlap between active write sets must be resolved
+  before both agents edit.
+- Shared config, routing, package metadata, schemas, and coordination files have
+  one integration owner.
+- When sequencing is required, the second task remains planned/blocked until the
+  first result packet is available.
+- Preserve unrelated dirty-worktree changes; do not reset or rewrite them.
+- A verifier reviews shared-file changes before acceptance.
 
-Allowed write set:
-- <files/globs>
+Good splits isolate vertical slices, read-only audits, or tests against a stable
+contract. Risky splits put multiple agents into the same router, schema, shared
+component, package file, or coordination summary.
 
-Do not touch:
-- <files/globs>
+## Verification and handoff
 
-Success criteria:
-- <criteria>
+Builders run focused checks and the tier required by `AGENTS.md`. The
+orchestrator integrates results, then runs the broadest required gate once.
+Fast verification is iteration evidence, not a substitute for full release
+verification.
 
-Required checks:
-- ./scripts/verify.sh, if project scaffold exists
-- npm run check:content, if content/JSON changed
-- task-specific checks
+Every result packet returns exactly:
 
-Return:
-- summary
-- files changed
-- checks run
-- risks
-- suggested next step
-```
+1. summary/outcome;
+2. files changed;
+3. checks run with pass/fail/blocked state;
+4. residual risks;
+5. recommended next step.
 
-For content or methodology tasks, context packets must state that the approved
-educational hierarchy is Program -> Level -> Section -> Lesson -> Card.
-Do not reintroduce `module`/`unit` content architecture or compatibility
-surfaces.
+Move to `review` only when the packet is complete. Move to `done` after an
+independent verifier/orchestrator accepts the result or the relevant human gate
+is satisfied.
 
-## Merge/conflict rules
+## Branches and artifacts
 
-- If two agents touch the same file, stop and let the orchestrator decide ordering.
-- Prefer one agent per vertical slice or one agent per isolated layer.
-- Do not let multiple agents refactor shared architecture at the same time.
-- Shared files such as `package.json`, router config, and Tailwind config require orchestration.
-- Never accept a subagent result without a verifier pass when it changes shared files.
+Branch, commit, push, and PR conventions live only in
+`docs/engineering/contributing.md`; do not duplicate them here.
 
-## Good parallel splits
-
-Good:
-- Agent A: content schema and loader.
-- Agent B: mobile app shell.
-- Agent C: lesson block renderer after schema stabilizes.
-- Agent D: tests for already merged components.
-
-Risky:
-- Two agents editing router config.
-- Two agents changing the content model.
-- One agent installing dependencies while another edits config generated by that install.
-- Multiple agents doing broad refactors.
+Generated bulk evidence belongs in ignored temporary storage. Commit only a
+decision-grade report and the smallest useful screenshots/fixtures under
+`harness/artifacts/T-XXX/`. Never place new binary artifact directories inside
+task lifecycle lanes.

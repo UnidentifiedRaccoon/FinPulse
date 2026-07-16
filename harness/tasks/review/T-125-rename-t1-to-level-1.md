@@ -1,8 +1,6 @@
 # T-125 — Rename T1 marker to Level 1
 
-## Status
-
-review
+Status: review
 
 ## Goal
 

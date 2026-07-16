@@ -1,8 +1,6 @@
 # T-091 — Fix Auto-Card Shadow Clipping
 
-## Status
-
-review
+Status: review
 
 ## Goal
 

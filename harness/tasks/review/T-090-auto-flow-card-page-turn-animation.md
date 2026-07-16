@@ -1,8 +1,6 @@
 # T-090 — Auto-Flow Card Page-Turn Animation
 
-## Status
-
-review
+Status: review
 
 ## Goal
 
