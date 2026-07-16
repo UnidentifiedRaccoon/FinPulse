@@ -1,8 +1,6 @@
 # T-060 — YC DB network and SSL deploy fix
 
-## Status
-
-review
+Status: review
 
 ## Goal
 

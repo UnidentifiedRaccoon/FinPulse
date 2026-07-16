@@ -1,8 +1,6 @@
 # T-078 Practice Card Types
 
-## Status
-
-review
+Status: review
 
 ## Goal
 

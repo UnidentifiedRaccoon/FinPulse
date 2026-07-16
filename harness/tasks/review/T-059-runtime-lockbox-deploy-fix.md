@@ -1,8 +1,6 @@
 # T-059 — Runtime Lockbox deploy fix
 
-## Status
-
-review
+Status: review
 
 ## Goal
 

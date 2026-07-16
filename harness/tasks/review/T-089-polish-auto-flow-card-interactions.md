@@ -1,8 +1,6 @@
 # T-089 — Polish Auto-Flow Card Interactions
 
-## Status
-
-review
+Status: review
 
 ## Goal
 

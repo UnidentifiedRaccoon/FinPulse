@@ -1,8 +1,6 @@
 # T-155 — Body text weight normalization
 
-## Status
-
-review
+Status: review
 
 ## Goal
 

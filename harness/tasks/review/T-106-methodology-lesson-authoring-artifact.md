@@ -1,6 +1,6 @@
 # T-106 — Methodology Lesson Authoring Artifact
 
-Status: complete
+Status: review
 Owner: Codex
 Started: 2026-06-08
 

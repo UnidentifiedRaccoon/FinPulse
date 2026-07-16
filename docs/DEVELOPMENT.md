@@ -35,17 +35,26 @@ Add or adapt these scripts in `package.json`:
     "test:watch": "vitest",
     "check:content": "node scripts/check-content-json.mjs",
     "check:runtime-imports": "node scripts/check-runtime-content-imports.mjs",
+    "check:harness": "node scripts/check-harness.mjs",
     "build:storybook": "storybook build -o dist/storybook --disable-telemetry",
+    "verify:fast": "bash ./scripts/verify.sh --fast",
     "verify": "bash ./scripts/verify.sh"
   }
 }
 ```
 
-If the scaffold uses a different TypeScript build mode, keep the project-native command but ensure `npm run verify` remains the single verification entry point.
+Keep `npm run verify` as the full release gate. `npm run verify:fast` is the
+local iteration gate and must never be reported as a full pass.
 
 ## Verification command
 
-Agents should run:
+For normal local iteration, agents should run focused checks followed by:
+
+```bash
+npm run verify:fast
+```
+
+For shared runtime, persistence, release, or pre-merge work, run:
 
 ```bash
 ./scripts/verify.sh
@@ -57,7 +66,24 @@ or:
 npm run verify
 ```
 
-`npm run verify` runs backend tests as part of the normal Vitest suite. PostgreSQL-backed tests must have a reachable database; CI must provide PostgreSQL instead of skipping those tests.
+`npm run verify:fast` runs harness/content/import checks, typecheck, lint, and
+tests that do not require PostgreSQL. It skips release builds and DB integration
+tests.
+
+`npm run verify` first checks that a PostgreSQL test database is reachable, then
+runs the full test suite plus web, admin, server, and Storybook builds. When no
+database URL is set, it uses the documented local development URL only after a
+successful connection preflight; otherwise it fails before expensive checks.
+CI always provides isolated PostgreSQL and never skips backend tests.
+
+The `Verify` workflow runs for pull requests (and manual dispatch). A push to
+`main` is verified once inside the production `Deploy` workflow before build and
+deployment, avoiding two identical full workflows for the same SHA.
+
+For safety, full verification refuses a remote URL inherited only from
+`FINPULSE_DATABASE_URL` or `DATABASE_URL`. Prefer an explicit isolated
+`FINPULSE_TEST_DATABASE_URL`; `FINPULSE_ALLOW_REMOTE_TEST_DATABASE=true` is an
+intentional override for a known disposable remote test database.
 
 ## Production build artifact
 
@@ -120,14 +146,17 @@ The admin container serves only the Next.js app. It does not read PostgreSQL and
 
 Current admin limitations:
 - one env-configured admin;
-- read-only progress board;
+- read-only progress board plus the accepted guarded content editor;
 - global all-user visibility;
 - no organizations/RBAC;
 - no reflection/artifact answer text in default responses.
 
 ## Local backend database
 
-The Stage 2 backend uses PostgreSQL for learner identity, sessions, progress, and private reflection/artifact answers. JSON files remain the source-of-truth for educational content.
+The Stage 2 backend uses PostgreSQL for published JSONB content, learner
+identity, sessions, progress, and private reflection/artifact answers. JSON
+files under `src/content/**` are validated seed/migration fixtures, not the
+published runtime source of truth.
 
 For local development, start PostgreSQL before running backend tests or `npm run dev`. A simple Docker container is enough:
 
@@ -176,8 +205,8 @@ Allowed without special approval for MVP:
 - Vitest and Testing Library.
 
 Requires explicit approval:
-- Next.js migration;
-- backend frameworks;
+- migration of the learner app to Next.js/SSR;
+- a second or replacement backend framework (Fastify is the accepted current backend);
 - analytics SDKs;
 - auth providers;
 - payment libraries;
