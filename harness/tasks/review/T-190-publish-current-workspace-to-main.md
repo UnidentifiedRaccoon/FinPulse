@@ -1,6 +1,6 @@
 # T-190 — Publish current workspace to main
 
-Status: active
+Status: review
 Owner: /root
 Model: GPT-5.5 / xhigh
 Started: 2026-07-16
@@ -52,19 +52,41 @@ committing secrets, private data, generated bulk artifacts, or ignored files.
 
 ## Checks
 
-- [ ] Secret/private-data and untracked-artifact audit.
-- [ ] `git diff --check` before staging and on the staged patch.
-- [ ] `npm run check:harness`.
-- [ ] `npm run verify` with an isolated reachable test database, or record the
+- [x] Secret/private-data and untracked-artifact audit.
+- [x] `git diff --check` before staging and on the staged patch.
+- [x] `npm run check:harness`.
+- [x] `npm run verify` with an isolated reachable test database, or record the
   exact environment blocker and rely on required GitHub CI only if local full
   verification cannot start safely.
-- [ ] Staged scope and commit inspected.
-- [ ] Required PR checks pass without bypass.
+- [x] Staged scope and commit inspected.
+- [x] Required PR checks pass without bypass.
 - [ ] PR is squash-merged into `main` and remote state is verified.
 
 ## Result packet
 
 - Files changed:
+  - Complete safe worktree: 58 files in commit `f456567`, covering Story v2,
+    methodology review artifacts, lean harness/task lifecycle, verification
+    scripts, CI, and their task packets.
+  - `.gitignore` excludes the generated local Gate 5 context snapshot.
+  - This packet moves from `active` to `review` in a final metadata commit.
 - Checks run (pass/fail/blocked/skipped):
+  - PASS — two independent worktree audits found no secrets, private data,
+    nested repositories, binaries, or unexplained dangerous changes.
+  - PASS — `git diff --check` and staged diff check.
+  - PASS — `npm run verify:fast`: harness 12/12, content/import guards,
+    typecheck, lint, and non-DB tests 118/118.
+  - BLOCKED locally as designed — `npm run verify` stopped at database
+    preflight because no isolated PostgreSQL is available; no remote database
+    was substituted.
+  - PASS — PR #32 `Verify / npm run verify` with isolated PostgreSQL on commit
+    `f456567` (1m51s).
 - Risks:
+  - `tmp/gate5-dev-pack-20260709/` remains local and ignored because it is an
+    852 KiB generated snapshot containing duplicated and stale documents.
+  - Story v2 remains a review artifact; screen-model and Phase B gates remain
+    open and runtime v1 content is unchanged.
 - Follow-up:
+  - Push the packet-only lifecycle commit, require the final PR check to pass,
+    squash-merge PR #32, then verify the merged `origin/main` SHA and post-merge
+    workflow state.
