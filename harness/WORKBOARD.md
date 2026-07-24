@@ -13,8 +13,6 @@ Active claims are derived from `harness/tasks/active/`; run
 
 - T-186 / screen model — review recommended Model B and decide whether a
   voluntary screen-6 reflection is ephemeral or saved only by explicit action.
-- T-186 / external story review — collect feedback on the derived five-chapter
-  Sasha story without silently changing the approved Story Blueprint.
 - Story v2 / engagement model — decide later whether the course needs a
   meta-progress or game loop and, if so, review it as a separate product model;
   Sasha's calendar, tables, and notes are not that mechanic.
@@ -24,6 +22,10 @@ Active claims are derived from `harness/tasks/active/`; run
 - Story v2 Phase B: Approval 1 is satisfied; work remains blocked until the
   screen-model decision, a v2 competency catalog, isolated namespace, ledger
   schema, validator, Issue Register, and Trace + Continuity Ledger exist.
+- Story v2 source review: before any prototype or publication of the affected
+  Sections, close the dated `LV2-DEC-004` gates for employer benefits/DMS,
+  card terms, the FNS education-deduction route, EGRUL inference, and regulated
+  investment-platform terminology.
 
 ## Maintenance debt
 

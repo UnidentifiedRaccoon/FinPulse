@@ -1,6 +1,6 @@
 # Project State — FinPulse Learning MVP
 
-Last updated: 2026-07-16
+Last updated: 2026-07-24
 
 This file is a current-state snapshot, not a task log. Detailed implementation
 history lives in `harness/tasks/**` and Git. Keep this file within the automated
@@ -22,6 +22,15 @@ objects from the current Story v2 canon. Sasha now uses ordinary situational
 tools: a calendar, personal tables, notes, source folders, and a shared document
 only where collaboration requires one. Learner results remain private
 Navigator artifacts. No replacement game or meta-progress mechanic is approved.
+
+The 2026-07-24 canon amendment synchronizes the recovered July 23 five-chapter
+story with the Blueprint while preserving 5 Levels, 20 Sections, and four
+lesson beats per Section. The opening rent-date conflict now ends in a written
+move to payday while the month still has almost no buffer. A bounded
+employer-benefits spine links future DMS/course conditions, actual DMS use,
+Sasha's own course payment, an FNS-bound education-deduction case, and the
+final digital-consent scene. Contract, medical/privacy, tax, EGRUL, and
+financial-registry claims remain behind explicit source gates.
 
 The published sixteen-lesson course remains v1. Story v2 is independent and
 does not change runtime content until its explicit gates and control artifacts
@@ -112,7 +121,9 @@ For v2 work:
 - `docs/methodology/lore_v2_decisions.md` records the accepted package and
   open blockers;
 - the five-chapter story and Level 1 competency/emotion map are derived review
-  views and do not override the blueprint;
+  views synchronized under `LV2-DEC-004`; they do not override the blueprint,
+  and exact source-sensitive wording in the review story remains subject to the
+  Blueprint's publication gates;
 - `docs/methodology/lore_lesson_screen_model_review.md` contains the
   recommended Model B and remains pending human decision;
 - `docs/methodology/production_model_financial_lore_pipeline.md` defines the
@@ -162,6 +173,10 @@ proved otherwise.
   Story v2. A replacement game/meta-progress mechanic remains deliberately
   undecided and must not be inferred from Sasha's calendar, tables, or notes.
 - Documented competency gaps must not be hidden behind a full-coverage claim.
+- Story v2's employer-benefit, card, DMS, tax, EGRUL, and regulated-platform
+  details must not be generalized beyond their contract/date/source boundary;
+  `LV2-DEC-004` source gates block affected lesson prototypes/publication until
+  refreshed.
 - Production secret/session hardening and rate limiting remain open.
 - Export/delete controls and richer metadata for private saved answers remain
   future work.
