@@ -12,16 +12,19 @@ Active claims are derived from `harness/tasks/active/`; run
 ## Human decision queue
 
 - T-186 / screen model — review recommended Model B and decide whether a
-  voluntary screen-6 reflection is ephemeral or saved only by explicit action.
+  voluntary screen-6 reflection is ephemeral or saved only by explicit action;
+  revisit its old `4 × 4` assumptions against the approved `6 / 22 / 48`
+  baseline.
 - Story v2 / engagement model — decide later whether the course needs a
   meta-progress or game loop and, if so, review it as a separate product model;
   Sasha's calendar, tables, and notes are not that mechanic.
 
 ## Blocked by decision or control artifact
 
-- Story v2 Phase B: Approval 1 is satisfied; work remains blocked until the
-  screen-model decision, a v2 competency catalog, isolated namespace, ledger
-  schema, validator, Issue Register, and Trace + Continuity Ledger exist.
+- Story v2 Phase B: `LV2-DEC-006` resolves geometry only; separate B/C approval
+  and the screen-model decision, v2 competency catalog, isolated namespace,
+  ledger schema, validator, Issue Register, and Trace + Continuity Ledger are
+  still required.
 - Story v2 source review: before any prototype or publication of the affected
   Sections, close the dated `LV2-DEC-004` gates for employer benefits/DMS,
   card terms, the FNS education-deduction route, EGRUL inference, and regulated

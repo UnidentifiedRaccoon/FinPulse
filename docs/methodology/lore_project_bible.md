@@ -40,10 +40,10 @@ Project Bible отвечает на вопросы:
 
 | Источник | Роль в Gate 3 |
 |---|---|
-| [production_model_financial_lore_pipeline.md](./production_model_financial_lore_pipeline.md) | Пайплайн gated production: Project Bible предшествует Macro Arc и всем дальнейшим структурам. |
+| [production_model_financial_lore_pipeline.md](./lore_v2/production_model_financial_lore_pipeline.md) | Пайплайн gated production: Project Bible предшествует Macro Arc и всем дальнейшим структурам. |
 | [lore_source_pack.md](./lore_source_pack.md) | Gate 1: утверждённые вводные, открытые вопросы, временные гипотезы и generation risks. |
 | [lore_competency_table.md](./lore_competency_table.md) | Gate 2: production-relevant subset компетенций, ID, проверяемые действия, safety/fact-check notes. |
-| [adult_financial_competencies_2026.md](./adult_financial_competencies_2026.md) | Канонический локальный каталог взрослой рамки компетенций 2026. |
+| [adult_financial_competencies_2026.md](./lore_v2/adult_financial_competencies_2026.md) | Канонический локальный каталог взрослой рамки компетенций 2026. |
 | [finpulse_board_course_foundation.md](./finpulse_board_course_foundation.md) | Целевая рамка «Доска»: новый город, новая работа, объекты, эмоции, privacy и взрослый тон. |
 | [METHODOLOGY.md](./METHODOLOGY.md) | Стратегическая методическая рамка: микро-формат, без стыда, Real World A/B, Навигатор, safety. |
 | [AUTHORING.md](./AUTHORING.md) | MVP-фильтр и текущая операционная архитектура уроков Уровня 1. |

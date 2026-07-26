@@ -27,9 +27,9 @@ Competency Table переводит взрослую рамку финансов
 
 | Источник | Роль в Gate 2 |
 |---|---|
-| [adult_financial_competencies_2026.md](./adult_financial_competencies_2026.md) | Канонический локальный каталог взрослых компетенций 2026. |
+| [adult_financial_competencies_2026.md](./lore_v2/adult_financial_competencies_2026.md) | Канонический локальный каталог взрослых компетенций 2026. |
 | [lore_source_pack.md](./lore_source_pack.md) | Gate 1 / Source Pack: утверждённые вводные, открытые вопросы, риски и решения перед Gate 2. |
-| [production_model_financial_lore_pipeline.md](./production_model_financial_lore_pipeline.md) | Пайплайн, где Gate 2 соответствует нормализации рамки финансовых компетенций. |
+| [production_model_financial_lore_pipeline.md](./lore_v2/production_model_financial_lore_pipeline.md) | Пайплайн, где Gate 2 соответствует нормализации рамки финансовых компетенций. |
 | [finpulse_board_course_foundation.md](./finpulse_board_course_foundation.md) | Целевая рамка «Доска»: компетенция + эмоция + игровое действие + взрослый тон. |
 | [METHODOLOGY.md](./METHODOLOGY.md) | Методическая рамка: четыре области, слои навыков, поведенческие индикаторы, safety. |
 | [AUTHORING.md](./AUTHORING.md) | MVP-фильтр и текущая восьмиэкранная архитектура Уровня 1. |

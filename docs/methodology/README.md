@@ -9,27 +9,24 @@ Active source:
   v2 when stricter `PRODUCT.md`, `AUTHORING.md` or Story Blueprint boundaries
   exclude them.
 - `AUTHORING.md` — current MVP adaptation rules for agents and editors.
-- `adult_financial_competencies_2026.md` — local normalized adult competency
-  catalog used for course topic alignment and competency mapping.
-- `lore_story_v2.md` — canonical Story Blueprint v2 after Approval 1
-  `approved_with_blockers`, created independently of the ready 16-lesson v1
-  content. It contains the investor pitch, narrative canon, five-level arc,
-  causal map of twenty Sections, emotion-safety profile, framework alignment,
-  and structural gaps.
-- `lore_v2_decisions.md` — single decision log for Approval 1, later human
-  amendments and remaining blockers.
-- `lore_story_v2_book.md` — derived five-chapter Sasha story for external
-  review; it does not override the Story Blueprint.
-- `lore_level_1_competency_emotion_map.md` — review map of the four Level 1
-  topics, sixteen lesson actions, emotions, safety limits, and catalog gaps.
-- `lore_lesson_screen_model_review.md` — recommended Model B for a Level and
-  eight lesson-screen functions; still awaiting a separate human decision.
-- `production_model_financial_lore_pipeline.md` — lean v2 production workflow:
-  one Story Blueprint, an early vertical slice, Section-sized batches, one
-  trace/continuity ledger, independent audits, and three approvals. It is
-  active after Approval 1; Phase B is intentionally blocked until the screen
-  model decision, v2 competency catalog, isolated namespace, schema and
-  validator, Issue Register, and Trace + Continuity Ledger exist.
+- `lore_v2/README.md` — единственная точка входа и authority map для активного
+  Story v2-пакета после `LV2-DEC-005` и `LV2-DEC-006`.
+- `lore_v2/lore_story_v2_book.md` — актуальный шестиглавный narrative source
+  для пересборки нового Blueprint.
+- `lore_v2/adult_financial_competencies_2026.docx` — актуальный исходный
+  артефакт взрослой рамки; lossless Markdown-представление с 576 строками лежит
+  рядом.
+- `lore_v2/lore_story_v2_book_competency_coverage.html` — актуальный
+  шестиглавный диагностический отчёт оценки покрытия всех 576 компетенций; не
+  является планом уроков или заявлением о полном покрытии.
+- `lore_v2/lore_story_v2.md` — прежний Blueprint 1.4 со статусом
+  `rebuild_required`; его геометрия 80 уроков superseded, а текущий design
+  baseline задан как `6 Levels / 22 Sections / 48 Lessons`.
+- `lore_v2/lore_v2_decisions.md` — единый Decision Log, включая
+  `LV2-DEC-005`, `LV2-DEC-006` и закрытие `GAP-GEOMETRY-V2` только как
+  geometry blocker.
+- Остальные рабочие карты и production pipeline Story v2 также находятся
+  только под `lore_v2/` и требуют ревизии относительно baseline `6 / 22 / 48`.
 - `CONTENT_BACKLOG.md` — active runtime coverage and deferred target-methodology
   features.
 
@@ -42,7 +39,8 @@ Supporting foundation and provenance:
   `lore_macro_arc.md` — read-only provenance of the earlier gated process.
   They do not override the v2 canon and must not be chained as active gates.
   The old Competency Table supplies candidate IDs only; a separate approved
-  `lore_competency_catalog_v2.md` is required before Phase B.
+  `lore_v2/lore_competency_catalog_v2.md` is required before Phase B and is
+  not created or approved by the geometry decision itself.
 
 Story v2 currently has no approved replacement game or meta-progress mechanic.
 Sasha's calendars, personal tables, notes and documents are ordinary

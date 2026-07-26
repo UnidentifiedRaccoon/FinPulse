@@ -23,7 +23,7 @@ Source Pack нужен, чтобы все дальнейшие агенты prod
    экранов.
 
 В терминах
-[production_model_financial_lore_pipeline.md](./production_model_financial_lore_pipeline.md)
+[production_model_financial_lore_pipeline.md](./lore_v2/production_model_financial_lore_pipeline.md)
 это Source Pack для Gate 1: утверждение исходных материалов и ограничений.
 Следующий шаг после утверждения этого документа - Gate 2 / Competency Table.
 
@@ -31,8 +31,8 @@ Source Pack нужен, чтобы все дальнейшие агенты prod
 
 | Источник | Роль в Source Pack |
 |---|---|
-| [production_model_financial_lore_pipeline.md](./production_model_financial_lore_pipeline.md) | Производственный пайплайн лора: gates, артефакты, роли агентов, DoD этапов. |
-| [adult_financial_competencies_2026.md](./adult_financial_competencies_2026.md) | Канонический локальный каталог взрослых финансовых компетенций 2026 для покрытия тем. |
+| [production_model_financial_lore_pipeline.md](./lore_v2/production_model_financial_lore_pipeline.md) | Производственный пайплайн лора: gates, артефакты, роли агентов, DoD этапов. |
+| [adult_financial_competencies_2026.md](./lore_v2/adult_financial_competencies_2026.md) | Канонический локальный каталог взрослых финансовых компетенций 2026 для покрытия тем. |
 | [finpulse_board_course_foundation.md](./finpulse_board_course_foundation.md) | Утверждённая целевая рамка «Доска»: прогресс, эмоции, объекты, взрослый тон, privacy boundaries. |
 | [METHODOLOGY.md](./METHODOLOGY.md) | Широкая методическая рамка: компетенции, навыки, поведенческая экономика, Навигатор. |
 | [AUTHORING.md](./AUTHORING.md) | Операционный регламент текущих уроков Уровня 1 и MVP-фильтр. |
@@ -45,7 +45,7 @@ Source Pack нужен, чтобы все дальнейшие агенты prod
 ### 3.1. Финансовые компетенции
 
 - Source of truth для будущего покрытия тем:
-  [adult_financial_competencies_2026.md](./adult_financial_competencies_2026.md).
+  [adult_financial_competencies_2026.md](./lore_v2/adult_financial_competencies_2026.md).
 - Документ содержит взрослую часть Единой рамки компетенций ФГ 2026, очищенную
   от школьных возрастных блоков.
 - Каталог сгруппирован по четырём предметным областям:
@@ -314,7 +314,7 @@ Table**.
 Правильный следующий артефакт:
 
 ```text
-adult_financial_competencies_2026.md
+lore_v2/adult_financial_competencies_2026.md
         ↓
 Competency Table
         ↓
