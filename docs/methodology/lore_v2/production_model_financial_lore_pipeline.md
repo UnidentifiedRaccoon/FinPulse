@@ -1,7 +1,7 @@
 # Производственная модель истории ФинПульс
 
-**Статус:** active для Phase A; запуск Phase B заблокирован preflight из
-разделов 4 и 5.
+**Статус:** `phase_a_reopened` после `LV2-DEC-005`; запуск Phase B заблокирован
+решением о новой геометрии и прежним preflight из разделов 4 и 5.
 
 **Версия:** 2.0 от 2026-07-09.
 
@@ -11,20 +11,22 @@
 ## 1. Результат процесса
 
 Pipeline превращает официальную взрослую рамку компетенций, историю переезда и
-методику ФинПульс в проверяемые уроки без преждевременной генерации 80 текстов.
+методику ФинПульс в проверяемые уроки без преждевременной массовой генерации.
 
-Целевая геометрия остаётся планом:
+Следующая геометрия больше не утверждена. Прежняя гипотеза сохраняется ниже
+только для истории версии 2.0:
 
 ```text
 5 Levels
 × 4 Sections
 × 4 Lessons
-= 80 Lessons
+= 80 Lessons (superseded target)
 ```
 
-Геометрия не оправдывает сюжетный или методический наполнитель. Если ранний
-vertical slice показывает искусственность слота, структура возвращается на
-human review до масштабирования.
+Решение `LV2-DEC-005` уже вернуло структуру на human review: актуальная книга
+содержит больше самостоятельных сюжетно-образовательных единиц, чем честно
+помещается в прежние 80 слотов. Все проверки ниже, жёстко ожидающие 5 Levels,
+20 Sections или 80 Lessons, должны быть пересмотрены после нового решения.
 
 Главная единица качества — не документ и не gate, а причинная связь:
 
@@ -97,11 +99,11 @@ Canonical paths фиксируются до любых lesson writes:
 
 | Роль | Canonical path | Состояние на Phase A |
 |---|---|---|
-| Story Blueprint | `docs/methodology/lore_story_v2.md` | существует |
-| Competency Catalog v2 — control input | `docs/methodology/lore_competency_catalog_v2.md` | **не создан; hard blocker Phase B** |
-| Trace + Continuity Ledger | `docs/methodology/lore_trace_continuity_v2.json` | создаётся только после Approval 1 |
+| Story Blueprint | `docs/methodology/lore_v2/lore_story_v2.md` | `rebuild_required` после `LV2-DEC-005` |
+| Competency Catalog v2 — control input | `docs/methodology/lore_v2/lore_competency_catalog_v2.md` | **не создан; hard blocker Phase B** |
+| Trace + Continuity Ledger | `docs/methodology/lore_v2/lore_trace_continuity_v2.json` | создаётся после решения о новой геометрии |
 | Lesson Source / prototype package | Mode-specific paths из §4.3 | не создаётся до Approval 1 и mode decision |
-| Decision Log | `docs/methodology/lore_v2_decisions.md` | создаётся при первом human decision |
+| Decision Log | `docs/methodology/lore_v2/lore_v2_decisions.md` | существует |
 | Issue Register | `harness/lore-v2/issues.json` | создаётся перед Phase B |
 | Ledger schema — control artifact | `harness/schemas/lore-trace.schema.json` | **не создан; hard blocker Phase B** |
 | Validator — control artifact | `scripts/check-lore-v2.mjs`, команда `npm run check:lore-v2` | **не создан; hard blocker Phase B** |

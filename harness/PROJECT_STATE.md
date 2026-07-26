@@ -1,6 +1,6 @@
 # Project State — FinPulse Learning MVP
 
-Last updated: 2026-07-24
+Last updated: 2026-07-26
 
 This file is a current-state snapshot, not a task log. Detailed implementation
 history lives in `harness/tasks/**` and Git. Keep this file within the automated
@@ -9,13 +9,15 @@ harness budget.
 ## Current phase
 
 The repository contains the Stage 2 learner MVP, a separate internal admin app,
-and sixteen published Level 1 lessons. The current workspace also contains the
-human-approved Gate 4 Macro Arc provenance and Story Blueprint v2.
+and sixteen published Level 1 lessons. Active Story v2 material is consolidated
+under `docs/methodology/lore_v2/`, the only repository source boundary for that
+story package.
 
-Story v2 Approval 1 was recorded on 2026-07-14 as
-`approved_with_blockers`. Its five-chapter review story and Level 1
-competency/emotion map are available; the recommended v2 screen Model B still
-awaits a separate human decision.
+Story v2 Approval 1 was recorded on 2026-07-14 as `approved_with_blockers`.
+Decision `LV2-DEC-005` reopened Phase A, and `LV2-DEC-006` approved a
+six-chapter source plus the `6 Levels / 22 Sections / 48 Lessons` design
+baseline. Chapter ↔ Level applies only to this story. Blueprint 1.4 remains
+`rebuild_required`; packages B/C, Lessons and Cards remain unauthorized.
 
 The 2026-07-16 follow-up decision removes the Board and collectible level
 objects from the current Story v2 canon. Sasha now uses ordinary situational
@@ -23,18 +25,17 @@ tools: a calendar, personal tables, notes, source folders, and a shared document
 only where collaboration requires one. Learner results remain private
 Navigator artifacts. No replacement game or meta-progress mechanic is approved.
 
-The 2026-07-24 canon amendment synchronizes the recovered July 23 five-chapter
-story with the Blueprint while preserving 5 Levels, 20 Sections, and four
-lesson beats per Section. The opening rent-date conflict now ends in a written
-move to payday while the month still has almost no buffer. A bounded
-employer-benefits spine links future DMS/course conditions, actual DMS use,
-Sasha's own course payment, an FNS-bound education-deduction case, and the
-final digital-consent scene. Contract, medical/privacy, tax, EGRUL, and
-financial-registry claims remain behind explicit source gates.
+The 2026-07-24 amendment synchronized the recovered July 23 book into Blueprint
+1.4. Its narrative changes remain available; `LV2-DEC-005` superseded its
+geometry and `LV2-DEC-006` replaced that geometry at design-baseline level.
+Contract, medical/privacy, tax, EGRUL, and financial-registry claims remain
+behind explicit source gates.
 
-The published sixteen-lesson course remains v1. Story v2 is independent and
-does not change runtime content until its explicit gates and control artifacts
-are satisfied.
+The Story v2 boundary stores the exact competency DOCX and its lossless
+Markdown; both it and the coverage HTML contain the same 576 source rows. The
+HTML is synchronized with the six-chapter book through 190 story fragments and
+509 current evidence locations; row completeness is not a full-coverage claim.
+The sixteen-lesson course stays v1; Story v2 cannot change runtime content before its gates and controls pass.
 
 ## Locked product and architecture state
 
@@ -117,25 +118,25 @@ Canonical v1 sources remain under `docs/methodology/**` and
 
 For v2 work:
 
-- `docs/methodology/lore_story_v2.md` is canonical after Approval 1;
-- `docs/methodology/lore_v2_decisions.md` records the accepted package and
-  open blockers;
-- the five-chapter story and Level 1 competency/emotion map are derived review
-  views synchronized under `LV2-DEC-004`; they do not override the blueprint,
-  and exact source-sensitive wording in the review story remains subject to the
-  Blueprint's publication gates;
-- `docs/methodology/lore_lesson_screen_model_review.md` contains the
-  recommended Model B and remains pending human decision;
-- `docs/methodology/production_model_financial_lore_pipeline.md` defines the
-  lean four-phase/three-approval process and prototype/seed/publish boundaries;
+- `docs/methodology/lore_v2/README.md` defines authority for the single active
+  Story v2 folder;
+- the current six-chapter book drives the Blueprint rebuild; the folder
+  contains the exact competency DOCX and lossless Markdown view;
+- Blueprint 1.4 is `rebuild_required`, not an approved source of lesson count;
+- `docs/methodology/lore_v2/lore_v2_decisions.md` records the accepted package,
+  authority rules and open blockers;
+- the coverage HTML is a current six-chapter diagnostic report, not a lesson
+  plan or a claim of full competency coverage;
+- the Level 1 map, Model B review and production pipeline remain useful review
+  material but their `5 × 4 × 4` assumptions require revision;
 - prior Source Pack, Competency Table, Project Bible, and Macro Arc are
   read-only provenance and cannot silently override the v2 canon;
 - the former Board foundation and collectible-object ladder are superseded
   provenance; any replacement game/meta-progress model requires a separate
   product decision;
-- Phase B is blocked until the screen-model decision plus a v2 competency
-  catalog, isolated namespace, ledger schema, validator, Issue Register, and
-  Trace + Continuity Ledger exist;
+- `GAP-GEOMETRY-V2` is resolved only as geometry; packages B/C and Phase B stay
+  blocked by the screen model, catalog, namespace, ledger schema, validator,
+  Issue Register, and Trace + Continuity Ledger;
 - no v2 lesson/runtime mass generation is allowed before those controls.
 
 Project-owned content skills:
@@ -167,8 +168,10 @@ proved otherwise.
 
 ## Current decisions and risks
 
-- Approval 1 is satisfied with blockers; the screen-model package and the
-  persistence behavior of optional reflection still require human decisions.
+- `LV2-DEC-006` approves variable `6 / 22 / 48` and six-chapter segmentation;
+  substantive Blueprint, packages B/C and lesson production remain unapproved.
+- Screen-model and optional-reflection persistence remain undecided and must be
+  revisited against the 48-action baseline without authorizing production.
 - Board-dependent screens and collectible-object layouts are no longer part of
   Story v2. A replacement game/meta-progress mechanic remains deliberately
   undecided and must not be inferred from Sasha's calendar, tables, or notes.

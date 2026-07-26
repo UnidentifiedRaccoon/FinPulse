@@ -41,7 +41,7 @@ Macro Arc отвечает на вопросы:
 
 | Источник | Роль в Gate 4 |
 |---|---|
-| [production_model_financial_lore_pipeline.md](./production_model_financial_lore_pipeline.md) | Пайплайн gated production: Macro Arc предшествует Section Grid, Emotional Model, Traceability Matrix, Lesson Cards и Screen Scripts. |
+| [production_model_financial_lore_pipeline.md](./lore_v2/production_model_financial_lore_pipeline.md) | Пайплайн gated production: Macro Arc предшествует Section Grid, Emotional Model, Traceability Matrix, Lesson Cards и Screen Scripts. |
 | [lore_source_pack.md](./lore_source_pack.md) | Gate 1: исходные вводные, generation risks и MVP scope guard. |
 | [lore_competency_table.md](./lore_competency_table.md) | Gate 2: рабочие competency IDs, проверяемые действия, safety/fact-check notes и level-band guardrails. |
 | [lore_project_bible.md](./lore_project_bible.md) | Gate 3 approved source of truth: герой, город, работа, «Доска», NPC, объекты, tone, privacy и safety. |

@@ -1,13 +1,13 @@
 ---
 version: 1
 slug: "lore-story-v2-book-competency-coverage-html"
-primary_target: "lore_story_v2_book_competency_coverage.html"
+primary_target: "lore_v2/lore_story_v2_book_competency_coverage.html"
 related_targets: []
 ---
 
 # Coverage report surface brief
 
-- Scope: `docs/methodology/lore_story_v2_book_competency_coverage.html`.
+- Scope: `docs/methodology/lore_v2/lore_story_v2_book_competency_coverage.html`.
 - Mode: Read. This is a role-neutral methodological reference for human reviewers and future agents.
 - Job: understand the overall coverage state before inspecting individual competencies.
 - Primary path: read the 95 / 172 / 309 distribution, compare four groups, then search/filter and expand exact evidence.
