@@ -11,11 +11,14 @@ import { RuleWithRevisions } from './concepts/RuleWithRevisions'
 import { SceneDossier } from './concepts/SceneDossier'
 import { LibraryPage } from './routes/LibraryPage'
 import { NotFoundPage } from './routes/NotFoundPage'
+import { UserTestLessonPage } from './routes/UserTestLessonPage'
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route element={<LibraryPage />} path="/" />
+      <Route element={<UserTestLessonPage />} path="/" />
+      <Route element={<UserTestLessonPage />} path="/lesson/:step" />
+      <Route element={<LibraryPage />} path="/lab" />
       <Route element={<ObserverPause />} path="/concept/a" />
       <Route element={<SceneDossier />} path="/concept/b" />
       <Route element={<OneChangeModel />} path="/concept/c" />

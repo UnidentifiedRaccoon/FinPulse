@@ -21,7 +21,7 @@ export function NotFoundPage() {
       <main className="not-found">
         <h1 id="not-found-title" ref={titleRef} tabIndex={-1}>Такая версия не найдена</h1>
         <p>Вернитесь в лабораторию и выберите одну из самостоятельных версий.</p>
-        <Link className="button button--primary" to="/">
+        <Link className="button button--primary" to="/lab">
           <ArrowLeft aria-hidden="true" />
           К версиям
         </Link>

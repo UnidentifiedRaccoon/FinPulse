@@ -11,7 +11,7 @@ export function LabHeader({ compact = false, onAbout }: LabHeaderProps) {
     return (
       <header className="lab-header lab-header--compact">
         <span className="brand">ФинПульс</span>
-        <Link className="header-link" to="/">
+        <Link className="header-link" to="/lab">
           <ArrowLeft aria-hidden="true" />
           Все версии
         </Link>
@@ -21,7 +21,7 @@ export function LabHeader({ compact = false, onAbout }: LabHeaderProps) {
 
   return (
     <header className="lab-header">
-      <Link className="brand" to="/">
+      <Link className="brand" to="/lab">
         ФинПульс
       </Link>
       {onAbout ? (
@@ -29,7 +29,7 @@ export function LabHeader({ compact = false, onAbout }: LabHeaderProps) {
           О демке
         </button>
       ) : (
-        <Link className="header-link" to="/">Все версии</Link>
+        <Link className="header-link" to="/lab">Все версии</Link>
       )}
     </header>
   )

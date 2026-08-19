@@ -130,7 +130,7 @@ export function CompletionActions({ onRepeat }: { onRepeat: () => void }) {
         <RotateCcw aria-hidden="true" />
         Пройти ещё раз
       </Button>
-      <Link className="button button--primary" to="/">
+      <Link className="button button--primary" to="/lab">
         Выбрать другую версию
       </Link>
     </ActionRow>

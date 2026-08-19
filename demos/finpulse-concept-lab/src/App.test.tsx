@@ -22,7 +22,7 @@ describe('FinPulse concept lab', () => {
   it('frames the library as six alternatives, not a sequence of lessons', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const storageSpy = vi.spyOn(Storage.prototype, 'setItem')
-    renderAt('/')
+    renderAt('/lab')
 
     expect(screen.getByRole('heading', { name: 'Один эпизод — шесть самостоятельных версий' })).toBeInTheDocument()
     expect(screen.getByText(/история в шести главах/)).toBeInTheDocument()
@@ -36,7 +36,7 @@ describe('FinPulse concept lab', () => {
   })
 
   it('keeps the six originals and exposes three consilium mechanics in a separate navigation', () => {
-    renderAt('/')
+    renderAt('/lab')
 
     const originalNavigation = screen.getByRole('navigation', { name: 'Самостоятельные версии демки' })
     const consiliumNavigation = screen.getByRole('navigation', { name: 'Новые механики консилиума' })
@@ -49,6 +49,64 @@ describe('FinPulse concept lab', () => {
     expect(within(consiliumNavigation).getByRole('link', { name: /Неизменный мотив/ })).toHaveAttribute('href', '/concept/c2')
     expect(within(consiliumNavigation).getByText('Выбрано жюри')).toBeInTheDocument()
     expect(within(originalNavigation).queryByText('Выбрано жюри')).not.toBeInTheDocument()
+  })
+
+  it('opens as one clear learner lesson without research labels or competing routes', () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const storageSpy = vi.spyOn(Storage.prototype, 'setItem')
+    renderAt('/')
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Деньги нужны к сроку' })).toHaveFocus()
+    expect(screen.getByText('Короткий урок · 4 минуты')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Цель урока' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Начать' })).toBeInTheDocument()
+    expect(screen.queryByText(/A0|B1|C2|выбрано жюри|консилиум|канон|посылка/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(storageSpy).not.toHaveBeenCalled()
+  })
+
+  it('completes the public eight-step flow with calm feedback and no blocked mistake path', async () => {
+    const user = userEvent.setup()
+    renderAt('/')
+
+    await user.click(screen.getByRole('button', { name: 'Начать' }))
+    expect(screen.getByRole('heading', { name: 'Эти деньги уже были нужны для жилья' })).toHaveFocus()
+    expect(screen.getByText('2 из 8')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Посмотреть, что удалось проверить' }))
+    expect(screen.getByRole('heading', { name: 'Один удачный пример оставил вопросы' })).toHaveFocus()
+    await user.click(screen.getByRole('button', { name: 'Добавить один новый факт' }))
+
+    const checkPrimary = screen.getByRole('button', { name: 'Проверить' })
+    expect(checkPrimary).toBeDisabled()
+    expect(screen.queryByText(/C2|вымышленный дубль|граница реплики/i)).not.toBeInTheDocument()
+    await user.click(screen.getByRole('radio', { name: 'Вся внесённая сумма точно сохранится.' }))
+    expect(checkPrimary).toBeEnabled()
+    await user.click(checkPrimary)
+
+    expect(screen.getByRole('heading', { name: 'Есть нюанс' })).toHaveFocus()
+    expect(screen.getByText(/не подтверждает сохранность всей внесённой суммы/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Продолжить историю' }))
+    expect(screen.getByRole('heading', { name: 'Как решил Саша' })).toHaveFocus()
+    expect(screen.getByText(/Я сюда вкладываться не буду/)).toBeInTheDocument()
+    expect(screen.getByText(/Из отложенных денег Саша оплатил первый месяц продлённой аренды/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Попробовать на другой ситуации' }))
+    const transferCheck = screen.getByRole('button', { name: 'Проверить' })
+    expect(transferCheck).toBeDisabled()
+    await user.click(screen.getByRole('radio', { name: 'Заменить им основной план всей постановки.' }))
+    await user.click(transferCheck)
+    expect(screen.getByText('Есть нюанс')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'К итогу' })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: 'К итогу' }))
+    expect(screen.getByRole('heading', { name: 'Один факт меняет только связанный с ним вывод' })).toHaveFocus()
+    expect(screen.getByText(/не индивидуальная финансовая рекомендация/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Завершить' }))
+    expect(screen.getByRole('heading', { name: 'Урок завершён' })).toHaveFocus()
+    expect(screen.getByText('Готово · 8 из 8')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Пройти ещё раз' })).toBeInTheDocument()
   })
 
   it.each([
@@ -258,7 +316,8 @@ describe('FinPulse concept lab', () => {
   })
 
   it.each([
-    ['/', 'Один эпизод — шесть самостоятельных версий'],
+    ['/', 'Деньги нужны к сроку'],
+    ['/lab', 'Один эпизод — шесть самостоятельных версий'],
     ['/concept/a', 'Что известно до развязки?'],
     ['/concept/z', 'Такая версия не найдена'],
   ])('moves focus to the new route heading at %s', (path, title) => {
