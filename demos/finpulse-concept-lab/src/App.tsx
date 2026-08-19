@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router'
+import { Route, Routes, useParams } from 'react-router'
 
 import { BesideNotInstead } from './concepts/BesideNotInstead'
 import { ConsiliumDeadlineRehearsal } from './concepts/ConsiliumDeadlineRehearsal'
@@ -10,14 +10,21 @@ import { OneChangeModel } from './concepts/OneChangeModel'
 import { RuleWithRevisions } from './concepts/RuleWithRevisions'
 import { SceneDossier } from './concepts/SceneDossier'
 import { LibraryPage } from './routes/LibraryPage'
+import { LearnerMechanicPage } from './routes/LearnerMechanicPage'
 import { NotFoundPage } from './routes/NotFoundPage'
 import { UserTestLessonPage } from './routes/UserTestLessonPage'
+
+function LearnerLessonRoute() {
+  const { lessonSlug } = useParams()
+  return lessonSlug === 'one-fact-one-conclusion' ? <UserTestLessonPage /> : <LearnerMechanicPage />
+}
 
 export function AppRoutes() {
   return (
     <Routes>
       <Route element={<UserTestLessonPage />} path="/" />
       <Route element={<UserTestLessonPage />} path="/lesson/:step" />
+      <Route element={<LearnerLessonRoute />} path="/lesson/:lessonSlug/:step" />
       <Route element={<LibraryPage />} path="/lab" />
       <Route element={<ObserverPause />} path="/concept/a" />
       <Route element={<SceneDossier />} path="/concept/b" />

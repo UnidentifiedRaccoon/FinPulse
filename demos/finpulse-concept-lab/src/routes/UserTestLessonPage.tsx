@@ -15,7 +15,7 @@ import {
   RotateCcw,
 } from 'lucide-react'
 import { useEffect, useRef, type ReactNode } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 
 import {
   chapterThreeDecision,
@@ -25,6 +25,10 @@ import {
 } from '../demoContent'
 
 const TOTAL_STEPS = 8
+
+type LessonLocationState = {
+  fromLessonStep?: number
+}
 
 type PrimaryAnswer = 'timing' | 'principal' | 'suitable'
 type TransferAnswer = 'bounded' | 'replace' | 'guarantee'
@@ -67,8 +71,8 @@ function isTransferAnswer(value: string | null): value is TransferAnswer {
   return value === 'bounded' || value === 'replace' || value === 'guarantee'
 }
 
-function stepPath(step: number, query?: Record<string, string>) {
-  const pathname = step === 1 ? '/' : `/lesson/${step}`
+function stepPath(step: number, query?: Record<string, string>, basePath = '') {
+  const pathname = basePath ? `${basePath}/${step}` : step === 1 ? '/' : `/lesson/${step}`
   const search = new URLSearchParams(query).toString()
   return search ? `${pathname}?${search}` : pathname
 }
@@ -84,7 +88,7 @@ function LessonProgress({ current, onBack }: { current: number; onBack: () => vo
             <ArrowLeft aria-hidden="true" />
           </button>
           <div className="user-lesson__progress-copy">
-            <strong>Деньги нужны к сроку</strong>
+            <strong>Деньги могли понадобиться к сроку</strong>
           </div>
           <span className="user-lesson__step-count">{current} из {TOTAL_STEPS}</span>
         </div>
@@ -228,12 +232,14 @@ function TransferFeedback({ answer }: { answer?: TransferAnswer }) {
 }
 
 export function UserTestLessonPage() {
+  const location = useLocation()
   const navigate = useNavigate()
   const params = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const headingContainerRef = useRef<HTMLDivElement>(null)
   const parsedStep = Number(params.step ?? 1)
   const step = Number.isInteger(parsedStep) && parsedStep >= 1 && parsedStep <= TOTAL_STEPS ? parsedStep : 1
+  const basePath = params.lessonSlug ? `/lesson/${params.lessonSlug}` : ''
   const primaryAnswer = isPrimaryAnswer(searchParams.get('answer')) ? searchParams.get('answer') as PrimaryAnswer : undefined
   const transferAnswer = isTransferAnswer(searchParams.get('transfer'))
     ? searchParams.get('transfer') as TransferAnswer
@@ -242,7 +248,7 @@ export function UserTestLessonPage() {
   const done = searchParams.get('done') === '1'
 
   useEffect(() => {
-    document.title = `${step === 8 && done ? 'Урок завершён' : 'Деньги нужны к сроку'} · ФинПульс`
+    document.title = `${step === 8 && done ? 'Урок завершён' : 'Деньги могли понадобиться к сроку'} · ФинПульс`
     document.documentElement.scrollTop = 0
     document.body.scrollTop = 0
     headingContainerRef.current?.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true })
@@ -250,12 +256,15 @@ export function UserTestLessonPage() {
 
   useEffect(() => {
     if (step === 5 && !primaryAnswer) {
-      navigate('/lesson/4', { replace: true })
+      navigate(stepPath(4, undefined, basePath), { replace: true })
     }
-  }, [navigate, primaryAnswer, step])
+    if (step === 8 && !transferAnswer) {
+      navigate(stepPath(7, undefined, basePath), { replace: true })
+    }
+  }, [basePath, navigate, primaryAnswer, step, transferAnswer])
 
   function goTo(nextStep: number, query?: Record<string, string>) {
-    navigate(stepPath(nextStep, query))
+    navigate(stepPath(nextStep, query, basePath), { state: { fromLessonStep: step } })
   }
 
   function updateSearch(updates: Record<string, string | undefined>) {
@@ -267,27 +276,29 @@ export function UserTestLessonPage() {
         next.set(key, value)
       }
     }
-    setSearchParams(next, { replace: true })
+    setSearchParams(next, { replace: true, state: location.state })
   }
 
   function goBack() {
+    const previousStep = (location.state as LessonLocationState | null)?.fromLessonStep
+    if (previousStep === step - 1) {
+      navigate(-1)
+      return
+    }
+
+    let previousPath: string
     if (step === 2) {
-      goTo(1)
-      return
+      previousPath = stepPath(1, undefined, basePath)
+    } else if (step === 5 && primaryAnswer) {
+      previousPath = stepPath(4, { answer: primaryAnswer }, basePath)
+    } else if (step === 6 && primaryAnswer) {
+      previousPath = stepPath(5, { answer: primaryAnswer }, basePath)
+    } else if (step === 8 && transferAnswer) {
+      previousPath = stepPath(7, { transfer: transferAnswer, checked: '1' }, basePath)
+    } else {
+      previousPath = stepPath(Math.max(1, step - 1), undefined, basePath)
     }
-    if (step === 5 && primaryAnswer) {
-      goTo(4, { answer: primaryAnswer })
-      return
-    }
-    if (step === 6 && primaryAnswer) {
-      goTo(5, { answer: primaryAnswer })
-      return
-    }
-    if (step === 8 && transferAnswer) {
-      goTo(7, { transfer: transferAnswer, checked: '1' })
-      return
-    }
-    goTo(Math.max(1, step - 1))
+    navigate(previousPath, { replace: true })
   }
 
   return (
@@ -296,6 +307,9 @@ export function UserTestLessonPage() {
       {step === 1 ? (
         <header className="user-lesson__entry-header">
           <span className="user-lesson__wordmark">ФинПульс</span>
+          <button className="user-lesson__entry-library" onClick={() => navigate('/lab')} type="button">
+            <ArrowLeft aria-hidden="true" /> Все уроки
+          </button>
         </header>
       ) : (
         <LessonProgress current={step} onBack={goBack} />
@@ -305,7 +319,7 @@ export function UserTestLessonPage() {
         {step === 1 ? (
           <section className="user-lesson__entry-screen">
             <p className="user-lesson__meta">Короткий урок · 4 минуты</p>
-            <h1 tabIndex={-1}>Деньги нужны к сроку</h1>
+            <h1 tabIndex={-1}>Деньги могли понадобиться к сроку</h1>
             <p className="user-lesson__lead">
               Саша отложил деньги на жильё. Лера показывает рекламу, где обещают быстро увеличить часть суммы.
             </p>
@@ -317,7 +331,7 @@ export function UserTestLessonPage() {
         ) : null}
 
         {step === 2 ? (
-          <StoryCard title="Эти деньги уже были нужны для жилья">
+          <StoryCard title="Эти деньги были частью плана на жильё">
             <p>{chapterThreeGoalAndOffer[0]}</p>
             <p>{chapterThreeGoalAndOffer[1]}</p>
             <p>{chapterThreeGoalAndOffer[2]}</p>
@@ -425,6 +439,13 @@ export function UserTestLessonPage() {
               Теперь у вас есть простой ориентир: сначала назвать, на какой вопрос отвечает новый факт, а затем
               проверить, какие вопросы он не закрывает.
             </p>
+            <button
+              className="user-lesson__text-action"
+              onClick={() => navigate(stepPath(1, undefined, basePath))}
+              type="button"
+            >
+              <RotateCcw aria-hidden="true" /> Пройти ещё раз
+            </button>
           </article>
         ) : null}
       </main>
@@ -466,7 +487,7 @@ export function UserTestLessonPage() {
         <LessonAction icon="none" label="Завершить" onClick={() => updateSearch({ done: '1' })} />
       ) : null}
       {step === 8 && done ? (
-        <LessonAction icon="repeat" label="Пройти ещё раз" onClick={() => navigate('/')} />
+        <LessonAction label="Выбрать другой урок" onClick={() => navigate('/lab')} />
       ) : null}
     </div>
   )

@@ -1,9 +1,13 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { MemoryRouter } from 'react-router'
+import { HashRouter, MemoryRouter } from 'react-router'
 
 import { AppRoutes } from './App'
+import { practiceActionLabel } from './components/practiceMechanicLabels'
+import { learnerLessonEntries } from './learnerLessonCatalog'
+
+const bannedLearnerCopy = /(?:канон(?:ическ[а-яё]*)?|учебн[а-яё]*|досье|модел[а-яё]*|консилиум[а-яё]*|жюри|исследовательск[а-яё]*|механик[а-яё]*|нить решения|обратн[а-яё]* дорожк[а-яё]*)/iu
 
 function renderAt(path: string) {
   return render(
@@ -15,40 +19,101 @@ function renderAt(path: string) {
 
 afterEach(() => {
   cleanup()
+  window.history.replaceState(null, '', '/')
   vi.restoreAllMocks()
 })
 
 describe('FinPulse concept lab', () => {
-  it('frames the library as six alternatives, not a sequence of lessons', () => {
+  it('shows a clean launcher with nine independent learner routes', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const storageSpy = vi.spyOn(Storage.prototype, 'setItem')
     renderAt('/lab')
 
-    expect(screen.getByRole('heading', { name: 'Один эпизод — шесть самостоятельных версий' })).toBeInTheDocument()
-    expect(screen.getByText(/история в шести главах/)).toBeInTheDocument()
-    expect(screen.getByText(/первом годе Саши после переезда ради новой работы/)).toBeInTheDocument()
-    expect(screen.getByText(/альтернативные версии одной демки, не уроки по порядку/)).toBeInTheDocument()
-    expect(screen.getByText(/можно пропустить без изменения сюжета/)).toBeInTheDocument()
-    expect(within(screen.getByRole('navigation', { name: 'Самостоятельные версии демки' })).getAllByRole('link')).toHaveLength(6)
-    expect(screen.getByText('Без регистрации. Ответы не отправляются и исчезают после выхода.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Выберите короткий урок' })).toHaveFocus()
+    expect(screen.getByText(/Уроки не зависят друг от друга/)).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Сообщение и проверка' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Деньги и срок' })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /Открыть урок/ })).toHaveLength(9)
+    expect(screen.getByText('Без регистрации. Ответы не отправляются и не сохраняются в аккаунте.')).toBeInTheDocument()
+    expect(screen.queryByText(/выбрано жюри|консилиум|самостоятельные версии|исследователь/i)).not.toBeInTheDocument()
     expect(fetchSpy).not.toHaveBeenCalled()
     expect(storageSpy).not.toHaveBeenCalled()
   })
 
-  it('keeps the six originals and exposes three consilium mechanics in a separate navigation', () => {
+  it('links every launcher card to its user-test lesson route', () => {
     renderAt('/lab')
 
-    const originalNavigation = screen.getByRole('navigation', { name: 'Самостоятельные версии демки' })
-    const consiliumNavigation = screen.getByRole('navigation', { name: 'Новые механики консилиума' })
+    for (const lesson of learnerLessonEntries) {
+      expect(screen.getByRole('link', { name: `Открыть урок «${lesson.title}»` }))
+        .toHaveAttribute('href', `/lesson/${lesson.slug}/1`)
+    }
+    expect(screen.getByRole('link', { name: 'Открыть урок «Что изменил один новый факт?»' }))
+      .toHaveAttribute('href', '/lesson/one-fact-one-conclusion/1')
+  })
 
-    expect(within(originalNavigation).getAllByRole('link')).toHaveLength(6)
-    expect(within(consiliumNavigation).getAllByRole('link')).toHaveLength(3)
-    expect(screen.getByRole('heading', { name: 'Деньги на жильё — три самостоятельные версии' })).toBeInTheDocument()
-    expect(within(consiliumNavigation).getByRole('link', { name: /Порог доверия/ })).toHaveAttribute('href', '/concept/a0')
-    expect(within(consiliumNavigation).getByRole('link', { name: /Обратная репетиция срока/ })).toHaveAttribute('href', '/concept/b1')
-    expect(within(consiliumNavigation).getByRole('link', { name: /Неизменный мотив/ })).toHaveAttribute('href', '/concept/c2')
-    expect(within(consiliumNavigation).getByText('Выбрано жюри')).toBeInTheDocument()
-    expect(within(originalNavigation).queryByText('Выбрано жюри')).not.toBeInTheDocument()
+  it('opens and restores the real hash-router lesson route', async () => {
+    const user = userEvent.setup()
+    window.location.hash = '#/lab'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+
+    const firstLesson = screen.getByRole('link', { name: 'Открыть урок «Что известно до ответа?»' })
+    expect(firstLesson).toHaveAttribute('href', '#/lesson/facts-before-reveal/1')
+    await user.click(firstLesson)
+    expect(window.location.hash).toBe('#/lesson/facts-before-reveal/1')
+    expect(screen.getByRole('heading', { name: 'Что известно до ответа?' })).toHaveFocus()
+
+    cleanup()
+    window.location.hash = '#/lesson/facts-before-reveal/4?practice-a-details=observed&practice-a-operation=claimed&practice-a-sender=unknown'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+
+    expect(screen.getByRole('heading', { name: 'Разберите три фразы' })).toHaveFocus()
+    expect(screen.getByRole('radio', { name: 'Есть в истории', checked: true })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Проверить разметку' })).toBeEnabled()
+  })
+
+  it('keeps the canonical lesson out of a forward-back loop', async () => {
+    const user = userEvent.setup()
+    window.location.hash = '#/lesson/one-fact-one-conclusion/3'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+
+    await user.click(screen.getByRole('button', { name: 'Добавить один новый факт' }))
+    expect(window.location.hash).toBe('#/lesson/one-fact-one-conclusion/4')
+
+    await user.click(screen.getByRole('button', { name: 'Назад' }))
+    expect(window.location.hash).toBe('#/lesson/one-fact-one-conclusion/3')
+
+    window.history.back()
+    await waitFor(() => expect(window.location.hash).toBe(''))
+
+    cleanup()
+    window.location.hash = '#/lesson/one-fact-one-conclusion/8'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+
+    expect(await screen.findByRole('heading', { name: 'Что можно обсудить, а что всё ещё неизвестно?' })).toHaveFocus()
+    expect(window.location.hash).toBe('#/lesson/one-fact-one-conclusion/7')
+    expect(screen.getByRole('button', { name: 'Проверить' })).toBeDisabled()
+  })
+
+  it('keeps the complete learner catalog free of research and editorial labels', () => {
+    expect(JSON.stringify(learnerLessonEntries)).not.toMatch(bannedLearnerCopy)
+  })
+
+  it.each([
+    ['facts-before-reveal', 'Разметка сведений'],
+    ['source-scope', 'Источники и их ответы'],
+    ['one-change', 'Сравнение двух путей'],
+    ['help-and-agency', 'Карта ролей'],
+    ['question-and-source', 'Два вопроса и два ответа'],
+    ['revise-explanation', 'Уточнение вывода'],
+    ['evidence-chain', 'Проверка известных фактов'],
+    ['deadline-backward', 'Сравнение сроков'],
+  ])('renders a distinct practice surface for %s', (slug, accessibleName) => {
+    renderAt(`/lesson/${slug}/4`)
+
+    const lesson = learnerLessonEntries.find((entry) => entry.slug === slug)!
+    expect(screen.getByRole('region', { name: accessibleName })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: practiceActionLabel(lesson.practice.kind) })).toBeDisabled()
+    expect(document.body.textContent ?? '').not.toMatch(bannedLearnerCopy)
   })
 
   it('opens as one clear learner lesson without research labels or competing routes', () => {
@@ -56,7 +121,7 @@ describe('FinPulse concept lab', () => {
     const storageSpy = vi.spyOn(Storage.prototype, 'setItem')
     renderAt('/')
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Деньги нужны к сроку' })).toHaveFocus()
+    expect(screen.getByRole('heading', { level: 1, name: 'Деньги могли понадобиться к сроку' })).toHaveFocus()
     expect(screen.getByText('Короткий урок · 4 минуты')).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'Цель урока' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Начать' })).toBeInTheDocument()
@@ -71,7 +136,7 @@ describe('FinPulse concept lab', () => {
     renderAt('/')
 
     await user.click(screen.getByRole('button', { name: 'Начать' }))
-    expect(screen.getByRole('heading', { name: 'Эти деньги уже были нужны для жилья' })).toHaveFocus()
+    expect(screen.getByRole('heading', { name: 'Эти деньги были частью плана на жильё' })).toHaveFocus()
     expect(screen.getByText('2 из 8')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Посмотреть, что удалось проверить' }))
@@ -107,6 +172,98 @@ describe('FinPulse concept lab', () => {
     expect(screen.getByRole('heading', { name: 'Урок завершён' })).toHaveFocus()
     expect(screen.getByText('Готово · 8 из 8')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Пройти ещё раз' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Выбрать другой урок' })).toBeInTheDocument()
+  })
+
+  it.each(learnerLessonEntries)(
+    'completes the adapted learner route $slug from story to summary',
+    async (lesson) => {
+      const user = userEvent.setup()
+      renderAt(`/lesson/${lesson.slug}/1`)
+
+      expect(screen.getByRole('heading', { level: 1, name: lesson.title })).toHaveFocus()
+      expect(screen.queryByText(/A0|B1|C2|жюри|консилиум/i)).not.toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: lesson.startLabel }))
+      expect(screen.getByRole('heading', { name: lesson.story.title })).toHaveFocus()
+      await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+      expect(screen.getByRole('heading', { name: lesson.focus.title })).toHaveFocus()
+      await user.click(screen.getByRole('button', { name: 'Попробовать' }))
+
+      for (const prompt of lesson.practice.prompts) {
+        const group = screen.getByRole('group', { name: prompt.legend })
+        for (const expectedId of prompt.expected) {
+          const option = prompt.options.find((candidate) => candidate.id === expectedId)
+          expect(option).toBeDefined()
+          const input = group.querySelector<HTMLInputElement>(`input[value="${expectedId}"]`)
+          expect(input).not.toBeNull()
+          await user.click(input!)
+        }
+      }
+      await user.click(screen.getByRole('button', { name: practiceActionLabel(lesson.practice.kind) }))
+
+      expect(screen.getByRole('heading', { name: lesson.feedback.successTitle })).toHaveFocus()
+      await user.click(screen.getByRole('button', { name: 'Продолжить историю' }))
+      expect(screen.getByRole('heading', { name: lesson.outcome.title })).toHaveFocus()
+      await user.click(screen.getByRole('button', { name: 'Попробовать на другой ситуации' }))
+
+      for (const prompt of lesson.transfer.prompts) {
+        if (!prompt) continue
+        const group = screen.getByRole('group', { name: prompt.legend })
+        for (const expectedId of prompt.expected) {
+          const option = prompt.options.find((candidate) => candidate.id === expectedId)
+          expect(option).toBeDefined()
+          const input = group.querySelector<HTMLInputElement>(`input[value="${expectedId}"]`)
+          expect(input).not.toBeNull()
+          await user.click(input!)
+        }
+      }
+
+      await user.click(screen.getByRole('button', { name: 'Проверить' }))
+      expect(screen.getByText(lesson.transfer.feedback.success)).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'К итогу' }))
+      expect(screen.getByRole('heading', { name: lesson.summary.title })).toHaveFocus()
+      await user.click(screen.getByRole('button', { name: 'Завершить' }))
+      expect(screen.getByRole('heading', { name: 'Урок завершён' })).toHaveFocus()
+      expect(screen.getByRole('button', { name: 'Выбрать другой урок' })).toBeInTheDocument()
+    },
+  )
+
+  it('explains an imprecise choice without blocking the learner', async () => {
+    const user = userEvent.setup()
+    const lesson = learnerLessonEntries.find((entry) => entry.slug === 'facts-before-reveal')!
+    renderAt(`/lesson/${lesson.slug}/1`)
+
+    await user.click(screen.getByRole('button', { name: lesson.startLabel }))
+    await user.click(screen.getByRole('button', { name: 'Продолжить' }))
+    await user.click(screen.getByRole('button', { name: 'Попробовать' }))
+
+    for (const prompt of lesson.practice.prompts) {
+      const wrong = prompt.options.find((option) => !prompt.expected.includes(option.id))!
+      const group = screen.getByRole('group', { name: prompt.legend })
+      await user.click(within(group).getByRole('radio', { name: wrong.label }))
+    }
+    await user.click(screen.getByRole('button', { name: practiceActionLabel(lesson.practice.kind) }))
+
+    expect(screen.getByRole('heading', { name: lesson.feedback.nuanceTitle })).toHaveFocus()
+    expect(screen.getAllByText(/Точнее здесь:/)).toHaveLength(lesson.practice.prompts.length)
+    expect(screen.getByRole('button', { name: 'Продолжить историю' })).toBeEnabled()
+  })
+
+  it('returns a direct feedback URL without answers to the required question', async () => {
+    renderAt('/lesson/facts-before-reveal/5')
+
+    expect(await screen.findByRole('heading', { name: 'Разберите три фразы' })).toHaveFocus()
+    expect(screen.getAllByRole('group')).toHaveLength(3)
+    expect(screen.getByRole('button', { name: 'Проверить разметку' })).toBeDisabled()
+  })
+
+  it('keeps the current one-fact lesson available on its canonical lab route', async () => {
+    const user = userEvent.setup()
+    renderAt('/lesson/one-fact-one-conclusion/1')
+
+    expect(screen.getByRole('heading', { name: 'Деньги могли понадобиться к сроку' })).toHaveFocus()
+    await user.click(screen.getByRole('button', { name: 'Начать' }))
+    expect(screen.getByRole('heading', { name: 'Эти деньги были частью плана на жильё' })).toHaveFocus()
   })
 
   it.each([
@@ -293,8 +450,8 @@ describe('FinPulse concept lab', () => {
     await user.click(screen.getByRole('radio', { name: 'До изменения плана на жильё' }))
     expect(screen.getByRole('radio', { name: 'До изменения плана на жильё' })).toBeChecked()
 
-    await user.click(screen.getByRole('link', { name: 'Все версии' }))
-    await user.click(screen.getByRole('link', { name: /Обратная репетиция срока/ }))
+    cleanup()
+    renderAt('/concept/b1')
     await user.click(screen.getByRole('button', { name: 'Открыть поздний канонический результат' }))
     await user.click(screen.getByRole('button', { name: 'Развернуть две дорожки назад' }))
 
@@ -316,10 +473,10 @@ describe('FinPulse concept lab', () => {
   })
 
   it.each([
-    ['/', 'Деньги нужны к сроку'],
-    ['/lab', 'Один эпизод — шесть самостоятельных версий'],
+    ['/', 'Деньги могли понадобиться к сроку'],
+    ['/lab', 'Выберите короткий урок'],
     ['/concept/a', 'Что известно до развязки?'],
-    ['/concept/z', 'Такая версия не найдена'],
+    ['/concept/z', 'Такой урок не найден'],
   ])('moves focus to the new route heading at %s', (path, title) => {
     renderAt(path)
     expect(screen.getByRole('heading', { level: 1, name: title })).toHaveFocus()
@@ -489,8 +646,8 @@ describe('FinPulse concept lab', () => {
     expect(screen.queryByDisplayValue('Личная временная формулировка')).not.toBeInTheDocument()
     expect(screen.getByText(/Ваша первая формулировка удалена/)).toBeInTheDocument()
 
-    await user.click(screen.getByRole('link', { name: 'Все версии' }))
-    await user.click(screen.getByRole('link', { name: /Правило с поправками/ }))
+    cleanup()
+    renderAt('/concept/f')
     await user.click(screen.getByRole('button', { name: 'Читать начало истории' }))
     await user.click(screen.getByRole('button', { name: 'Перейти к главе 3 без формулировки' }))
 
@@ -556,8 +713,8 @@ describe('FinPulse concept lab', () => {
 
   it('renders an intentional fallback for an unknown route', () => {
     renderAt('/concept/z')
-    expect(screen.getByRole('heading', { name: 'Такая версия не найдена' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Все версии' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Такой урок не найден' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'К урокам' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'О демке' })).not.toBeInTheDocument()
   })
 })

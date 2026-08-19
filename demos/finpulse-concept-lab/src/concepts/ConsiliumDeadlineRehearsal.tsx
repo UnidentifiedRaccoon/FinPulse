@@ -79,7 +79,7 @@ export function ConsiliumDeadlineRehearsal() {
           <StoryReader
             label="Канонический результат · позже в главе 3"
             paragraphs={chapterThreeHousingPayoff}
-            title="Отложенные деньги понадобились для жилья"
+            title="Часть отложенных денег позже использовали для жилья"
           />
           <LearningBridge
             boundary="В учебной дорожке меняется ровно одно условие о сроке. Она не показывает, что Саша сделал бы, и не предлагает переводить деньги."
