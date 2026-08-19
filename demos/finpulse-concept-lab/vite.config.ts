@@ -8,6 +8,9 @@ export default defineConfig({
   base: './',
   plugins: [react()],
   server: {
+    fs: {
+      allow: [fileURLToPath(new URL('../..', import.meta.url))],
+    },
     host: '127.0.0.1',
     port: 5177,
     strictPort: true,
