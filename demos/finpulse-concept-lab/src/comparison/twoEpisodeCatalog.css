@@ -13,10 +13,183 @@
   line-height: 1.35;
 }
 
+.comparison-catalog__lesson-area {
+  min-width: 0;
+}
+
+.comparison-catalog__lesson-area > h4 {
+  margin: 0 0 10px;
+  color: var(--library-muted);
+  font-size: 0.82rem;
+  font-weight: 720;
+  line-height: 1.4;
+}
+
 .comparison-catalog__lessons {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.comparison-explainer {
+  min-width: 0;
+  margin-top: 18px;
+  border-top: 1px solid var(--library-line);
+}
+
+.comparison-explainer > summary {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--library-blue-dark);
+  font-size: 0.91rem;
+  font-weight: 740;
+  line-height: 1.35;
+  list-style: none;
+  cursor: pointer;
+}
+
+.comparison-explainer > summary::-webkit-details-marker {
+  display: none;
+}
+
+.comparison-explainer > summary:focus-visible {
+  border-radius: 8px;
+  outline: 3px solid #0d6fe8;
+  outline-offset: 3px;
+}
+
+.comparison-explainer > summary svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  transition: transform 140ms ease;
+}
+
+.comparison-explainer[open] > summary svg {
+  transform: rotate(180deg);
+}
+
+.comparison-explainer__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.comparison-explainer__content {
+  min-width: 0;
+  padding: 6px 0 4px;
+}
+
+.comparison-explainer__essence {
+  margin: 0;
+  color: var(--library-ink);
+  font-size: 0.94rem;
+  line-height: 1.58;
+  overflow-wrap: anywhere;
+}
+
+.comparison-explainer__essence strong {
+  font-weight: 760;
+}
+
+.comparison-explainer__flow {
+  margin: 18px 0 20px;
+  padding: 6px 0;
+  border-top: 1px solid var(--library-line);
+  border-bottom: 1px solid var(--library-line);
+  counter-reset: comparison-step;
+  list-style: none;
+}
+
+.comparison-explainer__flow li {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 11px;
+  padding: 12px 0;
+  counter-increment: comparison-step;
+}
+
+.comparison-explainer__flow li::before {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  grid-row: 1 / span 2;
+  place-items: center;
+  border: 1px solid var(--library-line);
+  border-radius: 50%;
+  color: var(--library-blue-dark);
+  background: var(--library-soft);
+  font-size: 0.78rem;
+  font-weight: 780;
+  line-height: 1;
+  content: counter(comparison-step);
+}
+
+.comparison-explainer__flow li:not(:last-child)::after {
+  position: absolute;
+  top: 40px;
+  bottom: -8px;
+  left: 12px;
+  width: 1px;
+  background: var(--library-line);
+  content: '';
+}
+
+.comparison-explainer__flow li > span {
+  min-width: 0;
+  color: var(--library-blue-dark);
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.comparison-explainer__flow li > p {
+  min-width: 0;
+  margin: 3px 0 0;
+  color: var(--library-ink);
+  font-size: 0.89rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.comparison-explainer__guidance {
+  margin: 0;
+}
+
+.comparison-explainer__guidance > div {
+  padding: 12px 0;
+  border-top: 1px solid var(--library-line);
+}
+
+.comparison-explainer__guidance > div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.comparison-explainer__guidance dt {
+  color: var(--library-blue-dark);
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.comparison-explainer__guidance dd {
+  margin: 4px 0 0;
+  color: var(--library-muted);
+  font-size: 0.88rem;
+  line-height: 1.52;
+  overflow-wrap: anywhere;
 }
 
 .comparison-catalog__lesson-link {
@@ -94,7 +267,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .comparison-catalog__lesson-link {
+  .comparison-catalog__lesson-link,
+  .comparison-explainer > summary svg {
     transition: none;
   }
 }

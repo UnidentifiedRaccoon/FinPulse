@@ -13,6 +13,7 @@ import {
   comparisonEpisodeEntries,
   comparisonLessonPath,
 } from '../comparison/comparisonLessonCatalog'
+import { MechanicExplainer } from '../comparison/MechanicExplainer'
 import { sameEpisodeMechanicEntries, sharedSameEpisode } from '../comparison/sameEpisodeCatalog'
 import '../comparison/twoEpisodeCatalog.css'
 
@@ -50,7 +51,7 @@ export function ComparisonPage() {
             Девять способов, два эпизода
           </h1>
           <p className="learner-library__promise">
-            В каждом способе доступны два последовательных эпизода. Для каждого эпизода текст и финал одинаковы во всех девяти способах — меняется только ваше действие. Короткая метка показывает главное отличие способа.
+            Два эпизода в каждом способе устроены одинаково: текст и финал общие, меняется только действие ученика. Если выбираете механику для курса, раскройте «Как работает способ» — там показаны её ход, задача и ограничение. Это не рейтинг: выбор зависит от задачи урока.
           </p>
         </header>
 
@@ -71,21 +72,25 @@ export function ComparisonPage() {
                         <Clock aria-hidden="true" />
                         2 урока · каждый по {sharedSameEpisode.duration}
                       </p>
+                      <MechanicExplainer title={mechanic.title} explainer={mechanic.explainer} />
                     </div>
-                    <div className="comparison-catalog__lessons" aria-label={`Уроки способа «${mechanic.title}»`}>
-                      {comparisonEpisodeEntries.map((episode) => (
-                        <Link
-                          aria-label={`${episode.sequenceLabel}: ${episode.title}. Способ «${mechanic.title}»`}
-                          className="comparison-catalog__lesson-link"
-                          key={episode.slug}
-                          to={comparisonLessonPath(mechanic.slug, episode, 1)}
-                        >
-                          <span>{episode.sequenceLabel}</span>
-                          <strong>{episode.title}</strong>
-                          <small>{episode.cardSummary}</small>
-                          <ArrowRight aria-hidden="true" />
-                        </Link>
-                      ))}
+                    <div className="comparison-catalog__lesson-area">
+                      <h4>Выберите один из двух эпизодов</h4>
+                      <div className="comparison-catalog__lessons" aria-label={`Уроки способа «${mechanic.title}»`}>
+                        {comparisonEpisodeEntries.map((episode) => (
+                          <Link
+                            aria-label={`${episode.sequenceLabel}: ${episode.title}. Способ «${mechanic.title}»`}
+                            className="comparison-catalog__lesson-link"
+                            key={episode.slug}
+                            to={comparisonLessonPath(mechanic.slug, episode, 1)}
+                          >
+                            <span>{episode.sequenceLabel}</span>
+                            <strong>{episode.title}</strong>
+                            <small>{episode.cardSummary}</small>
+                            <ArrowRight aria-hidden="true" />
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </article>
                 </li>

@@ -45,8 +45,10 @@ describe('two-episode mechanic lab', () => {
     renderAt('/compare')
 
     expect(screen.getByRole('heading', { level: 1, name: 'Девять способов, два эпизода' })).toHaveFocus()
-    expect(screen.getByText(/Для каждого эпизода текст и финал одинаковы/)).toBeInTheDocument()
+    expect(screen.getByText(/Два эпизода в каждом способе устроены одинаково/)).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /Способ/ })).toHaveLength(18)
+    expect(screen.getAllByText('Как работает способ')).toHaveLength(9)
+    expect(screen.getAllByRole('heading', { level: 4, name: 'Выберите один из двух эпизодов' })).toHaveLength(9)
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
     expect(screen.queryByText(/Поменять местами/)).not.toBeInTheDocument()
@@ -64,6 +66,52 @@ describe('two-episode mechanic lab', () => {
     expect(new Set(sameEpisodeMechanicEntries.map((mechanic) => mechanic.shortLabel))).toHaveLength(9)
     expect(fetchSpy).not.toHaveBeenCalled()
     expect(storageSpy).not.toHaveBeenCalled()
+  })
+
+  it('explains every method with the same accessible three-step structure', async () => {
+    const user = userEvent.setup()
+    renderAt('/compare')
+
+    const disclosures = Array.from(document.querySelectorAll<HTMLDetailsElement>('.comparison-explainer'))
+    const summaries = Array.from(document.querySelectorAll<HTMLElement>('.comparison-explainer > summary'))
+
+    expect(disclosures).toHaveLength(9)
+    expect(summaries).toHaveLength(9)
+    expect(disclosures.every((disclosure) => !disclosure.open)).toBe(true)
+
+    for (const mechanic of sameEpisodeMechanicEntries) {
+      expect(mechanic.explainer.essence.trim()).not.toBe('')
+      expect(mechanic.explainer.steps).toHaveLength(3)
+      expect(mechanic.explainer.steps.every((step) => step.trim() !== '')).toBe(true)
+      expect(mechanic.explainer.usefulWhen.trim()).not.toBe('')
+      expect(mechanic.explainer.limitation.trim()).not.toBe('')
+    }
+
+    await user.click(summaries[0])
+    expect(disclosures[0].open).toBe(true)
+    expect(within(disclosures[0]).getByText('Суть.')).toBeInTheDocument()
+    expect(within(disclosures[0]).getByRole('list', {
+      name: `Схема способа «${sameEpisodeMechanicEntries[0].title}»`,
+    })).toBeInTheDocument()
+    expect(within(disclosures[0]).getAllByRole('listitem')).toHaveLength(3)
+    expect(within(disclosures[0]).getByText('Что дано')).toBeInTheDocument()
+    expect(within(disclosures[0]).getByText('Ваше действие')).toBeInTheDocument()
+    expect(within(disclosures[0]).getByText('Результат рассуждения')).toBeInTheDocument()
+    expect(within(disclosures[0]).getByText('Когда может пригодиться')).toBeInTheDocument()
+    expect(within(disclosures[0]).getByText('Ограничение')).toBeInTheDocument()
+
+    summaries[1].focus()
+    expect(summaries[1]).toHaveFocus()
+    expect(summaries[1].tabIndex).toBe(0)
+    await user.click(summaries[1])
+    expect(disclosures[0].open).toBe(true)
+    expect(disclosures[1].open).toBe(true)
+
+    await user.click(summaries[0])
+    expect(disclosures[0].open).toBe(false)
+    expect(disclosures[1].open).toBe(true)
+    expect(screen.getAllByRole('link', { name: /Способ/ })).toHaveLength(18)
+    expect(window.location.hash).toBe('')
   })
 
   it('leaves the existing Concept Lab launcher unchanged', () => {
