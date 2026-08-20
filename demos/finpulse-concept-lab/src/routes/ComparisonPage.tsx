@@ -2,7 +2,7 @@
  * THESIS: девять способов можно сравнить на двух одинаково разбитых последовательных эпизодах.
  * OWN-WORLD: тот же спокойный каталог ФинПульса, что и основная Concept Lab.
  * STORY: пользователь сначала выбирает способ, затем один из двух эпизодов и проходит полный восьмиэкранный разбор.
- * FIRST VIEWPORT: бренд, ясное обещание и начало матрицы 9 × 2 — без кодов, рейтингов и исследовательских подписей.
+ * FIRST VIEWPORT: бренд, ясное обещание, подтверждённый вердикт консилиума и начало матрицы 9 × 2.
  * FORM: каталог самостоятельных маршрутов; попарного workbench, фильтров и сравнительных controls нет.
  */
 import { ArrowRight, Clock, LockKeyhole } from 'lucide-react'
@@ -16,6 +16,12 @@ import {
 import { MechanicExplainer } from '../comparison/MechanicExplainer'
 import { sameEpisodeMechanicEntries, sharedSameEpisode } from '../comparison/sameEpisodeCatalog'
 import '../comparison/twoEpisodeCatalog.css'
+
+const verifiedConsiliumRanking = [
+  { code: 'C2', title: 'Неизменный мотив', score: '95,0', path: '/concept/c2' },
+  { code: 'A0', title: 'Порог доверия', score: '90,0', path: '/concept/a0' },
+  { code: 'B1', title: 'Обратная репетиция срока', score: '87,5', path: '/concept/b1' },
+] as const
 
 export function ComparisonPage() {
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -54,6 +60,27 @@ export function ComparisonPage() {
             Два эпизода в каждом способе устроены одинаково: текст и финал общие, меняется только действие ученика. Если выбираете механику для курса, раскройте «Как работает способ» — там показаны её ход, задача и ограничение. Это не рейтинг: выбор зависит от задачи урока.
           </p>
         </header>
+
+        <aside className="comparison-ranking" aria-labelledby="consilium-ranking-title">
+          <div className="comparison-ranking__heading">
+            <p>Результат отдельной оценки</p>
+            <h2 id="consilium-ranking-title">Приоритет консилиума</h2>
+          </div>
+          <p className="comparison-ranking__scope">
+            Оценка относится только к трём прототипам консилиума, а не к девяти способам ниже: их сравнительная эффективность ещё не проверялась.
+          </p>
+          <ol className="comparison-ranking__list">
+            {verifiedConsiliumRanking.map((mechanic, index) => (
+              <li key={mechanic.code}>
+                <span className="comparison-ranking__place">{index + 1}</span>
+                <Link to={mechanic.path}>
+                  <strong>{mechanic.code} · {mechanic.title}</strong>
+                  <span>{mechanic.score} / 100</span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </aside>
 
         <div className="learner-library__groups">
           <section className="learner-library__group" aria-labelledby="same-episode-group-title">

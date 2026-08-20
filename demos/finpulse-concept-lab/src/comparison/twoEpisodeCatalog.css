@@ -5,6 +5,109 @@
   padding: 30px 0;
 }
 
+.comparison-ranking {
+  display: grid;
+  gap: 16px;
+  margin: 32px 0 40px;
+  padding: 22px;
+  border: 1px solid var(--library-line);
+  border-radius: 16px;
+  background: var(--library-soft);
+}
+
+.comparison-ranking__heading > p {
+  margin: 0 0 5px;
+  color: var(--library-blue-dark);
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.comparison-ranking__heading > h2 {
+  margin: 0;
+  color: var(--library-ink);
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
+  line-height: 1.2;
+}
+
+.comparison-ranking__scope {
+  max-width: 70ch;
+  margin: 0;
+  color: var(--library-muted);
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.comparison-ranking__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comparison-ranking__list li {
+  display: flex;
+  min-width: 0;
+  align-items: stretch;
+  gap: 9px;
+}
+
+.comparison-ranking__place {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  margin-top: 12px;
+  border: 1px solid var(--library-line);
+  border-radius: 50%;
+  color: var(--library-blue-dark);
+  background: var(--library-card);
+  font-size: 0.78rem;
+  font-weight: 780;
+  line-height: 1;
+}
+
+.comparison-ranking__list a {
+  display: grid;
+  min-width: 0;
+  min-height: 52px;
+  flex: 1;
+  align-content: center;
+  gap: 3px;
+  padding: 10px 6px;
+  border-radius: 8px;
+  color: var(--library-ink);
+}
+
+.comparison-ranking__list a:hover {
+  color: var(--library-blue-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.comparison-ranking__list a:focus-visible {
+  outline: 3px solid #0d6fe8;
+  outline-offset: 3px;
+}
+
+.comparison-ranking__list strong {
+  font-size: 0.9rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.comparison-ranking__list a > span {
+  color: var(--library-muted);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+}
+
 .comparison-catalog__method-label {
   margin: 0 0 8px;
   color: var(--library-blue-dark);
@@ -253,6 +356,10 @@
   .learner-library__card.comparison-catalog__card {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+
+  .comparison-ranking__list {
+    grid-template-columns: 1fr;
   }
 }
 

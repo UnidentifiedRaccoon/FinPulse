@@ -46,6 +46,11 @@ describe('two-episode mechanic lab', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Девять способов, два эпизода' })).toHaveFocus()
     expect(screen.getByText(/Два эпизода в каждом способе устроены одинаково/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Приоритет консилиума' })).toBeInTheDocument()
+    expect(screen.getByText(/только к трём прототипам консилиума, а не к девяти способам ниже/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /C2 · Неизменный мотив.*95,0 \/ 100/ })).toHaveAttribute('href', '/concept/c2')
+    expect(screen.getByRole('link', { name: /A0 · Порог доверия.*90,0 \/ 100/ })).toHaveAttribute('href', '/concept/a0')
+    expect(screen.getByRole('link', { name: /B1 · Обратная репетиция срока.*87,5 \/ 100/ })).toHaveAttribute('href', '/concept/b1')
     expect(screen.getAllByRole('link', { name: /Способ/ })).toHaveLength(18)
     expect(screen.getAllByText('Как работает способ')).toHaveLength(9)
     expect(screen.getAllByRole('heading', { level: 4, name: 'Выберите один из двух эпизодов' })).toHaveLength(9)
