@@ -4,12 +4,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HashRouter, MemoryRouter } from 'react-router'
 
 import { AppRoutes } from '../App'
+import { practiceActionLabel } from '../components/practiceMechanicLabels'
 import {
-  comparisonMechanicEntries,
-  comparisonMechanics,
-  comparisonStory,
-  sharedComparisonFact,
-} from '../comparison/comparisonMechanics'
+  sameEpisodeMechanicEntries,
+  sharedSameEpisode,
+} from '../comparison/sameEpisodeCatalog'
 
 function renderAt(path: string) {
   return render(
@@ -25,165 +24,185 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('same-fragment comparison', () => {
-  it('renders one shared story and all nine choices without changing the lab launcher', () => {
+describe('same-episode mechanic lab', () => {
+  it('renders a nine-card catalog without pairwise comparison controls', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const storageSpy = vi.spyOn(Storage.prototype, 'setItem')
     renderAt('/compare')
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Одна история — разные способы разобраться' })).toHaveFocus()
-    expect(screen.getAllByRole('combobox')).toHaveLength(2)
-    expect(screen.getAllByRole('option')).toHaveLength(18)
-    expect(new Set(comparisonMechanicEntries.map((mechanic) => mechanic.slug))).toHaveLength(9)
+    expect(screen.getByRole('heading', { level: 1, name: 'Один эпизод, девять способов' })).toHaveFocus()
+    expect(screen.getByText(/Текст, факты и финал не меняются/)).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /Открыть разбор/ })).toHaveLength(9)
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Поменять местами/)).not.toBeInTheDocument()
 
-    for (const paragraph of comparisonStory.paragraphs) {
-      expect(screen.getAllByText(paragraph)).toHaveLength(1)
+    for (const mechanic of sameEpisodeMechanicEntries) {
+      expect(screen.getByRole('link', { name: `Открыть разбор «${mechanic.title}»` }))
+        .toHaveAttribute('href', `/compare/${mechanic.slug}/1`)
     }
-    expect(screen.getAllByText(sharedComparisonFact)).toHaveLength(1)
-
-    expect(screen.getByRole('link', { name: 'К урокам' })).toHaveAttribute('href', '/lab')
+    expect(new Set(sameEpisodeMechanicEntries.map((mechanic) => mechanic.slug))).toHaveLength(9)
     expect(fetchSpy).not.toHaveBeenCalled()
     expect(storageSpy).not.toHaveBeenCalled()
+  })
 
-    cleanup()
+  it('leaves the existing Concept Lab launcher unchanged', () => {
     renderAt('/lab')
+
     expect(screen.getByRole('heading', { name: 'Выберите короткий урок' })).toBeInTheDocument()
+    expect(screen.getByText('Сообщение и проверка')).toBeInTheDocument()
+    expect(screen.getByText('Деньги и срок')).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /Открыть урок/ })).toHaveLength(9)
-    expect(screen.queryByRole('link', { name: /сравнен/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Открыть разбор/ })).not.toBeInTheDocument()
   })
 
-  it('keeps the counterfactual wording identical in the two one-change methods', () => {
-    const delta = comparisonMechanics['one-change']
-    const conclusion = comparisonMechanics['one-fact-one-conclusion']
+  it('keeps story material outside mechanic definitions', () => {
+    const forbiddenKeys = ['opening', 'beforeReveal', 'reveal', 'outcome', 'checkpoint', 'summary']
 
-    expect(delta.renderer).toBe('practice')
-    expect(conclusion.renderer).toBe('conclusion')
-    if (delta.renderer !== 'practice' || conclusion.renderer !== 'conclusion') return
-    expect(delta.practice.notice).toBe(sharedComparisonFact)
-    expect(conclusion.notice).toBe(sharedComparisonFact)
+    for (const mechanic of sameEpisodeMechanicEntries) {
+      for (const key of forbiddenKeys) expect(mechanic).not.toHaveProperty(key)
+    }
+    expect(sharedSameEpisode.opening.paragraphs[0]).toMatch(/^Саша приехал в новый город/)
+    expect(sharedSameEpisode.beforeReveal.paragraphs.at(-1)).toBe(
+      'Получив сообщение Тамары, Саша сохранил точную дату оплаты в календаре рядом с днём зарплаты.',
+    )
+    expect(sharedSameEpisode.reveal).toBe(
+      'В тот же вечер он попросил перенести оплату на день зарплаты. Тамара согласилась, и новую дату они зафиксировали в переписке.',
+    )
   })
 
-  it.each(comparisonMechanicEntries)(
-    'opens $shortTitle against the unchanged shared fragment',
-    (mechanic) => {
-      const other = mechanic.slug === 'one-fact-one-conclusion'
-        ? 'facts-before-reveal'
-        : 'one-fact-one-conclusion'
-      renderAt(`/compare?first=${mechanic.slug}&second=${other}&view=first`)
+  it.each(sameEpisodeMechanicEntries)(
+    'runs the full $title route over the shared episode',
+    async (mechanic) => {
+      const user = userEvent.setup()
+      renderAt(`/compare/${mechanic.slug}/1`)
 
-      const panel = screen.getByRole('tabpanel', { name: /Первый/ })
-      expect(within(panel).getByText(mechanic.task)).toBeInTheDocument()
-      expect(within(panel).getByRole('heading', { name: mechanic.title })).toBeInTheDocument()
-      expect(screen.getAllByText(comparisonStory.paragraphs[0])).toHaveLength(1)
+      expect(screen.getByRole('heading', { level: 1, name: mechanic.title })).toHaveFocus()
+      await user.click(screen.getByRole('button', { name: 'Начать разбор' }))
+
+      expect(screen.getByText(sharedSameEpisode.opening.paragraphs[0])).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Продолжить историю' }))
+
+      expect(screen.getByText(sharedSameEpisode.beforeReveal.paragraphs[0])).toBeInTheDocument()
+      expect(screen.getByText(sharedSameEpisode.beforeReveal.facts[2].body)).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Увидеть ответ Тамары' }))
+
+      expect(screen.getByText(sharedSameEpisode.reveal)).toBeInTheDocument()
+      for (const prompt of mechanic.practice.prompts) {
+        const group = screen.getByRole('group', { name: prompt.legend })
+        for (const expectedId of prompt.expected) {
+          const option = prompt.options.find((candidate) => candidate.id === expectedId)
+          expect(option).toBeDefined()
+          await user.click(within(group).getByRole(prompt.mode === 'multiple' ? 'checkbox' : 'radio', { name: option!.label }))
+        }
+      }
+      await user.click(screen.getByRole('button', { name: practiceActionLabel(mechanic.practice.kind) }))
+
+      expect(screen.getByRole('heading', { name: mechanic.feedback.successTitle })).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Вернуться к эпизоду' }))
+
+      expect(screen.getByRole('heading', { name: sharedSameEpisode.outcome.title })).toBeInTheDocument()
+      expect(screen.getByText(sharedSameEpisode.outcome.paragraphs[1])).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Проверить границу вывода' }))
+
+      await user.click(screen.getByRole('radio', { name: 'Оплата комнаты затем состоялась' }))
+      await user.click(screen.getByRole('button', { name: 'Проверить' }))
+      expect(screen.getByText(sharedSameEpisode.checkpoint.feedback.success)).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'К итогу' }))
+
+      expect(screen.getByRole('heading', { name: sharedSameEpisode.summary.title })).toBeInTheDocument()
+      expect(screen.getByText(sharedSameEpisode.summary.takeaway)).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Завершить' }))
+
+      expect(screen.getByRole('heading', { name: 'Разбор завершён' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Выбрать другой способ' })).toBeInTheDocument()
     },
   )
 
-  it('runs two different methods and reveals a neutral side-by-side comparison', async () => {
+  it('shows calm corrective feedback without trapping the learner', async () => {
     const user = userEvent.setup()
-    renderAt('/compare')
+    const mechanic = sameEpisodeMechanicEntries[0]
+    renderAt(`/compare/${mechanic.slug}/4`)
 
-    const firstPanel = screen.getByRole('tabpanel', { name: /Первый/ })
-    const expectedFirst = [
-      'Дано как условие истории',
-      'Заявлено только в рекламе',
-      'В истории сказано: подтверждения не нашли',
-    ]
-    const firstGroups = within(firstPanel).getAllByRole('group')
-    for (const [index, label] of expectedFirst.entries()) {
-      await user.click(within(firstGroups[index]!).getByRole('radio', { name: label }))
+    for (const prompt of mechanic.practice.prompts) {
+      const group = screen.getByRole('group', { name: prompt.legend })
+      const wrong = prompt.options.find((option) => !prompt.expected.includes(option.id))
+      expect(wrong).toBeDefined()
+      await user.click(within(group).getByRole('radio', { name: wrong!.label }))
     }
+    await user.click(screen.getByRole('button', { name: practiceActionLabel(mechanic.practice.kind) }))
 
-    const secondPanel = screen.getByRole('tabpanel', { name: /Второй/ })
-    await user.click(within(secondPanel).getByRole('radio', {
-      name: 'Известен срок получения доступного тогда остатка; остальные вопросы и решение остаются открытыми.',
-    }))
-
-    await user.click(within(firstPanel).getByRole('button', { name: 'Показать разбор' }))
-    await user.click(within(secondPanel).getByRole('button', { name: 'Показать разбор' }))
-
-    expect(within(firstPanel).getByText('Сверка совпала')).toBeInTheDocument()
-    expect(within(secondPanel).getByText('Сверка совпала')).toBeInTheDocument()
-    expect(within(firstPanel).getByRole('button', { name: 'Разбор показан' })).toBeDisabled()
-    expect(within(secondPanel).getByRole('button', { name: 'Разбор показан' })).toBeDisabled()
-    expect(screen.getByRole('heading', { name: 'Сравните не ответы, а работу способов' })).toBeInTheDocument()
-    expect(screen.getByText('Помогает не превращать привлекательное утверждение в установленный факт.')).toBeInTheDocument()
-    expect(screen.getByText('Проверяет, останется ли новая реплика такой же ограниченной, как новое свидетельство.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: mechanic.feedback.nuanceTitle })).toBeInTheDocument()
+    expect(screen.getAllByText(/Точнее здесь:/)).toHaveLength(mechanic.practice.prompts.length)
+    expect(screen.getByRole('button', { name: 'Вернуться к эпизоду' })).toBeEnabled()
   })
 
-  it('explains why an imprecise classification does not fit the fragment', async () => {
-    const user = userEvent.setup()
-    renderAt('/compare')
+  it('repairs legacy query, invalid steps and incomplete direct links', async () => {
+    window.location.hash = '#/compare?first=facts-before-reveal&second=one-change&view=second'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+    await waitFor(() => expect(window.location.hash).toBe('#/compare'))
 
-    const firstPanel = screen.getByRole('tabpanel', { name: /Первый/ })
-    const groups = within(firstPanel).getAllByRole('group')
-    await user.click(within(groups[0]!).getByRole('radio', { name: 'Заявлено только в рекламе' }))
-    await user.click(within(groups[1]!).getByRole('radio', { name: 'Дано как условие истории' }))
-    await user.click(within(groups[2]!).getByRole('radio', { name: 'Заявлено только в рекламе' }))
-    await user.click(within(firstPanel).getByRole('button', { name: 'Показать разбор' }))
+    cleanup()
+    window.location.hash = '#/compare/facts-before-reveal/99'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+    await waitFor(() => expect(window.location.hash).toBe('#/compare/facts-before-reveal/1'))
 
-    expect(within(firstPanel).getByText('Есть нюанс')).toBeInTheDocument()
-    expect(within(firstPanel).getByText(/Дата окончания временной аренды задана самим фрагментом/)).toBeInTheDocument()
-    expect(within(firstPanel).getByText(/Высокий доход относится к обещанию публикации/)).toBeInTheDocument()
-    expect(within(firstPanel).getByText(/Фрагмент прямо сообщает итог поиска/)).toBeInTheDocument()
+    cleanup()
+    window.location.hash = '#/compare/facts-before-reveal/5'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+    await waitFor(() => expect(window.location.hash).toContain('#/compare/facts-before-reveal/4'))
+
+    cleanup()
+    window.location.hash = '#/compare/missing/3'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+    await waitFor(() => expect(window.location.hash).toBe('#/compare'))
+    expect(screen.getByRole('heading', { name: 'Один эпизод, девять способов' })).toBeInTheDocument()
+
+    cleanup()
+    window.location.hash = '#/compare/facts-before-reveal'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+    await waitFor(() => expect(window.location.hash).toBe('#/compare'))
+    expect(screen.getByRole('heading', { name: 'Один эпизод, девять способов' })).toBeInTheDocument()
   })
 
-  it('keeps answers transient and repairs invalid comparison state', async () => {
-    window.location.hash = '#/compare?first=one-fact-one-conclusion&second=facts-before-reveal&view=first&answer-one-fact-one-conclusion-compare-conclusion=bounded&checked-one-fact-one-conclusion=1'
+  it('restores bounded answer state from a direct HashRouter URL', async () => {
+    window.location.hash = '#/compare/one-fact-one-conclusion/4?practice-conclusion-boundary=bounded'
     render(<HashRouter><AppRoutes /></HashRouter>)
 
     expect(screen.getByRole('radio', {
-      name: 'Известен срок получения доступного тогда остатка; остальные вопросы и решение остаются открытыми.',
-      checked: false,
+      name: 'Перенос согласован, новая дата зафиксирована; остальные вопросы открыты',
+      checked: true,
     })).toBeInTheDocument()
-    expect(screen.queryByText('Сверка совпала')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Сравнить последствия' })).toBeEnabled()
+  })
+
+  it('clears completion when going back after reload and requires a checked checkpoint', async () => {
+    const user = userEvent.setup()
+    window.location.hash = '#/compare/facts-before-reveal/8?checkpoint-shared-boundary=payment-complete&checkpoint-checked=1&done=1'
+    render(<HashRouter><AppRoutes /></HashRouter>)
+
+    expect(screen.getByRole('heading', { name: 'Разбор завершён' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Назад' }))
     await waitFor(() => {
-      expect(window.location.hash).not.toContain('answer-')
-      expect(window.location.hash).not.toContain('checked-')
+      expect(window.location.hash).toContain('#/compare/facts-before-reveal/7')
+      expect(window.location.hash).not.toContain('done=1')
     })
+    await user.click(screen.getByRole('button', { name: 'К итогу' }))
+    expect(screen.getByRole('heading', { name: sharedSameEpisode.summary.title })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Разбор завершён' })).not.toBeInTheDocument()
 
     cleanup()
-    window.location.hash = '#/compare?first=missing&second=missing&view=third&checked-facts-before-reveal=1'
+    window.location.hash = '#/compare/facts-before-reveal/8?checkpoint-shared-boundary=payment-complete'
     render(<HashRouter><AppRoutes /></HashRouter>)
-
-    await waitFor(() => {
-      expect(window.location.hash).toContain('first=facts-before-reveal')
-      expect(window.location.hash).toContain('second=one-fact-one-conclusion')
-      expect(window.location.hash).toContain('view=first')
-      expect(window.location.hash).not.toContain('checked-facts-before-reveal=1')
-    })
-    for (const button of screen.getAllByRole('button', { name: 'Показать разбор' })) {
-      expect(button).toBeDisabled()
-    }
+    await waitFor(() => expect(window.location.hash).toContain('#/compare/facts-before-reveal/7'))
+    expect(screen.getByRole('button', { name: 'Проверить' })).toBeInTheDocument()
   })
 
-  it('changes and swaps methods without adding answer clicks to browser history', async () => {
+  it('returns deterministically from the first and completed screens to the new catalog', async () => {
     const user = userEvent.setup()
-    window.location.hash = '#/compare'
-    render(<HashRouter><AppRoutes /></HashRouter>)
+    renderAt('/compare/source-scope/1')
 
-    const firstSelect = screen.getByRole('combobox', { name: 'Первый способ: выберите способ' })
-    await user.selectOptions(firstSelect, 'source-scope')
-    expect(window.location.hash).toContain('first=source-scope')
-
-    await user.click(screen.getByRole('button', { name: 'Поменять способы местами' }))
-    expect(window.location.hash).toContain('first=one-fact-one-conclusion')
-    expect(window.location.hash).toContain('second=source-scope')
-    expect(screen.getAllByText(comparisonStory.paragraphs[0])).toHaveLength(1)
-  })
-
-  it('supports arrow-key navigation between the mobile comparison tabs', async () => {
-    const user = userEvent.setup()
-    renderAt('/compare')
-
-    const firstTab = document.getElementById('comparison-tab-first') as HTMLButtonElement
-    const secondTab = document.getElementById('comparison-tab-second') as HTMLButtonElement
-    firstTab.focus()
-    await user.keyboard('{ArrowRight}')
-    expect(secondTab).toHaveFocus()
-    expect(secondTab).toHaveAttribute('aria-selected', 'true')
-
-    await user.keyboard('{ArrowLeft}')
-    expect(firstTab).toHaveFocus()
-    expect(firstTab).toHaveAttribute('aria-selected', 'true')
+    await user.click(screen.getByRole('button', { name: 'Все способы' }))
+    expect(screen.getByRole('heading', { name: 'Один эпизод, девять способов' })).toBeInTheDocument()
   })
 })

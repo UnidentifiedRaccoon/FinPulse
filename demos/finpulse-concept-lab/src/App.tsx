@@ -9,6 +9,7 @@ import { ObserverPause } from './concepts/ObserverPause'
 import { OneChangeModel } from './concepts/OneChangeModel'
 import { RuleWithRevisions } from './concepts/RuleWithRevisions'
 import { SceneDossier } from './concepts/SceneDossier'
+import { SameEpisodeLessonPage } from './comparison/SameEpisodeLessonPage'
 import { ComparisonPage } from './routes/ComparisonPage'
 import { LibraryPage } from './routes/LibraryPage'
 import { LearnerMechanicPage } from './routes/LearnerMechanicPage'
@@ -28,6 +29,8 @@ export function AppRoutes() {
       <Route element={<LearnerLessonRoute />} path="/lesson/:lessonSlug/:step" />
       <Route element={<LibraryPage />} path="/lab" />
       <Route element={<ComparisonPage />} path="/compare" />
+      <Route element={<SameEpisodeLessonPage />} path="/compare/:mechanicSlug/:step" />
+      <Route element={<ComparisonPage />} path="/compare/*" />
       <Route element={<ObserverPause />} path="/concept/a" />
       <Route element={<SceneDossier />} path="/concept/b" />
       <Route element={<OneChangeModel />} path="/concept/c" />

@@ -1,0 +1,618 @@
+import { chapterOneOpening } from '../demoContent'
+import type {
+  LearnerFeedbackScreen,
+  LearnerPracticeScreen,
+  LearnerPrompt,
+} from '../learnerLessonCatalog'
+
+export type SameEpisodeMechanicSlug =
+  | 'facts-before-reveal'
+  | 'source-scope'
+  | 'one-change'
+  | 'help-and-agency'
+  | 'question-and-source'
+  | 'revise-explanation'
+  | 'evidence-chain'
+  | 'deadline-backward'
+  | 'one-fact-one-conclusion'
+
+export interface SameEpisodeMechanic {
+  slug: SameEpisodeMechanicSlug
+  title: string
+  description: string
+  goal: string
+  practice: LearnerPracticeScreen
+  feedback: LearnerFeedbackScreen
+}
+
+const finalOpeningParagraph = chapterOneOpening[7]
+const revealStart = 'В тот же вечер он попросил перенести оплату на день зарплаты.'
+const revealIndex = finalOpeningParagraph.indexOf(revealStart)
+
+if (revealIndex < 0) {
+  throw new Error('The shared episode reveal is missing from chapterOneOpening')
+}
+
+export const sharedSameEpisode = {
+  duration: '5–7 минут',
+  introLead: 'Саша проводит первый вечер после переезда и сверяет дату оплаты комнаты с датой первой полной зарплаты.',
+  opening: {
+    title: 'Первый вечер после переезда',
+    paragraphs: chapterOneOpening.slice(0, 5),
+  },
+  beforeReveal: {
+    title: 'Две даты рядом',
+    paragraphs: [
+      chapterOneOpening[5],
+      chapterOneOpening[6],
+      finalOpeningParagraph.slice(0, revealIndex).trim(),
+    ],
+    lead: 'К этому моменту история позволяет уверенно назвать одни факты и оставляет другие вопросы открытыми.',
+    facts: [
+      {
+        label: 'Известно',
+        body: 'Изначально заплатить за комнату нужно было на два дня раньше первой полной зарплаты.',
+      },
+      {
+        label: 'Также известно',
+        body: 'Компенсация не успевала к этому сроку, а деньгами с транспортной карты нельзя было оплатить комнату.',
+      },
+      {
+        label: 'Пока неизвестно',
+        body: 'Хватало ли наличных и денег на счёте, согласится ли Тамара и состоится ли затем оплата.',
+      },
+    ],
+  },
+  reveal: finalOpeningParagraph.slice(revealIndex).trim(),
+  outcome: {
+    title: 'К концу эпизода изменилась дата',
+    paragraphs: [
+      'Саша увидел в календаре расхождение между исходной датой оплаты комнаты и днём первой полной зарплаты.',
+      finalOpeningParagraph.slice(revealIndex).trim(),
+    ],
+    facts: [
+      {
+        label: 'Подтверждено',
+        body: 'Тамара согласилась перенести оплату на день зарплаты, и новую дату они зафиксировали в переписке.',
+      },
+      {
+        label: 'Не установлено',
+        body: 'Хватало ли Саше денег в исходную дату и состоялась ли оплата позже.',
+      },
+    ],
+  },
+  checkpoint: {
+    title: 'Что всё ещё нельзя заключить?',
+    scenario: 'Вернитесь к эпизоду целиком: даты сравнили, перенос согласовали и новую дату зафиксировали.',
+    prompt: {
+      id: 'shared-boundary',
+      legend: 'Какой вывод история всё ещё не подтверждает?',
+      options: [
+        { id: 'payment-complete', label: 'Оплата комнаты затем состоялась' },
+        { id: 'date-recorded', label: 'Новую дату зафиксировали в переписке' },
+        { id: 'gap-observed', label: 'Саша увидел расхождение между датами' },
+      ],
+      expected: ['payment-complete'],
+    } satisfies LearnerPrompt,
+    feedback: {
+      success: 'Верно: конец эпизода не сообщает о результате оплаты.',
+      nuance: 'Согласованная дата — ещё не подтверждение будущего платежа.',
+      copy: 'История подтверждает расхождение дат, просьбу, согласие и фиксацию новой даты. Про саму оплату в этом эпизоде ничего не сказано.',
+    },
+  },
+  summary: {
+    title: 'Что установлено в этом эпизоде',
+    items: [
+      {
+        label: 'Было',
+        body: 'Исходная дата оплаты комнаты стояла на два дня раньше первой полной зарплаты.',
+      },
+      {
+        label: 'Изменилось',
+        body: 'Тамара согласилась на день зарплаты, и новую дату они зафиксировали в переписке.',
+      },
+      {
+        label: 'Осталось неизвестным',
+        body: 'Хватало ли Саше денег и состоялась ли оплата позже.',
+      },
+    ],
+    takeaway: 'Один установленный факт меняет только связанный с ним вывод. Это учебная история, а не индивидуальная финансовая рекомендация.',
+  },
+} as const
+
+const pointInStoryOptions = [
+  { id: 'established', label: 'Уже подтверждено к этому моменту' },
+  { id: 'opposite', label: 'К этому моменту сказано обратное' },
+  { id: 'unknown', label: 'На тот момент неизвестно' },
+] as const
+
+const yesNoOptions = [
+  { id: 'confirmed', label: 'Подтверждено эпизодом' },
+  { id: 'not-confirmed', label: 'Не подтверждено эпизодом' },
+] as const
+
+export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, SameEpisodeMechanic>> = {
+  'facts-before-reveal': {
+    slug: 'facts-before-reveal',
+    title: 'Что было известно в каждый момент?',
+    description: 'Отделить установленное от того, что до ответа Тамары оставалось неизвестным.',
+    goal: 'Не переносить сведения из конца эпизода в более ранний момент и не додумывать нехватку денег.',
+    practice: {
+      kind: 'status',
+      title: 'Вернитесь к моменту до ответа Тамары',
+      contextItems: [],
+      prompts: [
+        {
+          id: 'pause-gap',
+          legend: 'Оплата комнаты стояла на два дня раньше первой полной зарплаты.',
+          options: pointInStoryOptions,
+          expected: ['established'],
+        },
+        {
+          id: 'pause-compensation',
+          legend: 'Компенсация рабочих расходов успевала прийти к исходному сроку оплаты.',
+          options: pointInStoryOptions,
+          expected: ['opposite'],
+        },
+        {
+          id: 'pause-shortage',
+          legend: 'Саше не хватало денег на оплату комнаты.',
+          options: pointInStoryOptions,
+          expected: ['unknown'],
+        },
+        {
+          id: 'pause-consent',
+          legend: 'Тамара согласится перенести дату.',
+          options: pointInStoryOptions,
+          expected: ['unknown'],
+        },
+      ],
+    },
+    feedback: {
+      successTitle: 'Вы сохранили границу паузы',
+      nuanceTitle: 'В ответ попал факт из другого момента',
+      paragraphs: [
+        'До ответа Тамары календарь уже показывал расхождение дат. Но история не говорила, хватало ли Саше других денег и согласится ли Тамара.',
+        'Её согласие становится известным только в конце эпизода — его нельзя использовать как факт более раннего момента.',
+      ],
+      facts: [],
+    },
+  },
+
+  'source-scope': {
+    slug: 'source-scope',
+    title: 'Какой источник что подтвердил?',
+    description: 'Сопоставить сообщение, календарь и ответ Тамары с тем, что каждый из них сообщает.',
+    goal: 'Видеть границу каждого источника и не превращать дату в доказательство наличия денег или оплаты.',
+    practice: {
+      kind: 'sources',
+      title: 'Определите роль каждого источника',
+      contextItems: [
+        { label: 'Сообщение Тамары', body: 'Точная исходная дата оплаты комнаты.' },
+        { label: 'Календарь Саши', body: 'Дата оплаты рядом с днём первой полной зарплаты.' },
+        { label: 'Переписка после просьбы', body: 'Согласие Тамары и совместная фиксация новой даты.' },
+      ],
+      prompts: [
+        {
+          id: 'source-message',
+          legend: 'Что подтверждает сообщение Тамары?',
+          options: [
+            { id: 'original-date', label: 'Исходную дату оплаты комнаты' },
+            { id: 'money-shortage', label: 'Нехватку денег у Саши' },
+            { id: 'payment-result', label: 'Будущий результат оплаты' },
+          ],
+          expected: ['original-date'],
+        },
+        {
+          id: 'source-calendar',
+          legend: 'Что показывает календарь после сохранения дат?',
+          options: [
+            { id: 'date-gap', label: 'Оплата на два дня раньше зарплаты' },
+            { id: 'enough-money', label: 'Денег точно недостаточно' },
+            { id: 'owner-agrees', label: 'Тамара заранее согласна на перенос' },
+          ],
+          expected: ['date-gap'],
+        },
+        {
+          id: 'source-reply',
+          legend: 'Что подтверждает переписка после просьбы?',
+          options: [
+            { id: 'transfer-agreed', label: 'Перенос согласован, новая дата зафиксирована' },
+            { id: 'salary-arrived', label: 'Зарплата уже поступила' },
+            { id: 'rent-paid', label: 'Комната уже оплачена' },
+          ],
+          expected: ['transfer-agreed'],
+        },
+      ],
+    },
+    feedback: {
+      successTitle: 'Каждый источник остался в своих границах',
+      nuanceTitle: 'Один источник получил слишком широкий вывод',
+      paragraphs: [
+        'Сообщение называет исходную дату, календарь помогает увидеть расположение дат, а переписка после просьбы подтверждает согласие Тамары и совместную фиксацию новой даты.',
+        'Ни один из этих источников не подтверждает достаточность денег или состоявшуюся оплату.',
+      ],
+      facts: [],
+    },
+  },
+
+  'one-change': {
+    slug: 'one-change',
+    title: 'Что меняет одна новая дата?',
+    description: 'Отметить только прямые последствия согласованного переноса даты.',
+    goal: 'Менять вывод ровно там, где изменился факт, и оставлять остальные вопросы открытыми.',
+    practice: {
+      kind: 'comparison',
+      title: 'Сравните положение до и после ответа',
+      contextItems: [
+        { label: 'До ответа', body: 'Оплата стояла на два дня раньше первой полной зарплаты.' },
+        { label: 'После ответа', body: 'Тамара согласилась на день зарплаты, новую дату зафиксировали.' },
+      ],
+      prompts: [
+        {
+          id: 'delta-date',
+          legend: 'Исходное расхождение дат больше не относится к согласованной дате.',
+          options: [
+            { id: 'direct', label: 'Прямое следствие' },
+            { id: 'not-direct', label: 'Из переноса не следует' },
+          ],
+          expected: ['direct'],
+        },
+        {
+          id: 'delta-compensation',
+          legend: 'Компенсация рабочих расходов стала приходить раньше.',
+          options: [
+            { id: 'direct', label: 'Прямое следствие' },
+            { id: 'not-direct', label: 'Из переноса не следует' },
+          ],
+          expected: ['not-direct'],
+        },
+        {
+          id: 'delta-payment',
+          legend: 'Оплата комнаты состоялась.',
+          options: [
+            { id: 'direct', label: 'Прямое следствие' },
+            { id: 'not-direct', label: 'Из переноса не следует' },
+          ],
+          expected: ['not-direct'],
+        },
+      ],
+    },
+    feedback: {
+      successTitle: 'Вы изменили только связанный вывод',
+      nuanceTitle: 'Перенос даты получил лишние последствия',
+      paragraphs: [
+        'Ответ Тамары меняет только установленную дату: теперь она совпадает с днём зарплаты и зафиксирована в переписке.',
+        'Он не меняет срок компенсации и не доказывает, что последующая оплата состоялась.',
+      ],
+      facts: [],
+    },
+  },
+
+  'help-and-agency': {
+    slug: 'help-and-agency',
+    title: 'Кто помогал, кто действовал?',
+    description: 'Различить действия Саши, действия Тамары и то, что они сделали вместе.',
+    goal: 'Не приписывать одному участнику решение или действие другого.',
+    practice: {
+      kind: 'roles',
+      title: 'Верните действия их участникам',
+      contextItems: [],
+      prompts: [
+        {
+          id: 'role-compare',
+          legend: 'Сравнил даты и сохранил их в календаре.',
+          options: [
+            { id: 'sasha', label: 'Саша' },
+            { id: 'tamara', label: 'Тамара' },
+            { id: 'both', label: 'Саша и Тамара вместе' },
+            { id: 'unspecified', label: 'Не указано' },
+          ],
+          expected: ['sasha'],
+        },
+        {
+          id: 'role-date',
+          legend: 'Сообщила точную исходную дату оплаты.',
+          options: [
+            { id: 'sasha', label: 'Саша' },
+            { id: 'tamara', label: 'Тамара' },
+            { id: 'both', label: 'Саша и Тамара вместе' },
+            { id: 'unspecified', label: 'Не указано' },
+          ],
+          expected: ['tamara'],
+        },
+        {
+          id: 'role-request',
+          legend: 'Попросил перенести оплату на день зарплаты.',
+          options: [
+            { id: 'sasha', label: 'Саша' },
+            { id: 'tamara', label: 'Тамара' },
+            { id: 'both', label: 'Саша и Тамара вместе' },
+            { id: 'unspecified', label: 'Не указано' },
+          ],
+          expected: ['sasha'],
+        },
+        {
+          id: 'role-record',
+          legend: 'Согласились и зафиксировали новую дату в переписке.',
+          options: [
+            { id: 'sasha', label: 'Саша' },
+            { id: 'tamara', label: 'Тамара' },
+            { id: 'both', label: 'Саша и Тамара вместе' },
+            { id: 'unspecified', label: 'Не указано' },
+          ],
+          expected: ['both'],
+        },
+      ],
+    },
+    feedback: {
+      successTitle: 'Действия остались у своих участников',
+      nuanceTitle: 'Одно действие перешло не тому участнику',
+      paragraphs: [
+        'Саша сравнил даты и попросил перенос. Тамара сообщила исходную дату и согласилась. Новую дату они зафиксировали вместе.',
+        'История описывает сотрудничество, но не сообщает, кто располагал достаточной суммой денег.',
+      ],
+      facts: [],
+    },
+  },
+
+  'question-and-source': {
+    slug: 'question-and-source',
+    title: 'Как меняется вопрос Саши?',
+    description: 'Подобрать источник к каждому новому вопросу и заметить вопрос без ответа.',
+    goal: 'Менять источник вместе с вопросом, а не ждать одного ответа на всё.',
+    practice: {
+      kind: 'thread',
+      title: 'Соедините вопрос с источником',
+      contextItems: [
+        { label: 'Сначала', body: 'Когда нужно платить и как эта дата расположена относительно зарплаты?' },
+        { label: 'Затем', body: 'Согласована ли другая дата?' },
+      ],
+      prompts: [
+        {
+          id: 'thread-original-date',
+          legend: 'Где Саша видит исходную дату и её положение относительно зарплаты?',
+          options: [
+            { id: 'message-calendar', label: 'В сообщении Тамары и своём календаре' },
+            { id: 'reply', label: 'Только в ответе на просьбу' },
+            { id: 'no-source', label: 'В эпизоде источника нет' },
+          ],
+          expected: ['message-calendar'],
+        },
+        {
+          id: 'thread-agreement',
+          legend: 'Где появляется ответ о согласованном переносе?',
+          options: [
+            { id: 'message-calendar', label: 'В исходной записи календаря' },
+            { id: 'reply', label: 'В ответе Тамары и новой записи в переписке' },
+            { id: 'no-source', label: 'В эпизоде источника нет' },
+          ],
+          expected: ['reply'],
+        },
+        {
+          id: 'thread-payment',
+          legend: 'Какой источник подтверждает, что оплата затем состоялась?',
+          options: [
+            { id: 'message-calendar', label: 'Сообщение и календарь' },
+            { id: 'reply', label: 'Ответ Тамары' },
+            { id: 'no-source', label: 'В эпизоде такого источника нет' },
+          ],
+          expected: ['no-source'],
+        },
+      ],
+    },
+    feedback: {
+      successTitle: 'Каждый вопрос получил свой источник',
+      nuanceTitle: 'Один источник ответил шире, чем позволяет эпизод',
+      paragraphs: [
+        'Сообщение и календарь отвечают о первоначальных датах. Ответ Тамары — о согласии и новой дате.',
+        'Для вопроса о состоявшейся оплате в этом эпизоде источника нет.',
+      ],
+      facts: [],
+    },
+  },
+
+  'revise-explanation': {
+    slug: 'revise-explanation',
+    title: 'Как уточнить объяснение?',
+    description: 'Собрать точное объяснение, не превращая единичный эпизод в универсальное правило.',
+    goal: 'Связать вывод только с действиями и фактами, которые действительно описаны.',
+    practice: {
+      kind: 'revision',
+      title: 'Уточните объяснение в три шага',
+      contextItems: [
+        { label: 'До ответа', body: 'Календарь показал расхождение двух дат.' },
+        { label: 'После ответа', body: 'Тамара согласилась, новую дату зафиксировали.' },
+      ],
+      prompts: [
+        {
+          id: 'revision-observation',
+          legend: 'Что точнее всего описывает первое наблюдение?',
+          options: [
+            { id: 'gap', label: 'Оплата стояла на два дня раньше зарплаты' },
+            { id: 'shortage', label: 'У Саши точно не было денег' },
+            { id: 'payment', label: 'Оплата уже прошла' },
+          ],
+          expected: ['gap'],
+        },
+        {
+          id: 'revision-added',
+          legend: 'Что добавил ответ Тамары?',
+          options: [
+            { id: 'agreement', label: 'Согласие на другую дату и её фиксацию' },
+            { id: 'salary', label: 'Подтверждение поступившей зарплаты' },
+            { id: 'legal-rule', label: 'Общее правило для любых договорённостей' },
+          ],
+          expected: ['agreement'],
+        },
+        {
+          id: 'revision-final',
+          legend: 'Какое итоговое объяснение остаётся точным?',
+          options: [
+            { id: 'bounded', label: 'Саша заметил расхождение; после его просьбы Тамара согласилась, и новую дату зафиксировали' },
+            { id: 'universal', label: 'Любую дату оплаты всегда можно перенести сообщением' },
+            { id: 'solved', label: 'После переноса вопрос оплаты был полностью решён' },
+          ],
+          expected: ['bounded'],
+        },
+      ],
+    },
+    feedback: {
+      successTitle: 'Объяснение осталось точным',
+      nuanceTitle: 'Объяснение стало шире истории',
+      paragraphs: [
+        'В эпизоде есть конкретная последовательность: расхождение дат, просьба, согласие и фиксация новой даты.',
+        'Из неё не следует универсальное правило, юридический вывод или подтверждение состоявшейся оплаты.',
+      ],
+      facts: [],
+    },
+  },
+
+  'evidence-chain': {
+    slug: 'evidence-chain',
+    title: 'На чём держится вывод?',
+    description: 'Проверить цепочку фактов и увидеть, где подтверждение заканчивается.',
+    goal: 'Не пропускать неподтверждённое звено между наблюдением, решением и результатом.',
+    practice: {
+      kind: 'evidence',
+      title: 'Проверьте каждое звено',
+      contextItems: [],
+      prompts: [
+        {
+          id: 'chain-gap',
+          legend: 'Исходная дата была на два дня раньше первой полной зарплаты.',
+          options: yesNoOptions,
+          expected: ['confirmed'],
+        },
+        {
+          id: 'chain-request',
+          legend: 'Саша попросил перенести дату.',
+          options: yesNoOptions,
+          expected: ['confirmed'],
+        },
+        {
+          id: 'chain-consent',
+          legend: 'Тамара согласилась.',
+          options: yesNoOptions,
+          expected: ['confirmed'],
+        },
+        {
+          id: 'chain-record',
+          legend: 'Новую дату зафиксировали в переписке.',
+          options: yesNoOptions,
+          expected: ['confirmed'],
+        },
+        {
+          id: 'chain-shortage',
+          legend: 'Саше не хватало денег в исходную дату.',
+          options: yesNoOptions,
+          expected: ['not-confirmed'],
+        },
+        {
+          id: 'chain-payment',
+          legend: 'Оплата комнаты затем состоялась.',
+          options: yesNoOptions,
+          expected: ['not-confirmed'],
+        },
+      ],
+    },
+    feedback: {
+      successTitle: 'Цепочка остановилась на последнем факте',
+      nuanceTitle: 'В цепочке появилось неподтверждённое звено',
+      paragraphs: [
+        'История подтверждает расхождение дат, просьбу, согласие и фиксацию новой даты.',
+        'Она не подтверждает нехватку денег, поступление зарплаты или последующую оплату комнаты.',
+      ],
+      facts: [],
+    },
+  },
+
+  'deadline-backward': {
+    slug: 'deadline-backward',
+    title: 'Что проверить до срока?',
+    description: 'Развернуть события назад от даты оплаты и поставить сверку до решения.',
+    goal: 'Увидеть, какая проверка предшествовала просьбе, и не путать согласованную дату с результатом оплаты.',
+    practice: {
+      kind: 'deadline',
+      title: 'Восстановите порядок работы со сроком',
+      contextItems: [
+        { label: 'Исходная дата', body: 'На два дня раньше первой полной зарплаты.' },
+        { label: 'Согласованная дата', body: 'День зарплаты; дата зафиксирована в переписке.' },
+      ],
+      prompts: [
+        {
+          id: 'deadline-first',
+          legend: 'Что в эпизоде произошло до просьбы о переносе?',
+          options: [
+            { id: 'compare', label: 'Саша сравнил и сохранил даты в календаре' },
+            { id: 'payment', label: 'Саша оплатил комнату' },
+            { id: 'consent', label: 'Тамара уже согласилась' },
+          ],
+          expected: ['compare'],
+        },
+        {
+          id: 'deadline-boundary',
+          legend: 'Что эта сверка дат позволяет заключить?',
+          options: [
+            { id: 'timing', label: 'Исходный срок наступал раньше дня зарплаты' },
+            { id: 'shortage', label: 'Денег у Саши точно не хватало' },
+            { id: 'result', label: 'Оплата позже точно состоялась' },
+          ],
+          expected: ['timing'],
+        },
+      ],
+    },
+    feedback: {
+      successTitle: 'Сверка оказалась до решения',
+      nuanceTitle: 'События поменялись местами или вывод стал слишком широким',
+      paragraphs: [
+        'Сначала Саша сохранил и сравнил даты, затем попросил перенос. Только после просьбы Тамара согласилась, и новую дату зафиксировали.',
+        'Сравнение говорит о сроках, но не о достаточности денег и не о результате оплаты.',
+      ],
+      facts: [],
+    },
+  },
+
+  'one-fact-one-conclusion': {
+    slug: 'one-fact-one-conclusion',
+    title: 'Что изменил один новый факт?',
+    description: 'Ограничить новый вывод ровно тем, что подтвердил ответ Тамары.',
+    goal: 'Не достраивать из одного нового факта достаточность денег, результат оплаты или универсальное правило.',
+    practice: {
+      kind: 'comparison',
+      title: 'Выберите вывод после ответа Тамары',
+      contextItems: [
+        { label: 'Новый факт', body: 'Тамара согласилась на день зарплаты, новую дату зафиксировали.' },
+        { label: 'Неизменные вопросы', body: 'Хватало ли денег и состоялась ли затем оплата.' },
+      ],
+      prompts: [
+        {
+          id: 'conclusion-boundary',
+          legend: 'Какой вывод следует из нового факта?',
+          options: [
+            { id: 'bounded', label: 'Перенос согласован, новая дата зафиксирована; остальные вопросы открыты' },
+            { id: 'enough', label: 'Теперь денег Саше точно хватит' },
+            { id: 'paid', label: 'Оплата комнаты уже состоялась' },
+            { id: 'best', label: 'Так всегда лучше поступать при несовпадении дат' },
+          ],
+          expected: ['bounded'],
+        },
+      ],
+    },
+    feedback: {
+      successTitle: 'Новый факт изменил один вывод',
+      nuanceTitle: 'К новому факту добавился лишний вывод',
+      paragraphs: [
+        'Ответ Тамары подтверждает только согласие на другую дату и её фиксацию в переписке.',
+        'Он не подтверждает достаточность денег, результат оплаты или то, что такой ход подходит для любой ситуации.',
+      ],
+      facts: [],
+    },
+  },
+}
+
+export const sameEpisodeMechanicEntries = Object.values(sameEpisodeMechanics)
+
+export function getSameEpisodeMechanic(value: string): SameEpisodeMechanic | undefined {
+  return sameEpisodeMechanics[value as SameEpisodeMechanicSlug]
+}
