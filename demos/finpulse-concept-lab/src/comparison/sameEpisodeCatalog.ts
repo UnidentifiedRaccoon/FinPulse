@@ -19,6 +19,8 @@ export type SameEpisodeMechanicSlug =
 export interface SameEpisodeMechanic {
   slug: SameEpisodeMechanicSlug
   title: string
+  shortLabel: string
+  catalogDescription: string
   description: string
   goal: string
   practice: LearnerPracticeScreen
@@ -36,6 +38,8 @@ if (revealIndex < 0) {
 export const sharedSameEpisode = {
   duration: '5–7 минут',
   introLead: 'Саша проводит первый вечер после переезда и сверяет дату оплаты комнаты с датой первой полной зарплаты.',
+  revealLabel: 'Ответ Тамары',
+  revealActionLabel: 'Увидеть ответ Тамары',
   opening: {
     title: 'Первый вечер после переезда',
     paragraphs: chapterOneOpening.slice(0, 5),
@@ -64,6 +68,16 @@ export const sharedSameEpisode = {
     ],
   },
   reveal: finalOpeningParagraph.slice(revealIndex).trim(),
+  feedbackFacts: [
+    {
+      label: 'Подтверждено',
+      body: 'Тамара согласилась перенести оплату на день зарплаты, и новую дату они зафиксировали в переписке.',
+    },
+    {
+      label: 'Не установлено',
+      body: 'Хватало ли Саше денег в исходную дату и состоялась ли оплата позже.',
+    },
+  ],
   outcome: {
     title: 'К концу эпизода изменилась дата',
     paragraphs: [
@@ -135,6 +149,8 @@ export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, Same
   'facts-before-reveal': {
     slug: 'facts-before-reveal',
     title: 'Что было известно в каждый момент?',
+    shortLabel: 'Смотрим на момент',
+    catalogDescription: 'Сверяете, что было известно именно в выбранный момент истории.',
     description: 'Отделить установленное от того, что до ответа Тамары оставалось неизвестным.',
     goal: 'Не переносить сведения из конца эпизода в более ранний момент и не додумывать нехватку денег.',
     practice: {
@@ -182,6 +198,8 @@ export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, Same
   'source-scope': {
     slug: 'source-scope',
     title: 'Какой источник что подтвердил?',
+    shortLabel: 'Смотрим на источник',
+    catalogDescription: 'Проверяете, на какой вопрос отвечает каждый источник.',
     description: 'Сопоставить сообщение, календарь и ответ Тамары с тем, что каждый из них сообщает.',
     goal: 'Видеть границу каждого источника и не превращать дату в доказательство наличия денег или оплаты.',
     practice: {
@@ -238,7 +256,9 @@ export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, Same
 
   'one-change': {
     slug: 'one-change',
-    title: 'Что меняет одна новая дата?',
+    title: 'Что изменилось до и после?',
+    shortLabel: 'Сравниваем до и после',
+    catalogDescription: 'Отмечаете только то, что изменилось после нового факта.',
     description: 'Отметить только прямые последствия согласованного переноса даты.',
     goal: 'Менять вывод ровно там, где изменился факт, и оставлять остальные вопросы открытыми.',
     practice: {
@@ -292,6 +312,8 @@ export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, Same
   'help-and-agency': {
     slug: 'help-and-agency',
     title: 'Кто помогал, кто действовал?',
+    shortLabel: 'Разделяем роли',
+    catalogDescription: 'Различаете, кто помогал, кто действовал и кто принимал решение.',
     description: 'Различить действия Саши, действия Тамары и то, что они сделали вместе.',
     goal: 'Не приписывать одному участнику решение или действие другого.',
     practice: {
@@ -359,6 +381,8 @@ export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, Same
   'question-and-source': {
     slug: 'question-and-source',
     title: 'Как меняется вопрос Саши?',
+    shortLabel: 'Идём от вопроса',
+    catalogDescription: 'Подбираете источник к каждому новому вопросу.',
     description: 'Подобрать источник к каждому новому вопросу и заметить вопрос без ответа.',
     goal: 'Менять источник вместе с вопросом, а не ждать одного ответа на всё.',
     practice: {
@@ -415,6 +439,8 @@ export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, Same
   'revise-explanation': {
     slug: 'revise-explanation',
     title: 'Как уточнить объяснение?',
+    shortLabel: 'Уточняем объяснение',
+    catalogDescription: 'Пересобираете объяснение после новых данных, не превращая случай в общее правило.',
     description: 'Собрать точное объяснение, не превращая единичный эпизод в универсальное правило.',
     goal: 'Связать вывод только с действиями и фактами, которые действительно описаны.',
     practice: {
@@ -471,6 +497,8 @@ export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, Same
   'evidence-chain': {
     slug: 'evidence-chain',
     title: 'На чём держится вывод?',
+    shortLabel: 'Проверяем цепочку',
+    catalogDescription: 'Проверяете каждое звено вывода и замечаете, где заканчиваются доказательства.',
     description: 'Проверить цепочку фактов и увидеть, где подтверждение заканчивается.',
     goal: 'Не пропускать неподтверждённое звено между наблюдением, решением и результатом.',
     practice: {
@@ -530,6 +558,8 @@ export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, Same
   'deadline-backward': {
     slug: 'deadline-backward',
     title: 'Что проверить до срока?',
+    shortLabel: 'Проверяем до срока',
+    catalogDescription: 'Определяете, что проверить до срока и каких данных для этого не хватает.',
     description: 'Развернуть события назад от даты оплаты и поставить сверку до решения.',
     goal: 'Увидеть, какая проверка предшествовала просьбе, и не путать согласованную дату с результатом оплаты.',
     practice: {
@@ -576,6 +606,8 @@ export const sameEpisodeMechanics: Readonly<Record<SameEpisodeMechanicSlug, Same
   'one-fact-one-conclusion': {
     slug: 'one-fact-one-conclusion',
     title: 'Что изменил один новый факт?',
+    shortLabel: 'Ограничиваем новый вывод',
+    catalogDescription: 'Меняете только тот вывод, который действительно поддержал новый факт.',
     description: 'Ограничить новый вывод ровно тем, что подтвердил ответ Тамары.',
     goal: 'Не достраивать из одного нового факта достаточность денег, результат оплаты или универсальное правило.',
     practice: {

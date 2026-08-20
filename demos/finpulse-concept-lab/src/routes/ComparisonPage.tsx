@@ -1,15 +1,20 @@
 /*
- * THESIS: один общий эпизод позволяет оценивать девять способов разбора без сюжетных помех.
+ * THESIS: девять способов можно сравнить на двух одинаково разбитых последовательных эпизодах.
  * OWN-WORLD: тот же спокойный каталог ФинПульса, что и основная Concept Lab.
- * STORY: пользователь выбирает один способ, проходит полный восьмиэкранный разбор и возвращается сюда.
- * FIRST VIEWPORT: бренд, ясное обещание и начало единого списка — без кодов, рейтингов и исследовательских подписей.
+ * STORY: пользователь сначала выбирает способ, затем один из двух эпизодов и проходит полный восьмиэкранный разбор.
+ * FIRST VIEWPORT: бренд, ясное обещание и начало матрицы 9 × 2 — без кодов, рейтингов и исследовательских подписей.
  * FORM: каталог самостоятельных маршрутов; попарного workbench, фильтров и сравнительных controls нет.
  */
 import { ArrowRight, Clock, LockKeyhole } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
 
+import {
+  comparisonEpisodeEntries,
+  comparisonLessonPath,
+} from '../comparison/comparisonLessonCatalog'
 import { sameEpisodeMechanicEntries, sharedSameEpisode } from '../comparison/sameEpisodeCatalog'
+import '../comparison/twoEpisodeCatalog.css'
 
 export function ComparisonPage() {
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -18,7 +23,7 @@ export function ComparisonPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
-    document.title = 'ФинПульс · Один эпизод, девять способов'
+    document.title = 'ФинПульс · Девять способов, два эпизода'
     document.documentElement.scrollTop = 0
     document.body.scrollTop = 0
     titleRef.current?.focus({ preventScroll: true })
@@ -42,38 +47,46 @@ export function ComparisonPage() {
         <header className="learner-library__intro">
           <p className="learner-library__brand">ФинПульс</p>
           <h1 id="same-episode-library-title" ref={titleRef} tabIndex={-1}>
-            Один эпизод, девять способов
+            Девять способов, два эпизода
           </h1>
           <p className="learner-library__promise">
-            Во всех разборах — один и тот же первый вечер Саши после переезда. Текст, факты и финал не меняются: отличается только ваше действие.
+            В каждом способе доступны два последовательных эпизода. Для каждого эпизода текст и финал одинаковы во всех девяти способах — меняется только ваше действие. Короткая метка показывает главное отличие способа.
           </p>
         </header>
 
         <div className="learner-library__groups">
           <section className="learner-library__group" aria-labelledby="same-episode-group-title">
             <h2 className="learner-library__group-title" id="same-episode-group-title">
-              Первый вечер после переезда
+              Выберите способ, затем эпизод
             </h2>
             <ul className="learner-library__list">
               {sameEpisodeMechanicEntries.map((mechanic) => (
                 <li className="learner-library__item" key={mechanic.slug}>
-                  <article className="learner-library__card">
+                  <article className="learner-library__card comparison-catalog__card">
                     <div className="learner-library__card-copy">
+                      <p className="comparison-catalog__method-label">{mechanic.shortLabel}</p>
                       <h3 className="learner-library__card-title">{mechanic.title}</h3>
-                      <p className="learner-library__description">{mechanic.description}</p>
+                      <p className="learner-library__description">{mechanic.catalogDescription}</p>
                       <p className="learner-library__duration">
                         <Clock aria-hidden="true" />
-                        {sharedSameEpisode.duration}
+                        2 урока · каждый по {sharedSameEpisode.duration}
                       </p>
                     </div>
-                    <Link
-                      aria-label={`Открыть разбор «${mechanic.title}»`}
-                      className="learner-library__link"
-                      to={`/compare/${mechanic.slug}/1`}
-                    >
-                      Открыть разбор
-                      <ArrowRight aria-hidden="true" />
-                    </Link>
+                    <div className="comparison-catalog__lessons" aria-label={`Уроки способа «${mechanic.title}»`}>
+                      {comparisonEpisodeEntries.map((episode) => (
+                        <Link
+                          aria-label={`${episode.sequenceLabel}: ${episode.title}. Способ «${mechanic.title}»`}
+                          className="comparison-catalog__lesson-link"
+                          key={episode.slug}
+                          to={comparisonLessonPath(mechanic.slug, episode, 1)}
+                        >
+                          <span>{episode.sequenceLabel}</span>
+                          <strong>{episode.title}</strong>
+                          <small>{episode.cardSummary}</small>
+                          <ArrowRight aria-hidden="true" />
+                        </Link>
+                      ))}
+                    </div>
                   </article>
                 </li>
               ))}

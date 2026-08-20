@@ -8,6 +8,14 @@ interface PracticeMechanicProps {
   answers: readonly string[][]
   onChange: (prompt: LearnerPrompt, values: string[]) => void
   practice: LearnerPracticeScreen
+  presentation?: PracticeMechanicPresentation
+}
+
+export interface PracticeMechanicPresentation {
+  deadlineStepLabels?: readonly string[]
+  deadlineTimelineLabels?: readonly [string, string, string]
+  threadAriaLabel?: string
+  threadStepLabels?: readonly string[]
 }
 
 interface ChoiceClusterProps {
@@ -75,7 +83,7 @@ function ContextCards({ className, items }: { className: string; items: readonly
   )
 }
 
-export function PracticeMechanic({ answers, onChange, practice }: PracticeMechanicProps) {
+export function PracticeMechanic({ answers, onChange, practice, presentation }: PracticeMechanicProps) {
   const choice = (prompt: LearnerPrompt, index: number, variant: string) => (
     <ChoiceCluster
       key={prompt.id}
@@ -149,14 +157,14 @@ export function PracticeMechanic({ answers, onChange, practice }: PracticeMechan
 
   if (practice.kind === 'thread') {
     return (
-      <section aria-label="Два вопроса и два ответа" className="practice-mechanic practice-mechanic--thread">
+      <section aria-label={presentation?.threadAriaLabel ?? 'Два вопроса и два ответа'} className="practice-mechanic practice-mechanic--thread">
         <ContextCards className="practice-mechanic__thread-moments" items={practice.contextItems} />
         <ol className="practice-mechanic__thread-line">
           {practice.prompts.map((prompt, index) => (
             <li key={prompt.id}>
               <span aria-hidden="true" className="practice-mechanic__thread-node" />
               <div>
-                <small>{index < 2 ? `Источник для шага ${index + 1}` : 'Граница ответа'}</small>
+                <small>{presentation?.threadStepLabels?.[index] ?? (index < 2 ? `Источник для шага ${index + 1}` : 'Граница ответа')}</small>
                 {choice(prompt, index, 'thread')}
               </div>
             </li>
@@ -200,16 +208,19 @@ export function PracticeMechanic({ answers, onChange, practice }: PracticeMechan
     )
   }
 
+  const deadlineTimelineLabels = presentation?.deadlineTimelineLabels
+    ?? ['Проверка', 'Изменение плана', 'Жилищная дата']
+
   return (
     <section aria-label="Сравнение сроков" className="practice-mechanic practice-mechanic--deadline">
       <ContextCards className="practice-mechanic__deadline-tracks" items={practice.contextItems} />
       <div aria-hidden="true" className="practice-mechanic__timeline">
-        <span>Проверка</span><i /><span>Изменение плана</span><i /><span>Жилищная дата</span>
+        <span>{deadlineTimelineLabels[0]}</span><i /><span>{deadlineTimelineLabels[1]}</span><i /><span>{deadlineTimelineLabels[2]}</span>
       </div>
       <ol className="practice-mechanic__deadline-decisions">
         {practice.prompts.map((prompt, index) => (
           <li key={prompt.id}>
-            <span>{index === 0 ? 'Поставьте проверку' : 'Ограничьте вывод'}</span>
+            <span>{presentation?.deadlineStepLabels?.[index] ?? (index === 0 ? 'Поставьте проверку' : 'Ограничьте вывод')}</span>
             {choice(prompt, index, 'deadline')}
           </li>
         ))}

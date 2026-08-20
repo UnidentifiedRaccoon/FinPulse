@@ -29,6 +29,7 @@ export function AppRoutes() {
       <Route element={<LearnerLessonRoute />} path="/lesson/:lessonSlug/:step" />
       <Route element={<LibraryPage />} path="/lab" />
       <Route element={<ComparisonPage />} path="/compare" />
+      <Route element={<SameEpisodeLessonPage />} path="/compare/:mechanicSlug/:episodeSlug/:step" />
       <Route element={<SameEpisodeLessonPage />} path="/compare/:mechanicSlug/:step" />
       <Route element={<ComparisonPage />} path="/compare/*" />
       <Route element={<ObserverPause />} path="/concept/a" />

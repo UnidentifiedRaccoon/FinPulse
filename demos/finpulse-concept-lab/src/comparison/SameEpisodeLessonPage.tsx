@@ -1,7 +1,7 @@
 /*
- * THESIS: один и тот же эпизод делает различия между девятью учебными действиями наблюдаемыми.
+ * THESIS: один и тот же способ можно проверить на двух последовательных эпизодах, не смешивая сюжет и учебное действие.
  * OWN-WORLD: знакомый learner-flow ФинПульса — светлый canvas, одна карточка, спокойный feedback, один CTA.
- * STORY: переезд, сверка двух дат, согласованный перенос и строгая граница того, что осталось неизвестным.
+ * STORY: каждый маршрут получает одну общую каноническую версию выбранного эпизода и строгую границу неизвестного.
  * FIRST VIEWPORT: название способа, короткое обещание, цель и один полностью видимый CTA.
  * FORM: восемь URL-экранов; общая история живёт отдельно от mechanic definition и не может разъехаться по вариантам.
  */
@@ -15,26 +15,21 @@ import {
   LockKeyhole,
   RotateCcw,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 
 import { PracticeMechanic } from '../components/PracticeMechanic'
 import { practiceActionLabel } from '../components/practiceMechanicLabels'
 import type { LearnerPrompt } from '../learnerLessonCatalog'
 import {
-  getSameEpisodeMechanic,
-  sharedSameEpisode,
-} from './sameEpisodeCatalog'
+  comparisonLessonPath,
+  getComparisonLesson,
+} from './comparisonLessonCatalog'
 
 const TOTAL_STEPS = 8
 
 type LessonLocationState = {
   fromLessonStep?: number
-}
-
-function lessonPath(slug: string, step: number, search?: URLSearchParams) {
-  const query = search?.toString()
-  return `/compare/${slug}/${step}${query ? `?${query}` : ''}`
 }
 
 function promptKey(prefix: 'practice' | 'checkpoint', prompt: LearnerPrompt) {
@@ -180,50 +175,60 @@ export function SameEpisodeLessonPage() {
   const params = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const headingContainerRef = useRef<HTMLDivElement>(null)
-  const mechanic = getSameEpisodeMechanic(params.mechanicSlug ?? '')
+  const lesson = getComparisonLesson(params.mechanicSlug ?? '', params.episodeSlug)
+  const mechanic = lesson?.method
+  const variant = lesson?.variant
+  const story = lesson?.story
+  const episode = lesson?.episode
   const parsedStep = Number(params.step)
   const step = Number.isInteger(parsedStep) && parsedStep >= 1 && parsedStep <= TOTAL_STEPS ? parsedStep : 1
   const done = searchParams.get('done') === '1'
   const checkpointChecked = searchParams.get('checkpoint-checked') === '1'
-  const checkpointPrompt = sharedSameEpisode.checkpoint.prompt
+  const checkpointPrompt = story?.checkpoint.prompt
 
-  const practiceAnswers = useMemo(
-    () => mechanic?.practice.prompts.map((prompt) => readSelection(searchParams, 'practice', prompt)) ?? [],
-    [mechanic, searchParams],
-  )
-  const checkpointAnswer = useMemo(
-    () => readSelection(searchParams, 'checkpoint', checkpointPrompt),
-    [checkpointPrompt, searchParams],
-  )
-  const practiceComplete = Boolean(mechanic) && practiceAnswers.every((answer) => answer.length > 0)
-  const practiceExact = mechanic ? mechanic.practice.prompts.every((prompt, index) => (
+  const practiceAnswers = variant?.practice.prompts.map((prompt) => (
+    readSelection(searchParams, 'practice', prompt)
+  )) ?? []
+  const checkpointAnswer = checkpointPrompt
+    ? readSelection(searchParams, 'checkpoint', checkpointPrompt)
+    : []
+  const practiceComplete = Boolean(variant) && practiceAnswers.every((answer) => answer.length > 0)
+  const practiceExact = variant ? variant.practice.prompts.every((prompt, index) => (
     sameSelection(practiceAnswers[index] ?? [], prompt.expected)
   )) : false
   const checkpointComplete = checkpointAnswer.length > 0
-  const checkpointExact = sameSelection(checkpointAnswer, checkpointPrompt.expected)
+  const checkpointExact = checkpointPrompt
+    ? sameSelection(checkpointAnswer, checkpointPrompt.expected)
+    : false
 
   useEffect(() => {
-    if (!mechanic) return
-    document.title = `${step === 8 && done ? 'Урок завершён' : mechanic.title} · ФинПульс`
+    if (!mechanic || !episode) return
+    document.title = `${step === 8 && done ? 'Урок завершён' : mechanic.title} · ${episode.title} · ФинПульс`
     document.documentElement.scrollTop = 0
     document.body.scrollTop = 0
     headingContainerRef.current?.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true })
-  }, [done, mechanic, step])
+  }, [done, episode, mechanic, step])
 
   useEffect(() => {
-    if (!mechanic || parsedStep === step) return
-    navigate(lessonPath(mechanic.slug, 1), { replace: true })
-  }, [mechanic, navigate, parsedStep, step])
+    if (!mechanic || !episode) return
+    if (params.episodeSlug === 'move-in-evening') {
+      navigate(comparisonLessonPath(mechanic.slug, episode, step, searchParams), { replace: true })
+      return
+    }
+    if (parsedStep !== step) {
+      navigate(comparisonLessonPath(mechanic.slug, episode, 1), { replace: true })
+    }
+  }, [episode, mechanic, navigate, params.episodeSlug, parsedStep, searchParams, step])
 
   useEffect(() => {
-    if (!mechanic) return
+    if (!mechanic || !episode) return
     if (step === 5 && !practiceComplete) {
-      navigate(lessonPath(mechanic.slug, 4, searchParams), { replace: true })
+      navigate(comparisonLessonPath(mechanic.slug, episode, 4, searchParams), { replace: true })
     }
     if (step === 8 && (!checkpointComplete || !checkpointChecked)) {
-      navigate(lessonPath(mechanic.slug, 7, searchParams), { replace: true })
+      navigate(comparisonLessonPath(mechanic.slug, episode, 7, searchParams), { replace: true })
     }
-  }, [checkpointChecked, checkpointComplete, mechanic, navigate, practiceComplete, searchParams, step])
+  }, [checkpointChecked, checkpointComplete, episode, mechanic, navigate, practiceComplete, searchParams, step])
 
   useEffect(() => {
     if (!mechanic || step === 8 || !done) return
@@ -237,13 +242,16 @@ export function SameEpisodeLessonPage() {
     navigate('/compare', { replace: true })
   }, [mechanic, navigate])
 
-  if (!mechanic) return null
+  if (!mechanic || !variant || !story || !episode || !checkpointPrompt) return null
   const activeMechanic = mechanic
+  const activeEpisode = episode
+  const activeVariant = variant
+  const activeStory = story
 
   function goTo(nextStep: number, paramsOverride = searchParams) {
     const next = new URLSearchParams(paramsOverride)
     if (nextStep < 8) next.delete('done')
-    navigate(lessonPath(activeMechanic.slug, nextStep, next), { state: { fromLessonStep: step } })
+    navigate(comparisonLessonPath(activeMechanic.slug, activeEpisode, nextStep, next), { state: { fromLessonStep: step } })
   }
 
   function updateSelection(
@@ -271,11 +279,11 @@ export function SameEpisodeLessonPage() {
     }
     const next = new URLSearchParams(searchParams)
     if (step === 8) next.delete('done')
-    navigate(lessonPath(activeMechanic.slug, Math.max(1, step - 1), next), { replace: true })
+    navigate(comparisonLessonPath(activeMechanic.slug, activeEpisode, Math.max(1, step - 1), next), { replace: true })
   }
 
   return (
-    <div className={step === 1 ? 'user-lesson user-lesson--entry' : 'user-lesson'} data-kind={mechanic.practice.kind} data-step={step}>
+    <div className={step === 1 ? 'user-lesson user-lesson--entry' : 'user-lesson'} data-kind={activeVariant.practice.kind} data-step={step}>
       <a className="skip-link" href="#same-episode-content">К основному содержанию</a>
       {step === 1 ? (
         <header className="user-lesson__entry-header">
@@ -291,28 +299,28 @@ export function SameEpisodeLessonPage() {
       <main className="user-lesson__main" id="same-episode-content" ref={headingContainerRef}>
         {step === 1 ? (
           <section className="user-lesson__entry-screen">
-            <p className="user-lesson__meta">Один общий эпизод · {sharedSameEpisode.duration}</p>
+            <p className="user-lesson__meta">{activeEpisode.sequenceLabel} · {activeEpisode.title} · {activeStory.duration}</p>
             <h1 tabIndex={-1}>{mechanic.title}</h1>
-            <p className="user-lesson__lead">{sharedSameEpisode.introLead}</p>
+            <p className="user-lesson__lead">{activeStory.introLead}</p>
             <section className="user-lesson__goal" aria-labelledby="same-episode-goal-title">
               <h2 id="same-episode-goal-title">Что вы попробуете</h2>
-              <p>{mechanic.goal}</p>
+              <p>{activeVariant.goal}</p>
             </section>
           </section>
         ) : null}
 
         {step === 2 ? (
-          <StoryCard title={sharedSameEpisode.opening.title}>
-            {sharedSameEpisode.opening.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          <StoryCard title={activeStory.opening.title}>
+            {activeStory.opening.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
           </StoryCard>
         ) : null}
 
         {step === 3 ? (
-          <StoryCard title={sharedSameEpisode.beforeReveal.title}>
-            {sharedSameEpisode.beforeReveal.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            <p className="user-lesson__focus-lead">{sharedSameEpisode.beforeReveal.lead}</p>
+          <StoryCard title={activeStory.beforeReveal.title}>
+            {activeStory.beforeReveal.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+            <p className="user-lesson__focus-lead">{activeStory.beforeReveal.lead}</p>
             <dl className="user-lesson__evidence">
-              {sharedSameEpisode.beforeReveal.facts.map((fact) => (
+              {activeStory.beforeReveal.facts.map((fact) => (
                 <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.body}</dd></div>
               ))}
             </dl>
@@ -321,13 +329,14 @@ export function SameEpisodeLessonPage() {
 
         {step === 4 ? (
           <article className="user-lesson__card user-lesson__practice-card">
-            <p className="user-lesson__meta">Ответ Тамары</p>
-            <div className="user-lesson__scenario"><p>{sharedSameEpisode.reveal}</p></div>
-            <h1 tabIndex={-1}>{mechanic.practice.title}</h1>
+            <p className="user-lesson__meta">{activeStory.revealLabel}</p>
+            <div className="user-lesson__scenario"><p>{activeStory.reveal}</p></div>
+            <h1 tabIndex={-1}>{activeVariant.practice.title}</h1>
             <PracticeMechanic
               answers={practiceAnswers}
               onChange={(prompt, value) => updateSelection('practice', prompt, value)}
-              practice={mechanic.practice}
+              practice={activeVariant.practice}
+              presentation={activeVariant.presentation}
             />
           </article>
         ) : null}
@@ -337,10 +346,10 @@ export function SameEpisodeLessonPage() {
             <div className="user-lesson__feedback-icon" aria-hidden="true">
               {practiceExact ? <CheckCircle2 /> : <Info />}
             </div>
-            <h1 tabIndex={-1}>{practiceExact ? mechanic.feedback.successTitle : mechanic.feedback.nuanceTitle}</h1>
-            {mechanic.feedback.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+            <h1 tabIndex={-1}>{practiceExact ? activeVariant.feedback.successTitle : activeVariant.feedback.nuanceTitle}</h1>
+            {activeVariant.feedback.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             <div className="user-lesson__answer-review">
-              {mechanic.practice.prompts.map((prompt, index) => {
+              {activeVariant.practice.prompts.map((prompt, index) => {
                 const actual = practiceAnswers[index] ?? []
                 const exact = sameSelection(actual, prompt.expected)
                 return (
@@ -357,7 +366,7 @@ export function SameEpisodeLessonPage() {
               })}
             </div>
             <dl className="user-lesson__evidence user-lesson__feedback-facts">
-              {sharedSameEpisode.outcome.facts.map((fact) => (
+              {activeStory.feedbackFacts.map((fact) => (
                 <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.body}</dd></div>
               ))}
             </dl>
@@ -365,11 +374,11 @@ export function SameEpisodeLessonPage() {
         ) : null}
 
         {step === 6 ? (
-          <StoryCard title={sharedSameEpisode.outcome.title}>
-            {sharedSameEpisode.outcome.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          <StoryCard title={activeStory.outcome.title}>
+            {activeStory.outcome.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             <div className="user-lesson__story-result">
               <strong>Граница эпизода</strong>
-              {sharedSameEpisode.outcome.facts.map((fact) => (
+              {activeStory.outcome.facts.map((fact) => (
                 <p key={fact.label}><strong>{fact.label}:</strong> {fact.body}</p>
               ))}
             </div>
@@ -379,8 +388,8 @@ export function SameEpisodeLessonPage() {
         {step === 7 ? (
           <article className="user-lesson__card user-lesson__practice-card">
             <p className="user-lesson__meta">Тот же эпизод</p>
-            <h1 tabIndex={-1}>{sharedSameEpisode.checkpoint.title}</h1>
-            <div className="user-lesson__scenario"><p>{sharedSameEpisode.checkpoint.scenario}</p></div>
+            <h1 tabIndex={-1}>{activeStory.checkpoint.title}</h1>
+            <div className="user-lesson__scenario"><p>{activeStory.checkpoint.scenario}</p></div>
             <div className="user-lesson__transfer-prompts">
               <ChoiceField
                 onChange={(value) => updateSelection('checkpoint', checkpointPrompt, value)}
@@ -393,9 +402,9 @@ export function SameEpisodeLessonPage() {
                 {checkpointExact ? <CheckCircle2 aria-hidden="true" /> : <Info aria-hidden="true" />}
                 <div>
                   <strong>{checkpointExact
-                    ? sharedSameEpisode.checkpoint.feedback.success
-                    : sharedSameEpisode.checkpoint.feedback.nuance}</strong>
-                  <p>{sharedSameEpisode.checkpoint.feedback.copy}</p>
+                    ? activeStory.checkpoint.feedback.success
+                    : activeStory.checkpoint.feedback.nuance}</strong>
+                  <p>{activeStory.checkpoint.feedback.copy}</p>
                 </div>
               </aside>
             ) : null}
@@ -406,13 +415,13 @@ export function SameEpisodeLessonPage() {
           <article className="user-lesson__card user-lesson__summary">
             <div className="user-lesson__summary-icon" aria-hidden="true"><CheckCircle2 /></div>
             <p className="user-lesson__meta">Итог</p>
-            <h1 tabIndex={-1}>{sharedSameEpisode.summary.title}</h1>
+            <h1 tabIndex={-1}>{activeStory.summary.title}</h1>
             <dl>
-              {sharedSameEpisode.summary.items.map((item) => (
+              {activeStory.summary.items.map((item) => (
                 <div key={item.label}><dt>{item.label}</dt><dd>{item.body}</dd></div>
               ))}
             </dl>
-            <p className="user-lesson__disclaimer">{sharedSameEpisode.summary.takeaway}</p>
+            <p className="user-lesson__disclaimer">{activeStory.summary.takeaway}</p>
           </article>
         ) : null}
 
@@ -421,10 +430,10 @@ export function SameEpisodeLessonPage() {
             <div className="user-lesson__complete-icon" aria-hidden="true"><Check /></div>
             <p className="user-lesson__meta">Готово · 8 из 8</p>
             <h1 tabIndex={-1}>Разбор завершён</h1>
-            <p>{sharedSameEpisode.summary.takeaway}</p>
+            <p>{activeStory.summary.takeaway}</p>
             <button
               className="user-lesson__text-action"
-              onClick={() => navigate(lessonPath(mechanic.slug, 1), { replace: true })}
+              onClick={() => navigate(comparisonLessonPath(mechanic.slug, activeEpisode, 1), { replace: true })}
               type="button"
             >
               <RotateCcw aria-hidden="true" /> Пройти ещё раз
@@ -436,12 +445,12 @@ export function SameEpisodeLessonPage() {
 
       {step === 1 ? <LessonAction label="Начать разбор" onClick={() => goTo(2)} /> : null}
       {step === 2 ? <LessonAction label="Продолжить историю" onClick={() => goTo(3)} /> : null}
-      {step === 3 ? <LessonAction label="Увидеть ответ Тамары" onClick={() => goTo(4)} /> : null}
+      {step === 3 ? <LessonAction label={activeStory.revealActionLabel} onClick={() => goTo(4)} /> : null}
       {step === 4 ? (
         <LessonAction
           disabled={!practiceComplete}
           icon="none"
-          label={practiceActionLabel(mechanic.practice.kind)}
+          label={practiceActionLabel(activeVariant.practice.kind)}
           onClick={() => goTo(5)}
         />
       ) : null}
@@ -470,7 +479,7 @@ export function SameEpisodeLessonPage() {
           setSearchParams(next, { replace: true, state: location.state })
         }} />
       ) : null}
-      {step === 8 && done ? <LessonAction label="Выбрать другой способ" onClick={() => navigate('/compare', { replace: true })} /> : null}
+      {step === 8 && done ? <LessonAction label="К способам и эпизодам" onClick={() => navigate('/compare', { replace: true })} /> : null}
     </div>
   )
 }
